@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "outDir": "./out/scripts",
+    "target": "es6"
+  },
+  "include": ["source/**/*"]
+}

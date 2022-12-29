@@ -1,0 +1,100 @@
+:root {
+    --menu-bar-height: 32px;
+    --configure-bar-height: 48px;
+    --main-bar-height: calc(100vh - (var(--menu-bar-height) + var(--configure-bar-height) + var(--status-bar-height)));
+    --tool-bar-width: 48px;
+    --tool-bar-height: var(--main-bar-height);
+    --puzzle-canvas-width: calc(100vw - var(--tool-bar-width));
+    --puzzle-canvas-height: var(--main-bar-height);
+    --status-bar-height: 32px;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    user-select: none;
+    cursor: default;
+}
+div#menu_bar {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: var(--menu-bar-height);
+    background-color: blue;
+}
+div#configure_bar {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: var(--configure-bar-height);
+    background-color: orange;
+}
+
+div#main_bar {
+    display: flex;
+    flex-direction: row;
+    height: var(--main-bar-height);
+}
+
+div#tool_bar {
+    display: flex;
+    flex-direction: column;
+    width: var(--tool-bar-width);
+    height: var(--tool-bar-height);
+    background-color: green;
+}
+
+div#tool_bar > div {
+    width: var(--tool-bar-width);
+    height: var(--tool-bar-width);
+    background-color: turquoise;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: calc(var(--tool-bar-width) - 16px);
+}
+
+div#tool_bar > div:hover {
+    background-color: darkturquoise;
+}
+
+div#object_selection_tool {
+    background-image: url("icons/cursor.svg")
+}
+
+div#rectangle_selection_tool {
+    background-image: url("icons/selection.svg");
+}
+
+div#grid_tool {
+    background-image: url("icons/2x2-cell.svg")
+}
+
+div#digit_tool {
+    background-image: url("icons/123.svg")
+}
+
+div#puzzle_canvas {
+/*    flex-grow: 1;*/
+    width: var(--puzzle-canvas-width);
+    height: var(--puzzle-canvas-height);
+    background: gray;
+    overflow: scroll;
+    padding : 0;
+    margin : 0;
+}
+
+svg#canvas_root{
+    background: white;
+}
+
+div#status_bar {
+    display: flex;
+    flex-direction: row;
+    height: var(--status-bar-height);
+    background-color: lightgrey;
+}

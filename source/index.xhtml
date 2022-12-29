@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <title>Puzzle Shop Pro</title>
+    <link rel="stylesheet" type="text/css" href="styles.css"/>
+    <script src="scripts/constants.js"/>
+    <script src="scripts/utilities.js"/>
+    <script src="scripts/bst_set.js"/>
+    <script src="scripts/colour.js"/>
+    <script src="scripts/bounding_box.js"/>
+    <script src="scripts/error_handling.js"/>
+    <script src="scripts/puzzle_shop_pro.js"/>
+    <script src="scripts/undo_redo.js"/>
+    <script src="scripts/scene_manager.js"/>
+    <script src="scripts/tool_box.js"/>
+    <script src="scripts/tools/object_selection_tool.js"/>
+    <script src="scripts/tools/grid_tool.js"/>
+    <script src="scripts/tools/digit_tool.js"/>
+    <script src="scripts/puzzle_grid.js"/>
+    <script src="scripts/constraints/region.js"/>
+    <script src="scripts/constraints/grid_9x9.js"/>
+
+    <body onload="start_puzzle_shop_pro()">
+        <div id="menu_bar"/>
+        <div id="configure_bar"/>
+        <div id="main_bar">
+            <div id="tool_bar">
+                <div id="object_selection_tool" title="Object Selection Tool"/>
+                <div id="rectangle_selection_tool" title="Rectangle Selection Tool"/>
+                <div id="grid_tool" title="Grid Tool (G)"/>
+                <div id="digit_tool" title="Digit Tool (Z)"/>
+            </div>
+            <div id="puzzle_canvas"/>
+        </div>
+        <div id="status_bar"/>
+    </body>
+</html>
