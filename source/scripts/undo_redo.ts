@@ -45,8 +45,7 @@ class UndoRedoStack {
     }
 
     doAction(action: IAction) {
-        console.debug(`doing: ${action.description}`);
-        console.debug(action);
+        console.debug(`do: ${action.description}`);
         action.apply();
         this.undoStack.push(action);
         this.redoStack = new Array();
@@ -56,7 +55,6 @@ class UndoRedoStack {
         let action = this.undoStack.pop();
         if (action !== undefined) {
             console.debug(`undo: ${action.description}`);
-            console.debug(action);
             action.revert();
             this.redoStack.push(action);
         }
@@ -66,7 +64,6 @@ class UndoRedoStack {
         let action = this.redoStack.pop();
         if (action !== undefined) {
             console.debug(`redo: ${action.description}`);
-            console.debug(action);
             action.apply();
             this.undoStack.push(action);
         }
