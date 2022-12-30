@@ -90,7 +90,8 @@ Element.prototype.setAttributes = function (...nameValuePairs) {
         this.setAttribute(name, value);
     }
 };
-if (globalThis.navigator.userAgent.includes("Mac OS")) {
+Navigator.prototype.isMacOS = globalThis.navigator.userAgent.includes("Mac OS");
+if (globalThis.navigator.isMacOS) {
     Object.defineProperty(MouseEvent.prototype, "shortcutKey", {
         get: function () {
             return this.metaKey;

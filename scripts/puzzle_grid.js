@@ -103,16 +103,16 @@ class PuzzleGrid {
         let pair = this.digitMap.get(key);
         let retval = null;
         if (pair) {
-            let [previousDigit, text] = pair;
-            retval = previousDigit;
+            // let [previousDigit, text] = pair;
+            retval = pair[0];
             // new digit to write
             if (digit) {
-                previousDigit = digit;
-                text.innerHTML = `${digit}`;
+                pair[0] = digit;
+                pair[1].innerHTML = `${digit}`;
                 // otherwise delete entry
             }
             else {
-                this.sceneManager.removeElement(text);
+                this.sceneManager.removeElement(pair[1]);
                 this.digitMap.delete(key);
             }
         }
