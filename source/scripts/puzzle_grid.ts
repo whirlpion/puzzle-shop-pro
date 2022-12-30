@@ -180,7 +180,9 @@ class PuzzleGrid {
                 }
             }
             this.errorHighlight.clearChildren();
-            console.debug(`Constraint violation! ${affectedCells.size} cells affected:`);
+            if (affectedCells.size > 0) {
+                console.debug(`Constraint violation! ${affectedCells.size} cells affected:`);
+            }
             for (let cell of affectedCells) {
                 // may be smarter to do this on a per constraint level then by cell
                 console.debug(` ${cell}`);
