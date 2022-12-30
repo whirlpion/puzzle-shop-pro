@@ -48,13 +48,31 @@ class Cell {
         this._i = i;
         this._j = j;
     }
-    static fromXY(x, y) {
-        let i = Math.floor(y / CELL_SIZE);
-        let j = Math.floor(x / CELL_SIZE);
-        return new Cell(i, j);
-    }
-    toString() {
-        return `r${this.i}c${this.j}`;
+    static bresenhamLine(from, to) {
+        let cells = [];
+        let x = from.j;
+        let y = from.i;
+        let x1 = to.j;
+        let y1 = to.i;
+        let dx = Math.abs(x1 - x);
+        let dy = Math.abs(y1 - y);
+        let sx = (x < x1) ? 1 : -1;
+        let sy = (y < y1) ? 1 : -1;
+        let err = dx - dy;
+        cells.push(from);
+        while ((y != y1) || (x != x1)) {
+            let e2 = 2 * err;
+            if (e2 > -dy) {
+                err -= dy;
+                x += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                y += sy;
+            }
+            cells.push(new Cell(y, x));
+        }
+        return cells;
     }
     cmp(that) {
         if (this._i < that._i) {
@@ -69,6 +87,17 @@ class Cell {
         else {
             return Ordering.GreaterThan;
         }
+    }
+    static fromXY(x, y) {
+        let i = Math.floor(y / CELL_SIZE);
+        let j = Math.floor(x / CELL_SIZE);
+        return new Cell(i, j);
+    }
+    static fromMouseEvent(event) {
+        return Cell.fromXY(event.offsetX, event.offsetY);
+    }
+    toString() {
+        return `r${this.i}c${this.j}`;
     }
 }
 Cell.MAX_VAL = 0xFFFF;
@@ -136,16 +165,17 @@ class PuzzleGrid {
         let pair = this.digitMap.get(cell);
         let retval = null;
         if (pair) {
-            let [previousDigit, text] = pair;
-            retval = previousDigit;
+            // pair[0] : Digit
+            // pair[1] : SVGTextElement
+            retval = pair[0];
             // new digit to write
             if (digit) {
-                previousDigit = digit;
-                text.innerHTML = `${digit}`;
+                pair[0] = digit;
+                pair[1].innerHTML = `${digit}`;
                 // otherwise delete entry
             }
             else {
-                this.sceneManager.removeElement(text);
+                this.sceneManager.removeElement(pair[1]);
                 this.digitMap.delete(cell);
             }
         }

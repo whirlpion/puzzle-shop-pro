@@ -98,13 +98,18 @@ Element.prototype.setAttributes = function (...nameValuePairs) {
     }
 };
 Navigator.prototype.isMacOS = globalThis.navigator.userAgent.includes("Mac OS");
+Object.defineProperty(MouseEvent.prototype, "primaryButton", {
+    get: function () {
+        return this.buttons & 1 ? true : false;
+    }
+});
+Object.defineProperty(MouseEvent.prototype, "secondaryButton", {
+    get: function () {
+        return this.buttons & 2 ? true : false;
+    }
+});
 if (globalThis.navigator.isMacOS) {
     Object.defineProperty(MouseEvent.prototype, "shortcutKey", {
-        get: function () {
-            return this.metaKey;
-        }
-    });
-    Object.defineProperty(KeyboardEvent.prototype, "shortcutKey", {
         get: function () {
             return this.metaKey;
         }
@@ -116,6 +121,15 @@ else {
             return this.ctrlKey;
         }
     });
+}
+if (globalThis.navigator.isMacOS) {
+    Object.defineProperty(KeyboardEvent.prototype, "shortcutKey", {
+        get: function () {
+            return this.metaKey;
+        }
+    });
+}
+else {
     Object.defineProperty(KeyboardEvent.prototype, "shortcutKey", {
         get: function () {
             return this.ctrlKey;
