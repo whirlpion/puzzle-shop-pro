@@ -62,6 +62,13 @@ Array.prototype.merge = function (that) {
     }
     return merged;
 };
+Array.collect = function (it) {
+    let data = new Array();
+    for (let entry = it.next(); !entry.done; entry = it.next()) {
+        data.push(entry.value);
+    }
+    return data;
+};
 String.prototype.toSnakeCase = function () {
     return this.replace(/[a-z0-9]([A-Z])/g, (match) => `${match.charAt(0)}_${match.charAt(1)}`).toLowerCase();
 };
