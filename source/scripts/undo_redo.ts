@@ -27,7 +27,7 @@ class UndoRedoStack {
             case 'z':
             case 'Z':
                 {
-                    if (kevt.ctrlKey) {
+                    if (kevt.shortcutKey) {
                         if (!kevt.shiftKey) {
                             this.undo();
                         } else {

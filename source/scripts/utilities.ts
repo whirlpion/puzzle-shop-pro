@@ -145,3 +145,36 @@ Element.prototype.setAttributes = function(...nameValuePairs: [string, string][]
     }
 }
 
+// MouseEvent
+
+interface MouseEvent {
+    get shortcutKey(): boolean;
+}
+
+// KeyboardEvent
+
+interface KeyboardEvent {
+    get shortcutKey(): boolean;
+}
+
+if (globalThis.navigator.userAgent.includes("Mac OS")) {
+    Object.defineProperty(MouseEvent.prototype, "shortcutKey", {
+        get:function(): boolean{
+            return this.metaKey;
+        }});
+
+    Object.defineProperty(KeyboardEvent.prototype, "shortcutKey", {
+        get:function(): boolean{
+            return this.metaKey;
+        }});
+} else {
+    Object.defineProperty(MouseEvent.prototype, "shortcutKey", {
+        get:function(): boolean{
+            return this.ctrlKey;
+        }});
+
+    Object.defineProperty(KeyboardEvent.prototype, "shortcutKey", {
+        get:function(): boolean{
+            return this.ctrlKey;
+        }});
+}
