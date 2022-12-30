@@ -32,10 +32,48 @@ class DigitTool extends ITool {
         this.highlightSvg = svg;
         this.puzzleGrid = puzzleGrid;
     }
+    // create a highlight rect
     createHighlightRect(cell) {
         let rect = this.sceneManager.createElement("rect", SVGRectElement);
         rect.setAttributes(["width", `${CELL_SIZE}`], ["height", `${CELL_SIZE}`], ["fill", Colour.LightBlue.toString()], ["x", `${cell.j * CELL_SIZE}`], ["y", `${cell.i * CELL_SIZE}`]);
         return rect;
+    }
+    // writes a digit to the highlighted cells
+    writeDigit(digit) {
+        // first make sure the key press would result in anything changing
+        let actionIsNoop = true;
+        let cells = Array.collect(this.highlightedCells.keys());
+        for (let cell of cells) {
+            if (this.puzzleGrid.getDigitAtCell(cell) !== digit) {
+                actionIsNoop = false;
+                break;
+            }
+        }
+        if (actionIsNoop) {
+            return;
+        }
+        let action = new WriteDigitAction(this.puzzleGrid, digit, ...cells);
+        this.actionStack.doAction(action);
+    }
+    // highlights a line of cells
+    highlightLine(from, to) {
+        // cell line
+        let line = Cell.bresenhamLine(from, to);
+        for (let cell of line) {
+            let rect = this.highlightedCells.get(cell);
+            if (!rect) {
+                rect = this.createHighlightRect(cell);
+                this.highlightedCells.set(cell, rect);
+                this.highlightSvg.appendChild(rect);
+            }
+        }
+        this.focusedCell = to;
+    }
+    handlePutDown() {
+        // no cells selected
+        this.highlightedCells = new BSTMap();
+        this.highlightSvg.clearChildren();
+        this.focusedCell = null;
     }
     // ctrl+click toggles individual cells
     // shift+click should select all cells between current and previous click
@@ -92,35 +130,6 @@ class DigitTool extends ITool {
         }
         const cell = Cell.fromMouseEvent(event);
         this.highlightLine(this.focusedCell, cell);
-    }
-    highlightLine(from, to) {
-        // cell line
-        let line = Cell.bresenhamLine(from, to);
-        for (let cell of line) {
-            let rect = this.highlightedCells.get(cell);
-            if (!rect) {
-                rect = this.createHighlightRect(cell);
-                this.highlightedCells.set(cell, rect);
-                this.highlightSvg.appendChild(rect);
-            }
-        }
-        this.focusedCell = to;
-    }
-    writeDigit(digit) {
-        // first make sure the key press would result in anything changing
-        let actionIsNoop = true;
-        let cells = Array.collect(this.highlightedCells.keys());
-        for (let cell of cells) {
-            if (this.puzzleGrid.getDigitAtCell(cell) !== digit) {
-                actionIsNoop = false;
-                break;
-            }
-        }
-        if (actionIsNoop) {
-            return;
-        }
-        let action = new WriteDigitAction(this.puzzleGrid, digit, ...cells);
-        this.actionStack.doAction(action);
     }
     handleKeyDown(event) {
         if (this.highlightedCells.size > 0) {
