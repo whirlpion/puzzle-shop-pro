@@ -145,6 +145,14 @@ Element.prototype.setAttributes = function(...nameValuePairs: [string, string][]
     }
 }
 
+// Navigator
+
+interface Navigator {
+    isMacOS: boolean;
+}
+
+Navigator.prototype.isMacOS = globalThis.navigator.userAgent.includes("Mac OS");
+
 // MouseEvent
 
 interface MouseEvent {
@@ -157,7 +165,7 @@ interface KeyboardEvent {
     get shortcutKey(): boolean;
 }
 
-if (globalThis.navigator.userAgent.includes("Mac OS")) {
+if (globalThis.navigator.isMacOS) {
     Object.defineProperty(MouseEvent.prototype, "shortcutKey", {
         get:function(): boolean{
             return this.metaKey;
