@@ -64,14 +64,14 @@ class ToolBox {
         this.sceneManager = sceneManager;
         this.currentTool = new NoOpTool(puzzleGrid, actionStack, sceneManager);
 
-        const blueprints: Array<[string, new (puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) => any, string | null]> = [
-          ["object_selection_tool", ObjectSelectionTool, "O"],
-          ["rectangle_selection_tool", NoOpTool, null],
-          ["grid_tool", GridTool, "G"],
-          ["digit_tool", DigitTool, "Z"],
+        const blueprints: Array<[string, new (puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) => any, string | undefined]> = [
+          ["object_selection_tool", ObjectSelectionTool, "KeyO"],
+          ["rectangle_selection_tool", NoOpTool, undefined],
+          ["grid_tool", GridTool, "KeyG"],
+          ["digit_tool", DigitTool, "KeyZ"],
         ];
 
-        for(let [id, toolConstructor, shortcut] of blueprints) {
+        for(let [id, toolConstructor, _code] of blueprints) {
             let tool = <ITool>new toolConstructor(puzzleGrid, actionStack, sceneManager);
             this.tools.push(tool);
 
@@ -80,20 +80,6 @@ class ToolBox {
             button.addEventListener("click", () => {
                 this.switchToTool(tool);
             });
-            document.addEventListener("keydown", (event: Event) => {
-                let keyboardEvent = <KeyboardEvent>event;
-                if (keyboardEvent.shiftKey ||
-                    keyboardEvent.metaKey ||
-                    keyboardEvent.ctrlKey ||
-                    keyboardEvent.altKey) {
-                    return;
-                }
-
-                if (keyboardEvent.key.toUpperCase() === shortcut) {
-                    this.switchToTool(tool);
-                    event.stopPropagation();
-                }
-            }, {capture: true}); // we want to handle tool switch last
         }
 
         // always start with the object selection tool
@@ -118,10 +104,25 @@ class ToolBox {
             this.currentTool.handleMouseMove(<MouseEvent>event);
         });
         document.addEventListener("keydown", (event: Event) => {
-            this.currentTool.handleKeyDown(<KeyboardEvent>event);
-        });
+            // check for tool switching
+            let keyboardEvent = <KeyboardEvent>event;
+            if (!keyboardEvent.shiftKey &&
+                !keyboardEvent.metaKey &&
+                !keyboardEvent.ctrlKey &&
+                !keyboardEvent.altKey) {
+
+                for(let k = 0; k < blueprints.length; k++) {
+                    let [_id, _toolConstructor, code] = blueprints[k];
+                    if (code && keyboardEvent.code === code) {
+                        this.switchToTool(this.tools[k]);
+                        event.stopPropagation();
+                    }
+                }
+            }
+            this.currentTool.handleKeyDown(keyboardEvent);
+        },{capture: true});
         document.addEventListener("keyup", (event: Event) => {
             this.currentTool.handleKeyUp(<KeyboardEvent>event);
-        });
+        }, {capture: true});
     }
 }
