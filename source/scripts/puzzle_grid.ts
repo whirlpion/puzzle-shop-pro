@@ -6,9 +6,6 @@ abstract class IConstraint {
     // handle for an svg element from the CanvasView that
     private _svg: SVGElement | null;
 
-    // cloneCells(): Array<Cell> {
-    //     return this._cells.clone();
-    // }
     get cells(): Array<Cell> {
         return this._cells;
     }
@@ -111,9 +108,9 @@ class PuzzleGrid {
 
     // key: cell row and column
     // value: set of constraints affecting the cell
-    private constraintMap: Map<string, Set<IConstraint>> = new Map();
+    private constraintMap: BSTMap<Cell, Set<IConstraint>> = new BSTMap();
     private violatedConstraints: Set<IConstraint> = new Set();
-    private digitMap: Map<string, [Digit, SVGTextElement]> = new Map();
+    private digitMap: BSTMap<Cell, [Digit, SVGTextElement]> = new BSTMap();
     private sceneManager: SceneManager;
 
     private errorHighlight: SVGGElement;
@@ -129,22 +126,66 @@ class PuzzleGrid {
         this.errorHighlight.setAttribute("opacity", "1.0");
     }
 
+    checkCellsForConstraintViolations(...cells: Cell[]) {
+        // checks each of the requested cells
+        for(let cell of cells) {
+            // identify all the constraints affecting the current cell
+            let constraintsOnCell = this.constraintMap.get(cell);
+            if (constraintsOnCell) {
+                // determine if the constraint is violated
+                for (let constraint of constraintsOnCell) {
+                    if (constraint.isConstraintViolated(this)) {
+                        this.violatedConstraints.add(constraint);
+                    } else {
+                        this.violatedConstraints.delete(constraint);
+                    }
+                }
+            }
+        }
+
+        // now construct set of all cells within the violated constraints area
+        let affectedCells: BSTSet<Cell> = new BSTSet();
+        for (let constraint of this.violatedConstraints) {
+            for (let cell of constraint.cells) {
+                affectedCells.add(cell);
+            }
+        }
+
+        // TODO: there's probably a smarter way to batch together cells into larger
+        // svg elements rather than painting a rect over each individual cell; keep
+        // in mind if we see performance issues here
+        this.errorHighlight.clearChildren();
+        if (affectedCells.size > 0) {
+            console.debug(`Constraint violation! ${affectedCells.size} cells affected`);
+
+            for (let cell of affectedCells) {
+                let rect = this.sceneManager.createElement("rect", SVGRectElement);
+                rect.setAttributes(
+                    ["x", `${cell.j * CELL_SIZE}`],
+                    ["y", `${cell.i * CELL_SIZE}`],
+                    ["width", `${CELL_SIZE}`],
+                    ["height", `${CELL_SIZE}`],
+                    ["fill", Colour.Pink.toString()]);
+                this.errorHighlight.appendChild(rect);
+            }
+        }
+    }
+
     // returns the previous digit at that cell if present
     setDigitAtCell(cell: Cell, digit: Digit | null): Digit | null {
-        const key = cell.toString();
-        let pair = this.digitMap.get(key);
+        let pair = this.digitMap.get(cell);
         let retval: Digit | null = null;
         if (pair) {
-            // let [previousDigit, text] = pair;
-            retval = pair[0];
+            let [previousDigit, text] = pair;
+            retval = previousDigit;
             // new digit to write
             if (digit) {
-                pair[0] = digit;
-                pair[1].innerHTML = `${digit}`;
+                previousDigit = digit;
+                text.innerHTML = `${digit}`;
             // otherwise delete entry
             } else {
-                this.sceneManager.removeElement(pair[1]);
-                this.digitMap.delete(key);
+                this.sceneManager.removeElement(text);
+                this.digitMap.delete(cell);
             }
         } else {
             // new digit to write
@@ -158,52 +199,16 @@ class PuzzleGrid {
                     ["font-size", `${CELL_SIZE * 3 / 4}`],
                     ["font-family", "sans-serif"]);
                 text.innerHTML = `${digit}`;
-                this.digitMap.set(key, [digit, text]);
+                this.digitMap.set(cell, [digit, text]);
             }
         }
 
-        // get the set of constraints on a cell and verify it is not violated
-        let constraintsOnCell = this.constraintMap.get(key);
-        if (constraintsOnCell) {
-            for (let constraint of constraintsOnCell) {
-                if (constraint.isConstraintViolated(this)) {
-                    this.violatedConstraints.add(constraint);
-                } else {
-                    this.violatedConstraints.delete(constraint);
-                }
-            }
-
-            let affectedCells: BSTSet<Cell> = new BSTSet();
-            for (let constraint of this.violatedConstraints) {
-                for (let cell of constraint.cells) {
-                    affectedCells.add(cell);
-                }
-            }
-            this.errorHighlight.clearChildren();
-            if (affectedCells.size > 0) {
-                console.debug(`Constraint violation! ${affectedCells.size} cells affected:`);
-            }
-            for (let cell of affectedCells) {
-                // may be smarter to do this on a per constraint level then by cell
-                console.debug(` ${cell}`);
-                let rect = this.sceneManager.createElement("rect", SVGRectElement);
-                rect.setAttributes(
-                    ["x", `${cell.j * CELL_SIZE}`],
-                    ["y", `${cell.i * CELL_SIZE}`],
-                    ["width", `${CELL_SIZE}`],
-                    ["height", `${CELL_SIZE}`],
-                    ["fill", Colour.Pink.toString()]);
-                this.errorHighlight.appendChild(rect);
-            }
-
-        }
-
+        this.checkCellsForConstraintViolations(cell);
         return retval;
     }
 
     getDigitAtCell(cell: Cell): Digit | null {
-        const key = cell.toString();
-        let retval = this.digitMap.get(key);
+        let retval = this.digitMap.get(cell);
         if (retval !== undefined) {
             let [digit, _svg] = retval;
             return digit;
@@ -211,24 +216,44 @@ class PuzzleGrid {
         return null;
     }
 
-    addConstraintToCell(cell: Cell, constraint: IConstraint): void {
-        const key = cell.toString();
-        if(!this.constraintMap.has(key)) {
-            this.constraintMap.set(key, new Set());
-        }
-        let set = this.constraintMap.get(key);
-        throwIfNull(set);
+    // adds a constraint and optionally checks to see if its addition affects
+    // the set of cells under violated constraints
+    addConstraint(constraint: IConstraint, checkViolations?: boolean, ): void {
+        for (let cell of constraint.cells) {
+            // get set of constraints already on cell, or create new one
+            let constraints = this.constraintMap.get(cell);
+            if (!constraints) {
+                constraints = new Set();
+                this.constraintMap.set(cell, constraints);
+            }
 
-        set.add(constraint);
+            // update the set with our constraint
+            constraints.add(constraint);
+        }
+
+        if (checkViolations) {
+            this.checkCellsForConstraintViolations(...constraint.cells);
+        }
     }
 
-    removeConstraintFromCell(cell: Cell, constraint: IConstraint): void {
-        const key = cell.toString();
-        let set = this.constraintMap.get(key);
-        throwIfNull(set);
-        set.delete(constraint);
-        if (set.size === 0) {
-            this.constraintMap.delete(key);
+    // removes a constraint and optionally checks to see if its removal affects
+    // the set of cells under violated constraints
+    removeConstraint(constraint: IConstraint, checkViolations?: boolean): void {
+        for (let cell of constraint.cells) {
+            // get the set of contraints already on cell
+            let constraints = this.constraintMap.get(cell);
+            throwIfUndefined(constraints);
+            constraints.delete(constraint);
+            // if no constraints exist on the cell, remove the entry from the map
+            if (constraints.size === 0) {
+                this.constraintMap.delete(cell);
+            }
+            // constraint is no longer in play so it can't be violated
+            this.violatedConstraints.delete(constraint);
+        }
+
+        if (checkViolations) {
+            this.checkCellsForConstraintViolations(...constraint.cells);
         }
     }
 }
