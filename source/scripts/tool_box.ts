@@ -127,6 +127,7 @@ class ToolBox {
                 } else {
                     this.actionStack.redo();
                 }
+                event.preventDefault();
                 event.stopPropagation();
                 return;
             }

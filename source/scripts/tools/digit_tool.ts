@@ -169,7 +169,11 @@ class DigitTool extends ITool {
                 break;
             }
             switch(event.code) {
-            case "Delete": case "Backspace":
+            case "Backspace":
+                event.preventDefault();
+                this.writeDigit(null);
+                return;
+            case "Delete":
                 this.writeDigit(null);
                 return;
             default:
