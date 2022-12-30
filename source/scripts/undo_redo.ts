@@ -16,32 +16,6 @@ class UndoRedoStack {
     constructor() {
         this.undoStack = new Array();
         this.redoStack = new Array();
-
-        let body = document.querySelector("body");
-        throwIfNull(body);
-
-        body.addEventListener("keydown", (event: Event) => {
-            let kevt = <KeyboardEvent>event;
-
-            switch(kevt.key) {
-            case 'z':
-            case 'Z':
-                {
-                    if (kevt.shortcutKey) {
-                        if (!kevt.shiftKey) {
-                            this.undo();
-                        } else {
-                            this.redo();
-                        }
-                        event.stopPropagation();
-                    }
-                }
-                break;
-            default:
-                break;
-            }
-
-        }, { capture: true });
     }
 
     doAction(action: IAction) {
