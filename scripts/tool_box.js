@@ -98,9 +98,22 @@ class ToolBox {
                     if (code && keyboardEvent.code === code) {
                         this.switchToTool(this.tools[k]);
                         event.stopPropagation();
+                        return;
                     }
                 }
             }
+            // check for undo/redo
+            if (keyboardEvent.shortcutKey && keyboardEvent.code === "KeyZ") {
+                if (!keyboardEvent.shiftKey) {
+                    this.actionStack.undo();
+                }
+                else {
+                    this.actionStack.redo();
+                }
+                event.stopPropagation();
+                return;
+            }
+            // propagate to tools
             this.currentTool.handleKeyDown(keyboardEvent);
         }, { capture: true });
         document.addEventListener("keyup", (event) => {
