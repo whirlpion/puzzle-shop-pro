@@ -168,7 +168,34 @@ Navigator.prototype.isMacOS = globalThis.navigator.userAgent.includes("Mac OS");
 // MouseEvent
 
 interface MouseEvent {
+    // abstract away control vs command
     get shortcutKey(): boolean;
+    // is primary button pressed
+    get primaryButton(): boolean;
+    // is secondary button pressed
+    get secondaryButton(): boolean;
+}
+
+Object.defineProperty(MouseEvent.prototype, "primaryButton", {
+    get:function(): boolean {
+        return this.buttons & 1 ? true : false;
+    }});
+
+Object.defineProperty(MouseEvent.prototype, "secondaryButton", {
+    get:function(): boolean {
+        return this.buttons & 2 ? true : false;
+    }});
+
+if (globalThis.navigator.isMacOS) {
+    Object.defineProperty(MouseEvent.prototype, "shortcutKey", {
+        get:function(): boolean {
+            return this.metaKey;
+        }});
+} else {
+    Object.defineProperty(MouseEvent.prototype, "shortcutKey", {
+        get:function(): boolean {
+            return this.ctrlKey;
+        }});
 }
 
 // KeyboardEvent
@@ -178,23 +205,13 @@ interface KeyboardEvent {
 }
 
 if (globalThis.navigator.isMacOS) {
-    Object.defineProperty(MouseEvent.prototype, "shortcutKey", {
-        get:function(): boolean{
-            return this.metaKey;
-        }});
-
     Object.defineProperty(KeyboardEvent.prototype, "shortcutKey", {
-        get:function(): boolean{
+        get:function(): boolean {
             return this.metaKey;
         }});
 } else {
-    Object.defineProperty(MouseEvent.prototype, "shortcutKey", {
-        get:function(): boolean{
-            return this.ctrlKey;
-        }});
-
     Object.defineProperty(KeyboardEvent.prototype, "shortcutKey", {
-        get:function(): boolean{
+        get:function(): boolean {
             return this.ctrlKey;
         }});
 }
