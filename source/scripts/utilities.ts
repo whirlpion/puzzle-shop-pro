@@ -80,6 +80,18 @@ Array.prototype.merge = function<T extends IOrdered>(this: Array<T>, that: Array
     return merged;
 }
 
+interface ArrayConstructor {
+    collect<T>(iterator: Iterator<T>): Array<T>;
+}
+
+Array.collect = function<T>(it: Iterator<T>): Array<T> {
+    let data: Array<T> = new Array();
+    for(let entry = it.next(); !entry.done; entry = it.next()) {
+        data.push(entry.value);
+    }
+    return data;
+}
+
 // String
 
 interface String {
