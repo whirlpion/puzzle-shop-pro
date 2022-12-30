@@ -90,3 +90,27 @@ Element.prototype.setAttributes = function (...nameValuePairs) {
         this.setAttribute(name, value);
     }
 };
+if (globalThis.navigator.userAgent.includes("Mac OS")) {
+    Object.defineProperty(MouseEvent.prototype, "shortcutKey", {
+        get: function () {
+            return this.metaKey;
+        }
+    });
+    Object.defineProperty(KeyboardEvent.prototype, "shortcutKey", {
+        get: function () {
+            return this.metaKey;
+        }
+    });
+}
+else {
+    Object.defineProperty(MouseEvent.prototype, "shortcutKey", {
+        get: function () {
+            return this.ctrlKey;
+        }
+    });
+    Object.defineProperty(KeyboardEvent.prototype, "shortcutKey", {
+        get: function () {
+            return this.ctrlKey;
+        }
+    });
+}
