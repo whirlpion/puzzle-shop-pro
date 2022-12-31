@@ -27,6 +27,13 @@ class WriteDigitAction extends IAction {
     }
 }
 
+enum Direction {
+    Up,
+    Right,
+    Down,
+    Left,
+}
+
 class DigitTool extends ITool {
     // the cells which are currently highlighted mapped to their associated SVG Rect
     highlightedCells: BSTMap<Cell, SVGRectElement> = new BSTMap();
@@ -87,6 +94,47 @@ class DigitTool extends ITool {
             }
         }
         this.focusedCell = to;
+    }
+
+    private moveFocus(direction: Direction): void {
+        throwIfNull(this.focusedCell);
+        let newFocus: Cell | null = null;
+        switch(direction) {
+        case Direction.Up:
+            if (this.focusedCell.i - 1 >= 0) {
+                newFocus = new Cell(this.focusedCell.i - 1, this.focusedCell.j);
+            }
+            break;
+        case Direction.Right:
+            if (this.focusedCell.j + 1 < this.puzzleGrid.columns) {
+                newFocus = new Cell(this.focusedCell.i, this.focusedCell.j + 1);
+            }
+            break;
+        case Direction.Down:
+            if (this.focusedCell.i + 1 < this.puzzleGrid.rows) {
+                newFocus = new Cell(this.focusedCell.i + 1, this.focusedCell.j);
+            }
+            break;
+        case Direction.Left:
+            if (this.focusedCell.j - 1 >= 0) {
+                newFocus = new Cell(this.focusedCell.i, this.focusedCell.j - 1);
+            }
+            break;
+        default:
+            throwMessage(`Unexpected Direction: ${direction}`);
+            break;
+        }
+
+        if (newFocus) {
+            this.highlightedCells.clear();
+            this.highlightSvg.clearChildren();
+
+            const rect = this.createHighlightRect(newFocus);
+            this.highlightedCells.set(newFocus, rect);
+            this.highlightSvg.appendChild(rect);
+            // focus the cell
+            this.focusedCell = newFocus;
+        }
     }
 
     override handlePutDown() {
@@ -158,26 +206,44 @@ class DigitTool extends ITool {
     }
 
     override handleKeyDown(event: KeyboardEvent) {
+        console.log(`code: ${event.code} key: ${event.key}`);
         if (this.highlightedCells.size > 0) {
             switch(event.key) {
             case "1": case "2": case "3":
             case "4": case "5": case "6":
             case "7": case "8": case "9":
+                event.preventDefault();
                 this.writeDigit(Digit.parse(event.key));
                 return;
             default:
                 break;
             }
-            switch(event.code) {
-            case "Backspace":
-                event.preventDefault();
-                this.writeDigit(null);
-                return;
-            case "Delete":
-                this.writeDigit(null);
-                return;
-            default:
-                break;
+            if (this.focusedCell) {
+                switch(event.code) {
+                case "Backspace":
+                case "Delete":
+                    event.preventDefault();
+                    this.writeDigit(null);
+                    return;
+                case "ArrowUp":
+                    this.moveFocus(Direction.Up);
+                    event.preventDefault();
+                    break;
+                case "ArrowRight":
+                    this.moveFocus(Direction.Right);
+                    event.preventDefault();
+                    break;
+                case "ArrowDown":
+                    this.moveFocus(Direction.Down);
+                    event.preventDefault();
+                    break;
+                case "ArrowLeft":
+                    this.moveFocus(Direction.Left);
+                    event.preventDefault();
+                    break;
+                default:
+                    break;
+                }
             }
         }
     }
