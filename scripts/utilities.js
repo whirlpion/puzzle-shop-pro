@@ -7,17 +7,16 @@ var Ordering;
 })(Ordering || (Ordering = {}));
 function makeComparator() {
     return (left, right) => {
-        return left.cmp(right);
+        return left.compare(right);
     };
 }
 // returns index of location of value, or -(index + 1) for insertion point
 Array.prototype.binarySearch = function (value) {
-    throwIfTrue(value.cmp === undefined);
     let left = 0;
     let right = this.length - 1;
     while (left <= right) {
         let middle = Math.floor((left + right) / 2);
-        switch (this[middle].cmp(value)) {
+        switch (this[middle].compare(value)) {
             case Ordering.LessThan:
                 left = middle + 1;
                 break;
@@ -36,10 +35,13 @@ Array.prototype.clear = function () {
 Array.prototype.clone = function () {
     return this.slice();
 };
-Array.prototype.cmp = function (that) {
+Array.prototype.compare = function (that) {
+    if (this === that) {
+        return Ordering.Equal;
+    }
     const length = Math.min(this.length, that.length);
     for (let k = 0; k < length; k++) {
-        let ord = this[k].cmp(that[k]);
+        let ord = this[k].compare(that[k]);
         if (ord != Ordering.Equal) {
             return ord;
         }
@@ -53,6 +55,21 @@ Array.prototype.cmp = function (that) {
     else {
         return Ordering.Equal;
     }
+};
+Array.prototype.equals = function (that) {
+    if (this === that) {
+        return true;
+    }
+    if (this.length !== that.length) {
+        return false;
+    }
+    const length = this.length;
+    for (let k = 0; k < length; k++) {
+        if (!this[k].equals(that[k])) {
+            return false;
+        }
+    }
+    return true;
 };
 Array.prototype.first = function () {
     if (this.length > 0) {
@@ -77,7 +94,7 @@ Array.prototype.merge = function (that) {
     let this_index = 0;
     let that_index = 0;
     while (this_index < this.length && that_index < that.length) {
-        switch (this[this_index].cmp(that[that_index])) {
+        switch (this[this_index].compare(that[that_index])) {
             case Ordering.LessThan:
                 merged.push(this[this_index++]);
                 break;
@@ -105,7 +122,7 @@ Array.collect = function (it) {
 String.prototype.toSnakeCase = function () {
     return this.replace(/[a-z0-9]([A-Z])/g, (match) => `${match.charAt(0)}_${match.charAt(1)}`).toLowerCase();
 };
-String.prototype.cmp = function (that) {
+String.prototype.compare = function (that) {
     if (this < that) {
         return Ordering.LessThan;
     }
@@ -115,6 +132,15 @@ String.prototype.cmp = function (that) {
     else {
         return Ordering.Equal;
     }
+};
+String.prototype.equals = function (that) {
+    return this === that;
+};
+Number.prototype.compare = function (that) {
+    return Math.sign(this.valueOf() - that);
+};
+Number.prototype.equals = function (that) {
+    return this === that;
 };
 Math.clamp = (min, val, max) => {
     return Math.min(max, Math.max(min, val));
@@ -132,9 +158,6 @@ Node.prototype.clearChildren = function () {
     while (this.lastChild) {
         this.removeChild(this.lastChild);
     }
-};
-Number.prototype.cmp = function (that) {
-    return Math.sign(this.valueOf() - that);
 };
 Element.prototype.setAttributes = function (...nameValuePairs) {
     for (let [name, value] of nameValuePairs) {

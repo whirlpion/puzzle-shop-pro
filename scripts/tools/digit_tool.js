@@ -45,6 +45,41 @@ class DigitTool extends ITool {
         rect.setAttributes(["width", `${CELL_SIZE}`], ["height", `${CELL_SIZE}`], ["fill", Colour.LightBlue.toString()], ["x", `${cell.j * CELL_SIZE}`], ["y", `${cell.i * CELL_SIZE}`]);
         return rect;
     }
+    clearAllHighlights() {
+        this.highlightedCells.clear();
+        this.highlightSvg.clearChildren();
+        this.focusedCell = null;
+    }
+    highlightCells(setFocus, ...cells) {
+        for (let cell of cells) {
+            if (this.highlightedCells.has(cell)) {
+                continue;
+            }
+            let rect = this.createHighlightRect(cell);
+            this.highlightedCells.set(cell, rect);
+            this.highlightSvg.appendChild(rect);
+        }
+        if (setFocus && cells.length > 0) {
+            this.focusedCell = cells.last();
+        }
+    }
+    toggleCell(cell) {
+        // cell toggle
+        let rect = this.highlightedCells.get(cell);
+        if (rect) {
+            this.highlightedCells.delete(cell);
+            this.highlightSvg.removeChild(rect);
+            // no focused cell after this point
+            this.focusedCell = null;
+        }
+        else {
+            rect = this.createHighlightRect(cell);
+            this.highlightedCells.set(cell, rect);
+            this.highlightSvg.appendChild(rect);
+            // focus the cell
+            this.focusedCell = cell;
+        }
+    }
     // writes a digit to the highlighted cells
     writeDigit(digit) {
         // first make sure the key press would result in anything changing
@@ -62,21 +97,8 @@ class DigitTool extends ITool {
         let action = new WriteDigitAction(this.puzzleGrid, digit, ...cells);
         this.actionStack.doAction(action);
     }
-    // highlights a line of cells
-    highlightLine(from, to) {
-        // cell line
-        let line = Cell.bresenhamLine(from, to);
-        for (let cell of line) {
-            let rect = this.highlightedCells.get(cell);
-            if (!rect) {
-                rect = this.createHighlightRect(cell);
-                this.highlightedCells.set(cell, rect);
-                this.highlightSvg.appendChild(rect);
-            }
-        }
-        this.focusedCell = to;
-    }
-    moveFocus(direction) {
+    moveFocus(direction, clearHighlight) {
+        console.log("moving focus?");
         throwIfNull(this.focusedCell);
         let newFocus = null;
         switch (direction) {
@@ -104,14 +126,11 @@ class DigitTool extends ITool {
                 throwMessage(`Unexpected Direction: ${direction}`);
                 break;
         }
+        if (clearHighlight) {
+            this.clearAllHighlights();
+        }
         if (newFocus) {
-            this.highlightedCells.clear();
-            this.highlightSvg.clearChildren();
-            const rect = this.createHighlightRect(newFocus);
-            this.highlightedCells.set(newFocus, rect);
-            this.highlightSvg.appendChild(rect);
-            // focus the cell
-            this.focusedCell = newFocus;
+            this.highlightCells(true, newFocus);
         }
     }
     handlePutDown() {
@@ -119,6 +138,20 @@ class DigitTool extends ITool {
         this.highlightedCells = new BSTMap();
         this.highlightSvg.clearChildren();
         this.focusedCell = null;
+    }
+    handleMouseDoubleClick(event) {
+        const cell = Cell.fromMouseEvent(event);
+        const digit = this.puzzleGrid.getDigitAtCell(cell);
+        if (digit) {
+            const matchingCells = this.puzzleGrid.getCellsWithDigit(digit);
+            this.clearAllHighlights();
+            this.highlightCells(false, ...matchingCells);
+            this.focusedCell = cell;
+        }
+        else {
+            this.clearAllHighlights();
+            this.highlightCells(true, cell);
+        }
     }
     // ctrl+click toggles individual cells
     // shift+click should select all cells between current and previous click
@@ -134,35 +167,32 @@ class DigitTool extends ITool {
         }
         const cell = Cell.fromMouseEvent(event);
         if (event.shortcutKey) {
-            // cell toggle
-            let rect = this.highlightedCells.get(cell);
-            if (rect) {
-                this.highlightedCells.delete(cell);
-                this.highlightSvg.removeChild(rect);
-                // no focused cell after this point
-                this.focusedCell = null;
-            }
-            else {
-                rect = this.createHighlightRect(cell);
-                this.highlightedCells.set(cell, rect);
-                this.highlightSvg.appendChild(rect);
-                // focus the cell
-                this.focusedCell = cell;
-            }
+            this.toggleCell(cell);
         }
         else if (event.shiftKey && this.focusedCell) {
             // cell line
-            this.highlightLine(this.focusedCell, cell);
+            const line = Cell.bresenhamLine(this.focusedCell, cell);
+            this.highlightCells(true, ...line);
         }
         else {
-            // set only the cell
-            this.highlightedCells.clear();
-            this.highlightSvg.clearChildren();
-            const rect = this.createHighlightRect(cell);
-            this.highlightedCells.set(cell, rect);
-            this.highlightSvg.appendChild(rect);
-            // focus the cell
-            this.focusedCell = cell;
+            // this block is here so that double click events work as expected, we need to
+            // make the highlight rect which would be the target of the first click
+            // persist in the DOM so it can receive a seconnd click
+            let clickRect = this.highlightedCells.get(cell);
+            if (clickRect) {
+                for (let [_cell, rect] of this.highlightedCells) {
+                    if (rect !== clickRect) {
+                        this.highlightSvg.removeChild(rect);
+                    }
+                }
+                this.highlightedCells.clear();
+                this.highlightCells(true, cell);
+            }
+            else {
+                this.highlightSvg.clearChildren();
+                this.highlightedCells.clear();
+                this.highlightCells(true, cell);
+            }
         }
     }
     handleMouseUp(_event) {
@@ -174,7 +204,8 @@ class DigitTool extends ITool {
             return;
         }
         const cell = Cell.fromMouseEvent(event);
-        this.highlightLine(this.focusedCell, cell);
+        const line = Cell.bresenhamLine(this.focusedCell, cell);
+        this.highlightCells(true, ...line);
     }
     handleKeyDown(event) {
         console.log(`code: ${event.code} key: ${event.key}`);
@@ -189,39 +220,29 @@ class DigitTool extends ITool {
                 case "7":
                 case "8":
                 case "9":
-                    event.preventDefault();
                     this.writeDigit(Digit.parse(event.key));
-                    return;
-                default:
                     break;
+                case "Backspace":
+                case "Delete":
+                    this.writeDigit(null);
+                    break;
+                case "ArrowUp":
+                    this.moveFocus(Direction.Up, !event.shiftKey);
+                    break;
+                case "ArrowRight":
+                    this.moveFocus(Direction.Right, !event.shiftKey);
+                    break;
+                case "ArrowDown":
+                    this.moveFocus(Direction.Down, !event.shiftKey);
+                    break;
+                case "ArrowLeft":
+                    this.moveFocus(Direction.Left, !event.shiftKey);
+                    break;
+                default:
+                    console.log(event.key);
+                    return;
             }
-            if (this.focusedCell) {
-                switch (event.code) {
-                    case "Backspace":
-                    case "Delete":
-                        event.preventDefault();
-                        this.writeDigit(null);
-                        return;
-                    case "ArrowUp":
-                        this.moveFocus(Direction.Up);
-                        event.preventDefault();
-                        break;
-                    case "ArrowRight":
-                        this.moveFocus(Direction.Right);
-                        event.preventDefault();
-                        break;
-                    case "ArrowDown":
-                        this.moveFocus(Direction.Down);
-                        event.preventDefault();
-                        break;
-                    case "ArrowLeft":
-                        this.moveFocus(Direction.Left);
-                        event.preventDefault();
-                        break;
-                    default:
-                        break;
-                }
-            }
+            event.preventDefault();
         }
     }
 }

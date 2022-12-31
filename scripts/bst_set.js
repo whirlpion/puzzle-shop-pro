@@ -18,7 +18,7 @@ class BSTSet {
     constructor(data) {
         if (data) {
             this.data = data.clone();
-            this.data.sort((a, b) => a.cmp(b));
+            this.data.sort((a, b) => a.compare(b));
         }
         else {
             this.data = new Array();

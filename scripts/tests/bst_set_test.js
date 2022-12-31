@@ -5,7 +5,7 @@ class Person {
         this.name = name;
     }
     // first sort by age then by name
-    cmp(that) {
+    compare(that) {
         if (this.age < that.age) {
             return Ordering.LessThan;
         }

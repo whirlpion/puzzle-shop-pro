@@ -8,7 +8,7 @@ class IConstraint {
         throwIfNull(this._svg);
         return this._svg;
     }
-    //  takes in a list of cells affected by this constraint and a puzzle grid
+    //  takes in a list of cells affected by this constraint and an svg element for display
     constructor(cells, svg) {
         this._cells = cells;
         this._svg = svg;
@@ -74,7 +74,7 @@ class Cell {
         }
         return cells;
     }
-    cmp(that) {
+    compare(that) {
         if (this._i < that._i) {
             return Ordering.LessThan;
         }
@@ -87,6 +87,9 @@ class Cell {
         else {
             return Ordering.GreaterThan;
         }
+    }
+    equals(that) {
+        return this.i == that.i && this.j == that.j;
     }
     static fromXY(x, y) {
         let i = Math.floor(y / CELL_SIZE);
@@ -121,7 +124,6 @@ class PuzzleGrid {
         this._columns = columns;
         this.sceneManager = sceneManager;
         this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
-        this.errorHighlight.setAttribute("opacity", "1.0");
     }
     checkCellsForConstraintViolations(...cells) {
         // checks each of the requested cells
@@ -189,6 +191,16 @@ class PuzzleGrid {
             }
         }
         this.checkCellsForConstraintViolations(cell);
+        return retval;
+    }
+    getCellsWithDigit(query) {
+        let retval = new Array();
+        for (let [cell, [digit, _element]] of this.digitMap) {
+            console.log(`cell: ${cell}, digit: ${digit}`);
+            if (query === digit) {
+                retval.push(cell);
+            }
+        }
         return retval;
     }
     getDigitAtCell(cell) {

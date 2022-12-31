@@ -6,8 +6,8 @@ class BSTMapRecord {
         this.key = key;
         this.value = value ? value : undefined;
     }
-    cmp(that) {
-        return this.key.cmp(that.key);
+    compare(that) {
+        return this.key.compare(that.key);
     }
 }
 class BSTMapRecordIterator {
