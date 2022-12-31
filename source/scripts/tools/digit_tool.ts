@@ -165,6 +165,11 @@ class DigitTool extends ITool {
         this.focusedCell = null;
     }
 
+    override handleMouseDoubleClick(event: MouseEvent): void {
+        let cell = Cell.fromMouseEvent(event);
+        console.log(`double click: ${cell}`);
+    }
+
     // ctrl+click toggles individual cells
     // shift+click should select all cells between current and previous click
     // click clears current selection set and sets current cell
@@ -188,8 +193,23 @@ class DigitTool extends ITool {
             const line = Cell.bresenhamLine(this.focusedCell, cell);
             this.highlightCells(true, ...line);
         } else {
-            this.clearAllHighlights();
-            this.highlightCells(true, cell);
+            // this block is here so that double click events work as expected, we need to
+            // make the highlight rect which would be the target of the first click
+            // persist in the DOM so it can receive a seconnd click
+            let clickRect = this.highlightedCells.get(cell);
+            if (clickRect) {
+                for (let [_cell, rect] of this.highlightedCells) {
+                    if (rect !== clickRect) {
+                        this.highlightSvg.removeChild(rect);
+                    }
+                }
+                this.highlightedCells.clear();
+                this.highlightCells(true, cell);
+            } else {
+                this.highlightSvg.clearChildren();
+                this.highlightedCells.clear();
+                this.highlightCells(true, cell);
+            }
         }
     }
 
