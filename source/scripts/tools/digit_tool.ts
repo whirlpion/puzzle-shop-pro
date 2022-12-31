@@ -61,6 +61,44 @@ class DigitTool extends ITool {
         return rect;
     }
 
+    private clearAllHighlights(): void {
+        this.highlightedCells.clear();
+        this.highlightSvg.clearChildren();
+        this.focusedCell = null;
+    }
+
+    private highlightCells(setFocus: boolean, ...cells: Cell[]): void {
+        for (let cell of cells) {
+            if (this.highlightedCells.has(cell)) {
+                continue;
+            }
+            let rect = this.createHighlightRect(cell);
+            this.highlightedCells.set(cell, rect);
+            this.highlightSvg.appendChild(rect);
+        }
+
+        if (setFocus && cells.length > 0) {
+            this.focusedCell = <Cell>cells.last();
+        }
+    }
+
+    private toggleCell(cell: Cell): void {
+        // cell toggle
+        let rect = this.highlightedCells.get(cell);
+        if (rect) {
+            this.highlightedCells.delete(cell);
+            this.highlightSvg.removeChild(rect);
+            // no focused cell after this point
+            this.focusedCell = null;
+        } else {
+            rect = this.createHighlightRect(cell);
+            this.highlightedCells.set(cell, rect);
+            this.highlightSvg.appendChild(rect);
+            // focus the cell
+            this.focusedCell = cell;
+        }
+    }
+
     // writes a digit to the highlighted cells
     private writeDigit(digit: Digit | null): void {
         // first make sure the key press would result in anything changing
@@ -81,22 +119,8 @@ class DigitTool extends ITool {
         this.actionStack.doAction(action);
     }
 
-    // highlights a line of cells
-    private highlightLine(from: Cell, to: Cell): void {
-        // cell line
-        let line = Cell.bresenhamLine(from, to);
-        for (let cell of line) {
-            let rect = this.highlightedCells.get(cell);
-            if (!rect) {
-                rect = this.createHighlightRect(cell)
-                this.highlightedCells.set(cell, rect);
-                this.highlightSvg.appendChild(rect);
-            }
-        }
-        this.focusedCell = to;
-    }
-
     private moveFocus(direction: Direction): void {
+        console.log("moving focus?");
         throwIfNull(this.focusedCell);
         let newFocus: Cell | null = null;
         switch(direction) {
@@ -126,14 +150,8 @@ class DigitTool extends ITool {
         }
 
         if (newFocus) {
-            this.highlightedCells.clear();
-            this.highlightSvg.clearChildren();
-
-            const rect = this.createHighlightRect(newFocus);
-            this.highlightedCells.set(newFocus, rect);
-            this.highlightSvg.appendChild(rect);
-            // focus the cell
-            this.focusedCell = newFocus;
+            this.clearAllHighlights();
+            this.highlightCells(true, newFocus);
         }
     }
 
@@ -161,33 +179,14 @@ class DigitTool extends ITool {
         const cell = Cell.fromMouseEvent(event);
 
         if (event.shortcutKey) {
-            // cell toggle
-            let rect = this.highlightedCells.get(cell);
-            if (rect) {
-                this.highlightedCells.delete(cell);
-                this.highlightSvg.removeChild(rect);
-                // no focused cell after this point
-                this.focusedCell = null;
-            } else {
-                rect = this.createHighlightRect(cell);
-                this.highlightedCells.set(cell, rect);
-                this.highlightSvg.appendChild(rect);
-                // focus the cell
-                this.focusedCell = cell;
-            }
+            this.toggleCell(cell);
         } else if (event.shiftKey && this.focusedCell) {
             // cell line
-            this.highlightLine(this.focusedCell, cell);
+            const line = Cell.bresenhamLine(this.focusedCell, cell);
+            this.highlightCells(true, ...line);
         } else {
-            // set only the cell
-            this.highlightedCells.clear();
-            this.highlightSvg.clearChildren();
-
-            const rect = this.createHighlightRect(cell);
-            this.highlightedCells.set(cell, rect);
-            this.highlightSvg.appendChild(rect);
-            // focus the cell
-            this.focusedCell = cell;
+            this.clearAllHighlights();
+            this.highlightCells(true, cell);
         }
     }
 
@@ -202,7 +201,8 @@ class DigitTool extends ITool {
         }
 
         const cell = Cell.fromMouseEvent(event);
-        this.highlightLine(this.focusedCell, cell);
+        const line = Cell.bresenhamLine(this.focusedCell, cell);
+        this.highlightCells(true, ...line);
     }
 
     override handleKeyDown(event: KeyboardEvent) {
@@ -212,39 +212,28 @@ class DigitTool extends ITool {
             case "1": case "2": case "3":
             case "4": case "5": case "6":
             case "7": case "8": case "9":
-                event.preventDefault();
                 this.writeDigit(Digit.parse(event.key));
-                return;
-            default:
                 break;
+            case "Backspace": case "Delete":
+                this.writeDigit(null);
+                break;
+            case "ArrowUp":
+                this.moveFocus(Direction.Up);
+                break;
+            case "ArrowRight":
+                this.moveFocus(Direction.Right);
+                break;
+            case "ArrowDown":
+                this.moveFocus(Direction.Down);
+                break;
+            case "ArrowLeft":
+                this.moveFocus(Direction.Left);
+                break;
+            default:
+                console.log(event.key);
+                return;
             }
-            if (this.focusedCell) {
-                switch(event.code) {
-                case "Backspace":
-                case "Delete":
-                    event.preventDefault();
-                    this.writeDigit(null);
-                    return;
-                case "ArrowUp":
-                    this.moveFocus(Direction.Up);
-                    event.preventDefault();
-                    break;
-                case "ArrowRight":
-                    this.moveFocus(Direction.Right);
-                    event.preventDefault();
-                    break;
-                case "ArrowDown":
-                    this.moveFocus(Direction.Down);
-                    event.preventDefault();
-                    break;
-                case "ArrowLeft":
-                    this.moveFocus(Direction.Left);
-                    event.preventDefault();
-                    break;
-                default:
-                    break;
-                }
-            }
+            event.preventDefault();
         }
     }
 }
