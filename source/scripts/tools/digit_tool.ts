@@ -119,7 +119,7 @@ class DigitTool extends ITool {
         this.actionStack.doAction(action);
     }
 
-    private moveFocus(direction: Direction): void {
+    private moveFocus(direction: Direction, clearHighlight: boolean): void {
         console.log("moving focus?");
         throwIfNull(this.focusedCell);
         let newFocus: Cell | null = null;
@@ -149,8 +149,11 @@ class DigitTool extends ITool {
             break;
         }
 
-        if (newFocus) {
+        if (clearHighlight) {
             this.clearAllHighlights();
+        }
+
+        if (newFocus) {
             this.highlightCells(true, newFocus);
         }
     }
@@ -218,16 +221,16 @@ class DigitTool extends ITool {
                 this.writeDigit(null);
                 break;
             case "ArrowUp":
-                this.moveFocus(Direction.Up);
+                this.moveFocus(Direction.Up, !event.shiftKey);
                 break;
             case "ArrowRight":
-                this.moveFocus(Direction.Right);
+                this.moveFocus(Direction.Right, !event.shiftKey);
                 break;
             case "ArrowDown":
-                this.moveFocus(Direction.Down);
+                this.moveFocus(Direction.Down, !event.shiftKey);
                 break;
             case "ArrowLeft":
-                this.moveFocus(Direction.Left);
+                this.moveFocus(Direction.Left, !event.shiftKey);
                 break;
             default:
                 console.log(event.key);
