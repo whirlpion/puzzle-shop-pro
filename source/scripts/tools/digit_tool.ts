@@ -263,7 +263,7 @@ class DigitTool extends ITool {
                 this.moveFocus(Direction.Left, !event.shiftKey);
                 break;
             default:
-                console.log(event.key);
+                console.log(`unhandled key press: ${event.key}`);
                 return;
             }
             event.preventDefault();
