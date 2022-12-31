@@ -166,8 +166,18 @@ class DigitTool extends ITool {
     }
 
     override handleMouseDoubleClick(event: MouseEvent): void {
-        let cell = Cell.fromMouseEvent(event);
-        console.log(`double click: ${cell}`);
+        const cell = Cell.fromMouseEvent(event);
+        const digit = this.puzzleGrid.getDigitAtCell(cell);
+        if (digit) {
+            const matchingCells = this.puzzleGrid.getCellsWithDigit(digit);
+
+            this.clearAllHighlights();
+            this.highlightCells(false, ...matchingCells);
+            this.focusedCell = cell;
+        } else {
+            this.clearAllHighlights();
+            this.highlightCells(true, cell);
+        }
     }
 
     // ctrl+click toggles individual cells
