@@ -2,13 +2,13 @@ function throwMessage(message: string): never {
   throw new Error(message);
 }
 
-function throwIfEqual(left: any, right: any, message?: string) {
+function throwIfEqual<T extends boolean | number | string | null | undefined>(left: T, right: T, message?: string) {
   if (left === right) {
     throw new Error(message || `Values must not be equal: ${left}`);
   }
 }
 
-function throwIfNotEqual(left: any, right: any, message?: string) {
+function throwIfNotEqual<T extends boolean | number | string | null | undefined>(left: T, right: T, message?: string) {
   if (left !== right) {
     throw new Error(message || `Values must be equal: ${right} and ${left}`);
   }

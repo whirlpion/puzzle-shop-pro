@@ -16,8 +16,12 @@ function makeComparator<T extends IOrdered>(): (left: T, right: T) => Ordering {
 
 interface Array<T> {
     binarySearch<T extends IOrdered>(value: T): number;
+    clear(): void;
     clone(): Array<T>;
+    cmp<T extends IOrdered>(that: Array<T>): Ordering;
+    first(): T | undefined;
     insert(index: number, ...values: T[]): void;
+    last(): T | undefined;
     merge<T extends IOrdered>(that: Array<T>): Array<T>;
     remove(index: number): void;
 }
@@ -44,12 +48,48 @@ Array.prototype.binarySearch = function<T extends IOrdered>(this: Array<T>, valu
     return -(left + 1);
 }
 
+Array.prototype.clear = function(): void {
+    this.length = 0;
+}
+
 Array.prototype.clone = function<T>(): Array<T> {
     return this.slice();
 }
 
+Array.prototype.cmp = function<T extends IOrdered>(this: Array<T>, that: Array<T>): Ordering {
+    const length = Math.min(this.length, that.length);
+    for(let k = 0; k < length; k++) {
+        let ord = this[k].cmp(that[k]);
+        if (ord != Ordering.Equal) {
+            return ord;
+        }
+    }
+
+    if (this.length < that.length) {
+        return Ordering.LessThan;
+    } else if (this.length > that.length) {
+        return Ordering.GreaterThan;
+    } else {
+        return Ordering.Equal;
+    }
+}
+
+Array.prototype.first = function<T>(this: Array<T>): T | undefined {
+    if (this.length > 0) {
+        return this[0];
+    }
+    return undefined;
+}
+
 Array.prototype.insert = function<T>(this: Array<T>, index: number, ...values: T[]): void {
     this.splice(index, 0, ...values);
+}
+
+Array.prototype.last = function<T>(this: Array<T>): T | undefined {
+    if (this.length > 0) {
+        return this[this.length - 1];
+    }
+    return undefined;
 }
 
 Array.prototype.remove = function<T>(this: Array<T>, index: number): void {
@@ -72,10 +112,10 @@ Array.prototype.merge = function<T extends IOrdered>(this: Array<T>, that: Array
         }
     }
     while(this_index < this.length) {
-        merged.push(this[this_index]);
+        merged.push(this[this_index++]);
     }
     while(that_index < that.length) {
-        merged.push(that[that_index]);
+        merged.push(that[that_index++]);
     }
     return merged;
 }
@@ -104,8 +144,14 @@ String.prototype.toSnakeCase = function(): string {
     return this.replace(/[a-z0-9]([A-Z])/g, (match: string) => `${match.charAt(0)}_${match.charAt(1)}`).toLowerCase();
 }
 
-String.prototype.cmp = function(_that: string): Ordering {
-    throwMessage("Not Implemented");
+String.prototype.cmp = function(that: string): Ordering {
+    if (this < that) {
+        return Ordering.LessThan;
+    } else if (this > that) {
+        return Ordering.GreaterThan;
+    } else {
+        return Ordering.Equal;
+    }
 }
 
 // Math
@@ -143,6 +189,17 @@ Node.prototype.clearChildren = function(): void {
         this.removeChild(this.lastChild);
     }
 }
+
+// Number
+
+interface Number {
+    cmp(that: number): Ordering;
+}
+
+Number.prototype.cmp = function(that: number): Ordering {
+    return Math.sign(this.valueOf() - that);
+}
+
 
 // Element
 
