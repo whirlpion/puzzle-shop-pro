@@ -48,5 +48,6 @@ function run_tests() {
     test.body.appendChild(document.createElement("ul"));
     bst_set_test();
     bst_map_test();
+    array_test();
     test.body.style.background = "lightgreen";
 }

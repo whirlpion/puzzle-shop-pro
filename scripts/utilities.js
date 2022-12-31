@@ -30,11 +30,44 @@ Array.prototype.binarySearch = function (value) {
     }
     return -(left + 1);
 };
+Array.prototype.clear = function () {
+    this.length = 0;
+};
 Array.prototype.clone = function () {
     return this.slice();
 };
+Array.prototype.cmp = function (that) {
+    const length = Math.min(this.length, that.length);
+    for (let k = 0; k < length; k++) {
+        let ord = this[k].cmp(that[k]);
+        if (ord != Ordering.Equal) {
+            return ord;
+        }
+    }
+    if (this.length < that.length) {
+        return Ordering.LessThan;
+    }
+    else if (this.length > that.length) {
+        return Ordering.GreaterThan;
+    }
+    else {
+        return Ordering.Equal;
+    }
+};
+Array.prototype.first = function () {
+    if (this.length > 0) {
+        return this[0];
+    }
+    return undefined;
+};
 Array.prototype.insert = function (index, ...values) {
     this.splice(index, 0, ...values);
+};
+Array.prototype.last = function () {
+    if (this.length > 0) {
+        return this[this.length - 1];
+    }
+    return undefined;
 };
 Array.prototype.remove = function (index) {
     this.splice(index, 1);
@@ -55,10 +88,10 @@ Array.prototype.merge = function (that) {
         }
     }
     while (this_index < this.length) {
-        merged.push(this[this_index]);
+        merged.push(this[this_index++]);
     }
     while (that_index < that.length) {
-        merged.push(that[that_index]);
+        merged.push(that[that_index++]);
     }
     return merged;
 };
@@ -72,8 +105,16 @@ Array.collect = function (it) {
 String.prototype.toSnakeCase = function () {
     return this.replace(/[a-z0-9]([A-Z])/g, (match) => `${match.charAt(0)}_${match.charAt(1)}`).toLowerCase();
 };
-String.prototype.cmp = function (_that) {
-    throwMessage("Not Implemented");
+String.prototype.cmp = function (that) {
+    if (this < that) {
+        return Ordering.LessThan;
+    }
+    else if (this > that) {
+        return Ordering.GreaterThan;
+    }
+    else {
+        return Ordering.Equal;
+    }
 };
 Math.clamp = (min, val, max) => {
     return Math.min(max, Math.max(min, val));
@@ -91,6 +132,9 @@ Node.prototype.clearChildren = function () {
     while (this.lastChild) {
         this.removeChild(this.lastChild);
     }
+};
+Number.prototype.cmp = function (that) {
+    return Math.sign(this.valueOf() - that);
 };
 Element.prototype.setAttributes = function (...nameValuePairs) {
     for (let [name, value] of nameValuePairs) {
