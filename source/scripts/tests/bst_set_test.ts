@@ -9,7 +9,7 @@ class Person {
     }
 
     // first sort by age then by name
-    cmp(that: Person): Ordering {
+    compare(that: Person): Ordering {
         if (this.age < that.age) {
             return Ordering.LessThan;
         } else if(this.age == that.age) {

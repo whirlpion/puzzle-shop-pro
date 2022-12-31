@@ -10,8 +10,8 @@ class BSTMapRecord<K extends IOrdered, V> {
         this.value = value ? value : undefined;
     }
 
-    cmp(that: BSTMapRecord<K, V>): Ordering {
-        return this.key.cmp(that.key);
+    compare(that: BSTMapRecord<K, V>): Ordering {
+        return this.key.compare(that.key);
     }
 }
 

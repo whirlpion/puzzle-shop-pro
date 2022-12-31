@@ -5,12 +5,16 @@ enum Ordering {
 }
 
 interface IOrdered {
-    cmp(that: IOrdered): Ordering;
+    compare(that: IOrdered): Ordering;
+}
+
+interface IEquals {
+    equals(that: IEquals): boolean;
 }
 
 function makeComparator<T extends IOrdered>(): (left: T, right: T) => Ordering {
     return (left: T, right: T): Ordering => {
-        return left.cmp(right);
+        return left.compare(right);
     };
 }
 
@@ -18,7 +22,8 @@ interface Array<T> {
     binarySearch<T extends IOrdered>(value: T): number;
     clear(): void;
     clone(): Array<T>;
-    cmp<T extends IOrdered>(that: Array<T>): Ordering;
+    compare<T extends IOrdered>(that: Array<T>): Ordering;
+    equals<T extends IEquals>(that: Array<T>): boolean;
     first(): T | undefined;
     insert(index: number, ...values: T[]): void;
     last(): T | undefined;
@@ -28,13 +33,11 @@ interface Array<T> {
 
 // returns index of location of value, or -(index + 1) for insertion point
 Array.prototype.binarySearch = function<T extends IOrdered>(this: Array<T>, value: T): number {
-    throwIfTrue((value as IOrdered).cmp === undefined);
-
     let left = 0;
     let right = this.length - 1;
     while (left <= right) {
         let middle = Math.floor((left + right) / 2);
-        switch (this[middle].cmp(value)) {
+        switch (this[middle].compare(value)) {
         case Ordering.LessThan:
             left = middle + 1;
             break;
@@ -56,10 +59,14 @@ Array.prototype.clone = function<T>(): Array<T> {
     return this.slice();
 }
 
-Array.prototype.cmp = function<T extends IOrdered>(this: Array<T>, that: Array<T>): Ordering {
+Array.prototype.compare = function<T extends IOrdered>(this: Array<T>, that: Array<T>): Ordering {
+    if (this === that) {
+        return Ordering.Equal;
+    }
+
     const length = Math.min(this.length, that.length);
     for(let k = 0; k < length; k++) {
-        let ord = this[k].cmp(that[k]);
+        let ord = this[k].compare(that[k]);
         if (ord != Ordering.Equal) {
             return ord;
         }
@@ -72,6 +79,24 @@ Array.prototype.cmp = function<T extends IOrdered>(this: Array<T>, that: Array<T
     } else {
         return Ordering.Equal;
     }
+}
+
+Array.prototype.equals = function<T extends IEquals>(this: Array<T>, that: Array<T>): boolean {
+    if (this === that) {
+        return true;
+    }
+
+    if (this.length !== that.length) {
+        return false;
+    }
+
+    const length = this.length;
+    for (let k = 0; k < length; k++) {
+        if (!this[k].equals(that[k])) {
+            return false;
+        }
+    }
+    return true;
 }
 
 Array.prototype.first = function<T>(this: Array<T>): T | undefined {
@@ -101,7 +126,7 @@ Array.prototype.merge = function<T extends IOrdered>(this: Array<T>, that: Array
     let this_index = 0;
     let that_index = 0;
     while(this_index < this.length && that_index < that.length) {
-        switch(this[this_index].cmp(that[that_index])) {
+        switch(this[this_index].compare(that[that_index])) {
             case Ordering.LessThan:
                 merged.push(this[this_index++]);
                 break;
@@ -137,14 +162,15 @@ Array.collect = function<T>(it: Iterator<T>): Array<T> {
 interface String {
     // convert camelCase or PascalCase to snake_case
     toSnakeCase(): string;
-    cmp(that_: string): Ordering
+    compare(that: string): Ordering
+    equals(that: string): boolean;
 }
 
 String.prototype.toSnakeCase = function(): string {
     return this.replace(/[a-z0-9]([A-Z])/g, (match: string) => `${match.charAt(0)}_${match.charAt(1)}`).toLowerCase();
 }
 
-String.prototype.cmp = function(that: string): Ordering {
+String.prototype.compare = function(that: string): Ordering {
     if (this < that) {
         return Ordering.LessThan;
     } else if (this > that) {
@@ -152,6 +178,25 @@ String.prototype.cmp = function(that: string): Ordering {
     } else {
         return Ordering.Equal;
     }
+}
+
+String.prototype.equals = function(that: string): boolean {
+    return this === that;
+}
+
+// Number
+
+interface Number {
+    compare(that: number): Ordering;
+    equals(that: number): boolean;
+}
+
+Number.prototype.compare = function(that: number): Ordering {
+    return Math.sign(this.valueOf() - that);
+}
+
+Number.prototype.equals = function(that: number): boolean {
+    return this === that;
 }
 
 // Math
@@ -189,17 +234,6 @@ Node.prototype.clearChildren = function(): void {
         this.removeChild(this.lastChild);
     }
 }
-
-// Number
-
-interface Number {
-    cmp(that: number): Ordering;
-}
-
-Number.prototype.cmp = function(that: number): Ordering {
-    return Math.sign(this.valueOf() - that);
-}
-
 
 // Element
 

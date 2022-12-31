@@ -24,7 +24,7 @@ class BSTSet<T extends IOrdered> {
     constructor(data?: Array<T>) {
         if (data) {
             this.data = data.clone();
-            this.data.sort((a: T, b: T): Ordering => a.cmp(b));
+            this.data.sort((a: T, b: T): Ordering => a.compare(b));
         } else {
             this.data = new Array();
         }

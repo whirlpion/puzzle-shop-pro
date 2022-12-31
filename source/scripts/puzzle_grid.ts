@@ -100,7 +100,7 @@ class Cell {
     }
 
 
-    cmp(that: Cell): Ordering {
+    compare(that: Cell): Ordering {
         if (this._i < that._i) {
             return Ordering.LessThan;
         } else if (this._i === that._i && this._j < that._j) {
@@ -110,6 +110,10 @@ class Cell {
         } else {
             return Ordering.GreaterThan;
         }
+    }
+
+    equals(that: Cell): boolean {
+        return this.i == that.i && this.j == that.j;
     }
 
     static fromXY(x: number, y: number): Cell {
