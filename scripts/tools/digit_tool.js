@@ -21,6 +21,13 @@ class WriteDigitAction extends IAction {
         }
     }
 }
+var Direction;
+(function (Direction) {
+    Direction[Direction["Up"] = 0] = "Up";
+    Direction[Direction["Right"] = 1] = "Right";
+    Direction[Direction["Down"] = 2] = "Down";
+    Direction[Direction["Left"] = 3] = "Left";
+})(Direction || (Direction = {}));
 class DigitTool extends ITool {
     constructor(puzzleGrid, actionStack, sceneManager) {
         super(puzzleGrid, actionStack, sceneManager);
@@ -68,6 +75,44 @@ class DigitTool extends ITool {
             }
         }
         this.focusedCell = to;
+    }
+    moveFocus(direction) {
+        throwIfNull(this.focusedCell);
+        let newFocus = null;
+        switch (direction) {
+            case Direction.Up:
+                if (this.focusedCell.i - 1 >= 0) {
+                    newFocus = new Cell(this.focusedCell.i - 1, this.focusedCell.j);
+                }
+                break;
+            case Direction.Right:
+                if (this.focusedCell.j + 1 < this.puzzleGrid.columns) {
+                    newFocus = new Cell(this.focusedCell.i, this.focusedCell.j + 1);
+                }
+                break;
+            case Direction.Down:
+                if (this.focusedCell.i + 1 < this.puzzleGrid.rows) {
+                    newFocus = new Cell(this.focusedCell.i + 1, this.focusedCell.j);
+                }
+                break;
+            case Direction.Left:
+                if (this.focusedCell.j - 1 >= 0) {
+                    newFocus = new Cell(this.focusedCell.i, this.focusedCell.j - 1);
+                }
+                break;
+            default:
+                throwMessage(`Unexpected Direction: ${direction}`);
+                break;
+        }
+        if (newFocus) {
+            this.highlightedCells.clear();
+            this.highlightSvg.clearChildren();
+            const rect = this.createHighlightRect(newFocus);
+            this.highlightedCells.set(newFocus, rect);
+            this.highlightSvg.appendChild(rect);
+            // focus the cell
+            this.focusedCell = newFocus;
+        }
     }
     handlePutDown() {
         // no cells selected
@@ -132,6 +177,7 @@ class DigitTool extends ITool {
         this.highlightLine(this.focusedCell, cell);
     }
     handleKeyDown(event) {
+        console.log(`code: ${event.code} key: ${event.key}`);
         if (this.highlightedCells.size > 0) {
             switch (event.key) {
                 case "1":
@@ -143,21 +189,38 @@ class DigitTool extends ITool {
                 case "7":
                 case "8":
                 case "9":
+                    event.preventDefault();
                     this.writeDigit(Digit.parse(event.key));
                     return;
                 default:
                     break;
             }
-            switch (event.code) {
-                case "Backspace":
-                    event.preventDefault();
-                    this.writeDigit(null);
-                    return;
-                case "Delete":
-                    this.writeDigit(null);
-                    return;
-                default:
-                    break;
+            if (this.focusedCell) {
+                switch (event.code) {
+                    case "Backspace":
+                    case "Delete":
+                        event.preventDefault();
+                        this.writeDigit(null);
+                        return;
+                    case "ArrowUp":
+                        this.moveFocus(Direction.Up);
+                        event.preventDefault();
+                        break;
+                    case "ArrowRight":
+                        this.moveFocus(Direction.Right);
+                        event.preventDefault();
+                        break;
+                    case "ArrowDown":
+                        this.moveFocus(Direction.Down);
+                        event.preventDefault();
+                        break;
+                    case "ArrowLeft":
+                        this.moveFocus(Direction.Left);
+                        event.preventDefault();
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }
