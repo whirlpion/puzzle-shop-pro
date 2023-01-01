@@ -149,11 +149,10 @@ class DigitTool extends ITool {
             break;
         }
 
-        if (clearHighlight) {
-            this.clearAllHighlights();
-        }
-
         if (newFocus) {
+            if (clearHighlight) {
+                this.clearAllHighlights();
+            }
             this.highlightCells(true, newFocus);
         }
     }
