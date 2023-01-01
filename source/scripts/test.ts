@@ -54,6 +54,9 @@ function run_tests(): void {
     bst_set_test();
     bst_map_test();
     array_test();
+    u32_test();
+    xxhash32_test();
+    hasher_test();
 
     test.body.style.background = "lightgreen";
 }

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "./out/scripts",
-    "target": "es6"
+    "target": "es2017"
   },
   "include": ["source/**/*"]
 }
