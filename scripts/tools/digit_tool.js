@@ -126,10 +126,10 @@ class DigitTool extends ITool {
                 throwMessage(`Unexpected Direction: ${direction}`);
                 break;
         }
-        if (clearHighlight) {
-            this.clearAllHighlights();
-        }
         if (newFocus) {
+            if (clearHighlight) {
+                this.clearAllHighlights();
+            }
             this.highlightCells(true, newFocus);
         }
     }
