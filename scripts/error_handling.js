@@ -9,7 +9,7 @@ function throwIfEqual(left, right, message) {
 }
 function throwIfNotEqual(left, right, message) {
     if (left !== right) {
-        throw new Error(message || `Values must be equal: ${right} and ${left}`);
+        throw new Error(message || `Values must be equal: ${left} and ${right}`);
     }
 }
 function throwIfUndefined(val, message) {
