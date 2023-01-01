@@ -10,7 +10,7 @@ function throwIfEqual<T extends boolean | number | string | null | undefined>(le
 
 function throwIfNotEqual<T extends boolean | number | string | null | undefined>(left: T, right: T, message?: string) {
   if (left !== right) {
-    throw new Error(message || `Values must be equal: ${right} and ${left}`);
+    throw new Error(message || `Values must be equal: ${left} and ${right}`);
   }
 }
 
