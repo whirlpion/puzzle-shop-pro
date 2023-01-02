@@ -1,3 +1,40 @@
+// object used for set/map tests
+class Person {
+    age: number;
+    name: string;
+
+    constructor(age: number, name: string) {
+        this.age = age;
+        this.name = name;
+    }
+
+    // first sort by age then by name
+    compare(that: Person): Ordering {
+        if (this.age < that.age) {
+            return Ordering.LessThan;
+        } else if(this.age == that.age) {
+            if (this.name < that.name) {
+                return Ordering.LessThan;
+            } else if (this.name == that.name) {
+                return Ordering.Equal;
+            } else {
+                return Ordering.GreaterThan;
+            }
+        } else {
+            return Ordering.GreaterThan;
+        }
+    }
+
+    equals(that: Person): boolean {
+        return this.age === that.age && this.name === that.name;
+    }
+
+    hash<T extends IHashImplementation>(state: Hasher<T>): void {
+        state.writeNumbers(this.age);
+        state.writeStrings(this.name);
+    }
+}
+
 class test {
 
     static _body: HTMLBodyElement | null = null;
@@ -50,6 +87,7 @@ class test {
 
 function run_tests(): void {
     test.body.appendChild(document.createElement("ul"));
+    test.body.style.background = "lightgreen";
 
     bst_set_test();
     bst_map_test();
@@ -57,6 +95,6 @@ function run_tests(): void {
     u32_test();
     xxhash32_test();
     hasher_test();
-
-    test.body.style.background = "lightgreen";
+    hash_set_test();
+    hash_map_test();
 }

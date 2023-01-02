@@ -66,12 +66,12 @@ class BSTMapValueIterator<K extends IOrdered, V> {
 class BSTMap<K extends IOrdered, V> {
     private data: Array<BSTMapRecord<K, V>> = new Array();
 
-    constructor() {
-
-    }
-
     get size(): number {
         return this.data.length;
+    }
+
+    constructor() {
+
     }
 
     [Symbol.iterator](): BSTMapRecordIterator<K,V>{

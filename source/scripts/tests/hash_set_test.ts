@@ -1,9 +1,8 @@
-
-function bst_set_test(): void {
+function hash_set_test(): void {
     try {
-        test.println("--- Begin BSTSet<T> test ---");
+        test.println("--- Begin HashSet<T> test ---");
 
-        let set: BSTSet<Person> = new BSTSet();
+        let set: HashSet<Person> = new HashSet();
         const person1 = new Person(30, "Alice");
         const person2 = new Person(20, "Bob");
         const person3 = new Person(30, "Charlie");
@@ -49,27 +48,13 @@ function bst_set_test(): void {
         set.clear();
         throwIfNotEqual(set.size, 0);
 
-        test.println("should return the set entries in sorted order");
-        set.add(person3);
-        set.add(person1);
-        set.add(person2);
-        set.add(person5);
+        test.println("should contain all of the elements added");
+        set = new HashSet(array);
 
-        let values = Array.collect(set.entries());
-        throwIfNotEqual(values.length, set.size);
-
-        for(let k = 0; k < values.length; k++) {
-            throwIfNotEqual(array[k].age, values[k].age);
-            throwIfNotEqual(array[k].name, values[k].name);
+        for (let person of array) {
+            throwIfFalse(set.has(person));
         }
 
-        test.println("should iterate over set entires in sorted order");
-        let index = 0;
-        for (let person of set) {
-            throwIfNotEqual(array[index].name, person.name);
-            throwIfNotEqual(array[index].age, person.age);
-            index++;
-        }
     } catch (err) {
         test.error(err);
     }
