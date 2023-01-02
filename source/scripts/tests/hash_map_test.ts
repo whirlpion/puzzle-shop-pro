@@ -1,7 +1,6 @@
-function hash_map_test(): void {
+async function hash_map_test() {
+    await test.begin("HashMap<K,V>");
     try {
-        test.println("--- Begin HashMap<K,V> test ---");
-
         let map: HashMap<Person,string> = new HashMap();
         const person1 = new Person(30, "Alice");
         const person2 = new Person(20, "Bob");
@@ -16,38 +15,38 @@ function hash_map_test(): void {
         array.push([person1, "C"]);  // Alice
         array.push([person3, "D"]);  // Charlie
 
-        test.println("should add a new entry to the map");
+        await test.println("should add a new entry to the map");
         map.clear();
         map.set(person1, "C");
         throwIfFalse(map.has(person1));
 
-        test.println("should retrieve the value of an entry");
+        await test.println("should retrieve the value of an entry");
         map.clear();
         map.set(person1, "C");
         throwIfNotEqual(map.get(person1), "C");
 
-        test.println("should delete an entry from the map");
+        await test.println("should delete an entry from the map");
         map.clear();
         map.set(person1, "C");
         map.delete(person1);
         throwIfTrue(map.has(person1));
         throwIfFalse(map.size == 0);
 
-        test.println("should return the correct size of the map");
+        await test.println("should return the correct size of the map");
         map.clear();
         map.set(person1, "C");
         map.set(person2, "B");
         map.set(person3, "D");
         throwIfNotEqual(map.size, 3);
 
-        test.println("should clear all entries in the map");
+        await test.println("should clear all entries in the map");
         map.clear();
         map.set(person1, "C");
         map.set(person2, "B");
         map.clear();
         throwIfNotEqual(map.size, 0);
 
-        test.println("should iterate over the entries of the map");
+        await test.println("should iterate over the entries of the map");
         map.clear();
         map.set(person1, "C");
         map.set(person2, "B");
@@ -62,7 +61,7 @@ function hash_map_test(): void {
             throwIfFalse(map.has(key) && map.get(key) === value);
         }
 
-        test.println("should iterate over the keys of the map");
+        await test.println("should iterate over the keys of the map");
         const keys: Array<Person> = Array.collect(map.keys());
         throwIfNotEqual(keys.length, map.size);
 
@@ -70,7 +69,7 @@ function hash_map_test(): void {
             throwIfFalse(map.has(key));
         }
 
-        test.println("should iterate over the values of the map");
+        await test.println("should iterate over the values of the map");
         const values: Array<string> = Array.collect(map.values());
         throwIfNotEqual(values.length, map.size);
 

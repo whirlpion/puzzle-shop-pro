@@ -53,10 +53,30 @@ class test {
         return <HTMLUListElement>test._ul;
     }
 
-    static println(msg: string): void {
-        let li = document.createElement("li");
-        li.textContent = msg;
-        test.ul.appendChild(li);
+    static async run(func: {(): void}) {
+        return new Promise<void>((resolve, _reject) => {
+            globalThis.setTimeout(() => {
+                func();
+                resolve();
+            }, 0);
+        });
+    }
+
+    static async begin(name: string) {
+        this.run(() => {
+            let li = document.createElement("li");
+            li.style.fontWeight = "bold";
+            li.textContent = `--- Begin ${name} Test ---`;
+            test.ul.appendChild(li);
+        });
+    }
+
+    static async println(msg: string) {
+        this.run(() => {
+            let li = document.createElement("li");
+            li.textContent = msg;
+            test.ul.appendChild(li);
+        });
     }
 
     static error(err: any): void {
@@ -85,16 +105,16 @@ class test {
     }
 }
 
-function run_tests(): void {
+async function run_tests() {
     test.body.appendChild(document.createElement("ul"));
     test.body.style.background = "lightgreen";
 
-    bst_set_test();
-    bst_map_test();
-    array_test();
-    u32_test();
-    xxhash32_test();
-    hasher_test();
-    hash_set_test();
-    hash_map_test();
+    await bst_set_test();
+    await bst_map_test();
+    await array_test();
+    await u32_test();
+    await xxhash32_test();
+    await hasher_test();
+    await hash_set_test();
+    await hash_map_test();
 }

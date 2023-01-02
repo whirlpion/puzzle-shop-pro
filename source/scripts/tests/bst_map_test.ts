@@ -1,8 +1,7 @@
 
-function bst_map_test(): void {
+async function bst_map_test() {
+    await test.begin("BSTMap<K,V>");
     try {
-        test.println("--- Begin BSTMap<K,V> test ---");
-
         let map: BSTMap<Person,string> = new BSTMap();
         const person1 = new Person(30, "Alice");
         const person2 = new Person(20, "Bob");
@@ -17,38 +16,38 @@ function bst_map_test(): void {
         array.push([person1, "C"]);  // Alice
         array.push([person3, "D"]);  // Charlie
 
-        test.println("should add a new entry to the map");
+        await test.println("should add a new entry to the map");
         map = new BSTMap();
         map.set(person1, "C");
         throwIfFalse(map.has(person1));
 
-        test.println("should retrieve the value of an entry");
+        await test.println("should retrieve the value of an entry");
         map = new BSTMap();
         map.set(person1, "C");
         throwIfNotEqual(map.get(person1), "C");
 
-        test.println("should delete an entry from the map");
+        await test.println("should delete an entry from the map");
         map = new BSTMap();
         map.set(person1, "C");
         map.delete(person1);
         throwIfTrue(map.has(person1));
         throwIfFalse(map.size == 0);
 
-        test.println("should return the correct size of the map");
+        await test.println("should return the correct size of the map");
         map = new BSTMap();
         map.set(person1, "C");
         map.set(person2, "B");
         map.set(person3, "D");
         throwIfNotEqual(map.size, 3);
 
-        test.println("should clear all entries in the map");
+        await test.println("should clear all entries in the map");
         map = new BSTMap();
         map.set(person1, "C");
         map.set(person2, "B");
         map.clear();
         throwIfNotEqual(map.size, 0);
 
-        test.println("should iterate over the entries of the map");
+        await test.println("should iterate over the entries of the map");
         map = new BSTMap();
         map.set(person1, "C");
         map.set(person2, "B");
@@ -65,7 +64,7 @@ function bst_map_test(): void {
             throwIfNotEqual(entries[k][1], array[k][1]);
         }
 
-        test.println("should iterate over the keys of the map");
+        await test.println("should iterate over the keys of the map");
         map = new BSTMap();
         map.set(person1, "C");
         map.set(person2, "B");
@@ -81,7 +80,7 @@ function bst_map_test(): void {
             throwIfNotEqual(keys[k].name, array[k][0].name);
         }
 
-        test.println("should iterate over the values of the map");
+        await test.println("should iterate over the values of the map");
         map = new BSTMap();
         map.set(person1, "C");
         map.set(person2, "B");
@@ -97,7 +96,7 @@ function bst_map_test(): void {
             throwIfNotEqual(values[k], array[k][1]);
         }
 
-        test.println("should iterate over set entires in sorted order");
+        await test.println("should iterate over set entires in sorted order");
         map = new BSTMap();
         map.set(person1, "C");
         map.set(person2, "B");

@@ -1,7 +1,6 @@
-function hash_set_test(): void {
+async function hash_set_test() {
+    await test.begin("HashSet<T>");
     try {
-        test.println("--- Begin HashSet<T> test ---");
-
         let set: HashSet<Person> = new HashSet();
         const person1 = new Person(30, "Alice");
         const person2 = new Person(20, "Bob");
@@ -16,39 +15,39 @@ function hash_set_test(): void {
         array.push(person1); // Alice
         array.push(person3); // Charlie
 
-        test.println("should add a new element to the set");
+        await test.println("should add a new element to the set");
         set.add(person1);
         throwIfFalse(set.has(person1));
 
-        test.println("should return the correct size of the set");
+        await test.println("should return the correct size of the set");
         set.add(person1);
         set.add(person2);
         throwIfNotEqual(set.size, 2);
 
-        test.println("should return the correct size after deleting an element from the set");
+        await test.println("should return the correct size after deleting an element from the set");
         set.add(person1);
         set.add(person2);
         set.delete(person1);
         throwIfNotEqual(set.size, 1);
 
-        test.println("should return the correct size after clearing the set");
+        await test.println("should return the correct size after clearing the set");
         set.add(person1);
         set.add(person2);
         set.clear();
         throwIfNotEqual(set.size, 0);
 
-        test.println("should return the correct size after adding a duplicate element");
+        await test.println("should return the correct size after adding a duplicate element");
         set.add(person1);
         set.add(person2);
         set.add(person3);
         set.add(person4);
         throwIfNotEqual(set.size, 3);
 
-        test.println("should return the correct size after clearing all elements");
+        await test.println("should return the correct size after clearing all elements");
         set.clear();
         throwIfNotEqual(set.size, 0);
 
-        test.println("should contain all of the elements added");
+        await test.println("should contain all of the elements added");
         set = new HashSet(array);
 
         for (let person of array) {
