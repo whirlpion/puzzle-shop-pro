@@ -1,10 +1,10 @@
 
 
 class HashSetIterator<T extends IEquals & IHash> {
-    private bucketIterator: Iterator<[string,Array<T>]>
+    private bucketIterator: Iterator<[number,Array<T>]>
     private entryIterator: Iterator<[number, T]> | null = null;
 
-    constructor(bucketIterator: Iterator<[string,Array<T>]>) {
+    constructor(bucketIterator: Iterator<[number,Array<T>]>) {
         this.bucketIterator = bucketIterator;
     }
 
@@ -27,7 +27,7 @@ class HashSetIterator<T extends IEquals & IHash> {
 }
 
 class HashSet<T extends IEquals & IHash> {
-    private data: Map<string,Array<T>> = new Map();
+    private data: Map<number,Array<T>> = new Map();
     private _size: number= 0;
     private hasher: Hasher<XXHash32> = new Hasher(new XXHash32(u32.ZERO));
 
@@ -49,10 +49,9 @@ class HashSet<T extends IEquals & IHash> {
 
     add(value: T): HashSet<T> {
         value.hash(this.hasher);
-        const hash = this.hasher.finish();
-        const key = hash.toString();
+        const hash = this.hasher.finish().value;
 
-        let entries = this.data.get(key);
+        let entries = this.data.get(hash);
         if (entries) {
             for (let entry of entries) {
                 if (value.equals(entry)) {
@@ -61,7 +60,7 @@ class HashSet<T extends IEquals & IHash> {
             }
             entries.push(value);
         } else {
-            this.data.set(key,[value]);
+            this.data.set(hash,[value]);
         }
         this._size += 1;
         return this;
@@ -75,10 +74,9 @@ class HashSet<T extends IEquals & IHash> {
 
     delete(value: T): boolean {
         value.hash(this.hasher);
-        const hash = this.hasher.finish();
-        const key = hash.toString();
+        const hash = this.hasher.finish().value;
 
-        let entries = this.data.get(key);
+        let entries = this.data.get(hash);
         if(!entries) {
             return false;
         }
@@ -87,7 +85,7 @@ class HashSet<T extends IEquals & IHash> {
                 entries.remove(k);
                 this._size -= 1;
                 if (entries.length == 0) {
-                    this.data.delete(key);
+                    this.data.delete(hash);
                 }
                 return true;
             }
@@ -101,10 +99,9 @@ class HashSet<T extends IEquals & IHash> {
 
     has(value: T): boolean {
         value.hash(this.hasher);
-        const hash = this.hasher.finish();
-        const key = hash.toString();
+        const hash = this.hasher.finish().value;
 
-        let entries = this.data.get(key);
+        let entries = this.data.get(hash);
         if (entries) {
             for (let entry of entries) {
                 if (value.equals(entry)) {

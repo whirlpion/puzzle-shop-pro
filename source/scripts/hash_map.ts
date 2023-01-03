@@ -1,8 +1,8 @@
 class HashMapIterator<K extends IEquals & IHash, V> {
-    private bucketIterator: Iterator<[string, Array<{key: K, value: V}>]>;
+    private bucketIterator: Iterator<[number, Array<{key: K, value: V}>]>;
     private entryIterator: Iterator<[number, {key: K, value: V}]> | null = null;
 
-    constructor(bucketIterator: Iterator<[string, Array<{key: K, value: V}>]>) {
+    constructor(bucketIterator: Iterator<[number, Array<{key: K, value: V}>]>) {
         this.bucketIterator = bucketIterator;
     }
 
@@ -69,7 +69,7 @@ class HashMapValueIterator<K extends IEquals & IHash, V> {
 }
 
 class HashMap<K extends IEquals & IHash, V> {
-    private data: Map<string, Array<{key: K, value: V}>> = new Map();
+    private data: Map<number, Array<{key: K, value: V}>> = new Map();
     private _size: number = 0;
     private hasher: Hasher<XXHash32> = new Hasher(new XXHash32(u32.ZERO));
 
@@ -99,7 +99,7 @@ class HashMap<K extends IEquals & IHash, V> {
 
     delete(key: K) {
         key.hash(this.hasher);
-        const hash = this.hasher.finish().toString();
+        const hash = this.hasher.finish().value;
 
         let entries = this.data.get(hash);
         if (!entries) {
@@ -124,7 +124,7 @@ class HashMap<K extends IEquals & IHash, V> {
 
     get(key: K): V | undefined {
         key.hash(this.hasher);
-        const hash = this.hasher.finish().toString();
+        const hash = this.hasher.finish().value;
 
         let entries = this.data.get(hash);
         if (!entries) {
@@ -145,7 +145,7 @@ class HashMap<K extends IEquals & IHash, V> {
         }
 
         key.hash(this.hasher);
-        const hash = this.hasher.finish().toString();
+        const hash = this.hasher.finish().value;
 
         let entries = this.data.get(hash);
         if (!entries) {
@@ -166,7 +166,7 @@ class HashMap<K extends IEquals & IHash, V> {
 
     set(key: K, value: V): HashMap<K,V> {
         key.hash(this.hasher);
-        const hash = this.hasher.finish().toString();
+        const hash = this.hasher.finish().value;
 
         let entries = this.data.get(hash);
         if (!entries) {
