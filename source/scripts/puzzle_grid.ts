@@ -25,89 +25,10 @@ abstract class IConstraint {
     abstract isConstraintViolated(puzzleGrid: PuzzleGrid): boolean
 }
 
-class Cell implements IOrdered, IEquals {
-    static readonly MAX_VAL = 0xFFFF;
-
-    _i: number;
-    _j: number;
-
-    get i(): number {
-        return this._i;
-    }
-
-    get j(): number {
-        return this._j;
-    }
-
-    constructor(i: number, j: number) {
-        throwIfFalse(Number.isInteger(i) && i >= 0);
-        throwIfFalse(Number.isInteger(j) && j >= 0);
-
-        this._i = i;
-        this._j = j;
-    }
-
-    static bresenhamLine(from: Cell, to: Cell): Array<Cell> {
-        let cells: Array<Cell> = [];
-        let x = from.j;
-        let y = from.i;
-        let x1 = to.j;
-        let y1 = to.i;
-
-        let dx = Math.abs(x1 - x);
-        let dy = Math.abs(y1 - y);
-        let sx = (x < x1) ? 1 : -1;
-        let sy = (y < y1) ? 1 : -1;
-        let err = dx - dy;
-
-        cells.push(from);
-        while ((y != y1) || (x != x1)) {
-            let e2 = 2 * err;
-            if (e2 > -dy) {
-                err -= dy;
-                x += sx;
-            }
-
-            if (e2 < dx) {
-                err += dx;
-                y += sy;
-            }
-
-            cells.push(new Cell(y, x));
-        }
-        return cells;
-    }
-
-    compare(that: Cell): Ordering {
-        if (this._i < that._i) {
-            return Ordering.LessThan;
-        } else if (this._i === that._i && this._j < that._j) {
-            return Ordering.LessThan;
-        } else if (this._i === that._i && this._j === that._j) {
-            return Ordering.Equal;
-        } else {
-            return Ordering.GreaterThan;
-        }
-    }
-
-    equals(that: Cell): boolean {
-        return this.i == that.i && this.j == that.j;
-    }
-
-    static fromXY(x: number, y: number): Cell {
-        let i = Math.floor(y / CELL_SIZE);
-        let j = Math.floor(x / CELL_SIZE);
-
-        return new Cell(i, j);
-    }
-
-    static fromMouseEvent(event: MouseEvent): Cell {
-        return Cell.fromXY(event.offsetX, event.offsetY);
-    }
-
-    toString(): string {
-        return `r${this.i}c${this.j}`;
-    }
+enum HighlightCellsFlags {
+    None = 0,
+    Focus = 1 << 0,// foucs the last cell in the list
+    Clear = 1 << 1, // should all the other cells be removed
 }
 
 // puzzle grid handles digits and resolving constraints
@@ -124,14 +45,30 @@ class PuzzleGrid {
         return this._columns;
     }
 
+    private sceneManager: SceneManager;
     // key: cell row and column
     // value: set of constraints affecting the cell
     private constraintMap: BSTMap<Cell, Set<IConstraint>> = new BSTMap();
     private violatedConstraints: Set<IConstraint> = new Set();
-    private digitMap: BSTMap<Cell, [CellValue, SVGTextElement]> = new BSTMap();
-    private sceneManager: SceneManager;
+    private cellMap: BSTMap<Cell, [CellValue, SVGTextElement]> = new BSTMap();
 
+    // root element for error highlights
     private errorHighlight: SVGGElement;
+
+    // root element for cell selection highlights
+    private highlightSvg: SVGGElement;
+    // the cells which are currently highlighted mapped to their associated SVG Rect
+    private highlightedCells: BSTMap<Cell, SVGRectElement> = new BSTMap();
+    // are any cells highlighted
+    get hasHighlightedCells(): boolean {
+        return this.highlightedCells.size > 0;
+    }
+    // the cell that has focus
+    private _focusedCell: Cell | null = null;
+
+    public get focusedCell(): Cell | null {
+        return this._focusedCell;
+    }
 
     constructor(sceneManager: SceneManager, rows: number, columns: number) {
         throwIfFalse(Number.isInteger(rows));
@@ -141,7 +78,113 @@ class PuzzleGrid {
         this._columns = columns;
         this.sceneManager = sceneManager;
         this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
+        this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
     }
+
+    // Highlight Functions
+
+    clearAllHighlights(): void {
+        this.highlightedCells.clear();
+        this.highlightSvg.clearChildren();
+        this._focusedCell = null;
+    }
+
+    focusCell(cell: Cell): void {
+        this._focusedCell = cell;
+    }
+
+    highlightCells(flags: HighlightCellsFlags, ...cells: Cell[]): void {
+
+        // only keep cells in the provided cells array
+        // we keep any existing svgs rather then deleting/remaking
+        if (flags & HighlightCellsFlags.Clear) {
+            this.highlightSvg.clearChildren();
+            let highlightedCells: BSTMap<Cell, SVGRectElement> = new BSTMap();
+            for (let cell of cells) {
+                let rect = this.highlightedCells.get(cell);
+                if (rect) {
+                    highlightedCells.set(cell, rect);
+                    this.highlightSvg.appendChild(rect);
+                }
+            }
+            this.highlightedCells = highlightedCells;
+        }
+
+        for (let cell of cells) {
+            if (this.highlightedCells.has(cell)) {
+                continue;
+            }
+            const rect = this.sceneManager.createElement("rect", SVGRectElement);
+            rect.setAttributes(
+                ["width", `${CELL_SIZE}`],
+                ["height", `${CELL_SIZE}`],
+                ["fill", Colour.LightBlue.toString()],
+                ["x", `${cell.j * CELL_SIZE}`],
+                ["y", `${cell.i * CELL_SIZE}`]);
+            this.highlightedCells.set(cell, rect);
+            this.highlightSvg.appendChild(rect);
+        }
+
+        if (flags & HighlightCellsFlags.Focus) {
+            this._focusedCell = <Cell>cells.last();
+        }
+    }
+
+    toggleCell(cell: Cell): void {
+        // cell toggle
+        let rect = this.highlightedCells.get(cell);
+        if (rect) {
+            this.highlightedCells.delete(cell);
+            this.highlightSvg.removeChild(rect);
+            // no focused cell after this point
+            this._focusedCell = null;
+        } else {
+            this.highlightCells(HighlightCellsFlags.Focus, cell);
+        }
+    }
+
+    getHighlightedCells(): Array<Cell> {
+        return Array.collect(this.highlightedCells.keys());
+    }
+
+    moveFocus(direction: Direction, clearHighlight: boolean): void {
+        throwIfNull(this.focusedCell);
+        let newFocus: Cell | null = null;
+        switch(direction) {
+        case Direction.Up:
+            if (this.focusedCell.i - 1 >= 0) {
+                newFocus = new Cell(this.focusedCell.i - 1, this.focusedCell.j);
+            }
+            break;
+        case Direction.Right:
+            if (this.focusedCell.j + 1 < this.columns) {
+                newFocus = new Cell(this.focusedCell.i, this.focusedCell.j + 1);
+            }
+            break;
+        case Direction.Down:
+            if (this.focusedCell.i + 1 < this.rows) {
+                newFocus = new Cell(this.focusedCell.i + 1, this.focusedCell.j);
+            }
+            break;
+        case Direction.Left:
+            if (this.focusedCell.j - 1 >= 0) {
+                newFocus = new Cell(this.focusedCell.i, this.focusedCell.j - 1);
+            }
+            break;
+        default:
+            throwMessage(`Unexpected Direction: ${direction}`);
+            break;
+        }
+
+        if (newFocus) {
+            if (clearHighlight) {
+                this.clearAllHighlights();
+            }
+            this.highlightCells(HighlightCellsFlags.Focus, newFocus);
+        }
+    }
+
+    // Constraint Functions
 
     checkCellsForConstraintViolations(...cells: Cell[]) {
         // checks each of the requested cells
@@ -188,62 +231,6 @@ class PuzzleGrid {
         }
     }
 
-    // returns the previous digit at that cell if present
-    setCellValue(cell: Cell, value: CellValue | null): CellValue | null {
-        let pair = this.digitMap.get(cell);
-        let prevValue: CellValue | null = null;
-        if (pair) {
-            // pair[0] : PencilMark
-            // pair[1] : SVGTextElement
-            prevValue = pair[0];
-            // new digit to write
-            if (value) {
-                pair[0] = value;
-                pair[1].innerHTML = `${value.digit}`;
-            // otherwise delete entry
-            } else {
-                this.sceneManager.removeElement(pair[1]);
-                this.digitMap.delete(cell);
-            }
-        } else {
-            // new digit to write
-            if (value) {
-                let text = this.sceneManager.createElement("text", SVGTextElement, RenderLayer.PencilMark);
-                text.setAttributes(
-                    ["text-anchor", "middle"],
-                    ["dominant-baseline", "central"],
-                    ["x", `${cell.j * CELL_SIZE + CELL_SIZE/2}`],
-                    ["y", `${cell.i * CELL_SIZE + CELL_SIZE/2}`],
-                    ["font-size", `${CELL_SIZE * 3 / 4}`],
-                    ["font-family", "sans-serif"]);
-                text.innerHTML = `${value.digit}`;
-                this.digitMap.set(cell, [value, text]);
-            }
-        }
-
-        this.checkCellsForConstraintViolations(cell);
-        return prevValue;
-    }
-
-    getCellsWithDigit(digit: Digit) : Array<Cell> {
-        let retval = new Array();
-        for (let [cell, [value, _element]] of this.digitMap) {
-            if (digit === value.digit) {
-                retval.push(cell);
-            }
-        }
-        return retval;
-    }
-
-    getDigitAtCell(cell: Cell): Digit | null {
-        let retval = this.digitMap.get(cell);
-        if (retval !== undefined) {
-            let [value, _svg] = retval;
-            return value.digit;
-        }
-        return null;
-    }
-
     // adds a constraint and optionally checks to see if its addition affects
     // the set of cells under violated constraints
     addConstraint(constraint: IConstraint, checkViolations?: boolean, ): void {
@@ -283,6 +270,74 @@ class PuzzleGrid {
         if (checkViolations) {
             this.checkCellsForConstraintViolations(...constraint.cells);
         }
+    }
+
+    // Cell Settres/Getters
+
+    // returns the previous digit at that cell if present
+    setCellValue(cell: Cell, value: CellValue | null): CellValue | null {
+        let pair = this.cellMap.get(cell);
+        let prevValue: CellValue | null = null;
+        if (pair) {
+            // pair[0] : PencilMark
+            // pair[1] : SVGTextElement
+            prevValue = pair[0];
+            // new digit to write
+            if (value) {
+                pair[0] = value;
+                if (value.digit) {
+                    pair[1].textContent = `${value.digit}`;
+                } else {
+                    pair[1].textContent = '';
+                }
+            // otherwise delete entry
+            } else {
+                this.sceneManager.removeElement(pair[1]);
+                this.cellMap.delete(cell);
+            }
+        } else {
+            // new digit to write
+            if (value) {
+                let text = this.sceneManager.createElement("text", SVGTextElement, RenderLayer.PencilMark);
+                text.setAttributes(
+                    ["text-anchor", "middle"],
+                    ["dominant-baseline", "central"],
+                    ["x", `${cell.j * CELL_SIZE + CELL_SIZE/2}`],
+                    ["y", `${cell.i * CELL_SIZE + CELL_SIZE/2}`],
+                    ["font-size", `${CELL_SIZE * 3 / 4}`],
+                    ["font-family", "sans-serif"]);
+                text.innerHTML = `${value.digit}`;
+                if (value.digit) {
+                    text.textContent = `${value.digit}`;
+                } else {
+                    text.textContent = '';
+                }
+
+                this.cellMap.set(cell, [value, text]);
+            }
+        }
+
+        this.checkCellsForConstraintViolations(cell);
+        return prevValue;
+    }
+
+    getCellsWithDigit(digit: Digit) : Array<Cell> {
+        let retval = new Array();
+        for (let [cell, [value, _element]] of this.cellMap) {
+            if (digit === value.digit) {
+                retval.push(cell);
+            }
+        }
+        return retval;
+    }
+
+    getDigitAtCell(cell: Cell): Digit | null {
+        let retval = this.cellMap.get(cell);
+        if (retval !== undefined) {
+            let [value, _svg] = retval;
+            return value.digit;
+        }
+        return null;
     }
 }
 
