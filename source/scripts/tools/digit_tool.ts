@@ -1,12 +1,16 @@
 class WriteDigitAction extends IAction {
     override apply(): void {
+        let cellValue = new CellValue();
+        cellValue.digit = this.digit;
         for (let cell of this.cells) {
-            this.puzzleGrid.setDigitAtCell(cell, this.digit);
+            this.puzzleGrid.setCellValue(cell, cellValue);
         }
     }
     override revert(): void {
         for(let k = 0; k < this.cells.length; k++) {
-            this.puzzleGrid.setDigitAtCell(this.cells[k], this.previousDigits[k]);
+            let cellValue = new CellValue();
+            cellValue.digit = this.previousDigits[k];
+            this.puzzleGrid.setCellValue(this.cells[k], cellValue);
         }
     }
 

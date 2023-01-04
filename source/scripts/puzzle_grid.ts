@@ -25,28 +25,7 @@ abstract class IConstraint {
     abstract isConstraintViolated(puzzleGrid: PuzzleGrid): boolean
 }
 
-enum Digit {
-    One = 1,
-    Two,
-    Three,
-    Four,
-    Five,
-    Size,
-    Seven,
-    Eight,
-    Nine,
-}
-
-namespace Digit {
-    export function parse(value: string): Digit {
-        let integer = Number.parseInt(value);
-        throwIfTrue(isNaN(integer));
-        throwIfFalse(integer >= 1 && integer <= 9);
-        return integer;
-    }
-}
-
-class Cell {
+class Cell implements IOrdered, IEquals {
     static readonly MAX_VAL = 0xFFFF;
 
     _i: number;
@@ -149,7 +128,7 @@ class PuzzleGrid {
     // value: set of constraints affecting the cell
     private constraintMap: BSTMap<Cell, Set<IConstraint>> = new BSTMap();
     private violatedConstraints: Set<IConstraint> = new Set();
-    private digitMap: BSTMap<Cell, [Digit, SVGTextElement]> = new BSTMap();
+    private digitMap: BSTMap<Cell, [CellValue, SVGTextElement]> = new BSTMap();
     private sceneManager: SceneManager;
 
     private errorHighlight: SVGGElement;
@@ -210,17 +189,17 @@ class PuzzleGrid {
     }
 
     // returns the previous digit at that cell if present
-    setDigitAtCell(cell: Cell, digit: Digit | null): Digit | null {
+    setCellValue(cell: Cell, value: CellValue | null): CellValue | null {
         let pair = this.digitMap.get(cell);
-        let retval: Digit | null = null;
+        let prevValue: CellValue | null = null;
         if (pair) {
-            // pair[0] : Digit
+            // pair[0] : PencilMark
             // pair[1] : SVGTextElement
-            retval = pair[0];
+            prevValue = pair[0];
             // new digit to write
-            if (digit) {
-                pair[0] = digit;
-                pair[1].innerHTML = `${digit}`;
+            if (value) {
+                pair[0] = value;
+                pair[1].innerHTML = `${value.digit}`;
             // otherwise delete entry
             } else {
                 this.sceneManager.removeElement(pair[1]);
@@ -228,7 +207,7 @@ class PuzzleGrid {
             }
         } else {
             // new digit to write
-            if (digit) {
+            if (value) {
                 let text = this.sceneManager.createElement("text", SVGTextElement, RenderLayer.PencilMark);
                 text.setAttributes(
                     ["text-anchor", "middle"],
@@ -237,20 +216,19 @@ class PuzzleGrid {
                     ["y", `${cell.i * CELL_SIZE + CELL_SIZE/2}`],
                     ["font-size", `${CELL_SIZE * 3 / 4}`],
                     ["font-family", "sans-serif"]);
-                text.innerHTML = `${digit}`;
-                this.digitMap.set(cell, [digit, text]);
+                text.innerHTML = `${value.digit}`;
+                this.digitMap.set(cell, [value, text]);
             }
         }
 
         this.checkCellsForConstraintViolations(cell);
-        return retval;
+        return prevValue;
     }
 
-    getCellsWithDigit(query: Digit) : Array<Cell> {
+    getCellsWithDigit(digit: Digit) : Array<Cell> {
         let retval = new Array();
-        for (let [cell, [digit, _element]] of this.digitMap) {
-            console.log(`cell: ${cell}, digit: ${digit}`);
-            if (query === digit) {
+        for (let [cell, [value, _element]] of this.digitMap) {
+            if (digit === value.digit) {
                 retval.push(cell);
             }
         }
@@ -260,8 +238,8 @@ class PuzzleGrid {
     getDigitAtCell(cell: Cell): Digit | null {
         let retval = this.digitMap.get(cell);
         if (retval !== undefined) {
-            let [digit, _svg] = retval;
-            return digit;
+            let [value, _svg] = retval;
+            return value.digit;
         }
         return null;
     }
