@@ -12,9 +12,9 @@ class ITool {
         this.sceneManager = sceneManager;
     }
     // when user switches to this tool
-    handlePickUp() { }
+    handlePickUp(_prevTool) { }
     // when user switches to another tool
-    handlePutDown() { }
+    handlePutDown(_nextTool) { }
     // when the canvas receives click event with this tool
     handleMouseClick(_event) { }
     // when the canvas receives dblclick event with this tool
@@ -40,9 +40,11 @@ class ToolBox {
         if (tool == this.currentTool) {
             return;
         }
-        this.currentTool.handlePutDown();
+        const prevTool = this.currentTool;
+        const nextTool = tool;
+        this.currentTool.handlePutDown(nextTool);
         this.currentTool = tool;
-        this.currentTool.handlePickUp();
+        this.currentTool.handlePickUp(prevTool);
         console.debug(`Switching to ${tool.constructor.name}`);
     }
     constructor(puzzleGrid, actionStack, sceneManager) {

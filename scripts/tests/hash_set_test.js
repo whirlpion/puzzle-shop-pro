@@ -1,8 +1,8 @@
 "use strict";
-async function bst_set_test() {
-    await test.begin("BSTSet<T>");
+async function hash_set_test() {
+    await test.begin("HashSet<T>");
     try {
-        let set = new BSTSet();
+        let set = new HashSet();
         const person1 = new Person(30, "Alice");
         const person2 = new Person(20, "Bob");
         const person3 = new Person(30, "Charlie");
@@ -40,23 +40,10 @@ async function bst_set_test() {
         await test.println("should return the correct size after clearing all elements");
         set.clear();
         throwIfNotEqual(set.size, 0);
-        await test.println("should return the set entries in sorted order");
-        set.add(person3);
-        set.add(person1);
-        set.add(person2);
-        set.add(person5);
-        let values = Array.collect(set.entries());
-        throwIfNotEqual(values.length, set.size);
-        for (let k = 0; k < values.length; k++) {
-            throwIfNotEqual(array[k].age, values[k].age);
-            throwIfNotEqual(array[k].name, values[k].name);
-        }
-        await test.println("should iterate over set entires in sorted order");
-        let index = 0;
-        for (let person of set) {
-            throwIfNotEqual(array[index].name, person.name);
-            throwIfNotEqual(array[index].age, person.age);
-            index++;
+        await test.println("should contain all of the elements added");
+        set = new HashSet(array);
+        for (let person of array) {
+            throwIfFalse(set.has(person));
         }
     }
     catch (err) {

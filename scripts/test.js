@@ -1,4 +1,38 @@
 "use strict";
+// object used for set/map tests
+class Person {
+    constructor(age, name) {
+        this.age = age;
+        this.name = name;
+    }
+    // first sort by age then by name
+    compare(that) {
+        if (this.age < that.age) {
+            return Ordering.LessThan;
+        }
+        else if (this.age == that.age) {
+            if (this.name < that.name) {
+                return Ordering.LessThan;
+            }
+            else if (this.name == that.name) {
+                return Ordering.Equal;
+            }
+            else {
+                return Ordering.GreaterThan;
+            }
+        }
+        else {
+            return Ordering.GreaterThan;
+        }
+    }
+    equals(that) {
+        return this.age === that.age && this.name === that.name;
+    }
+    hash(state) {
+        state.writeNumbers(this.age);
+        state.writeStrings(this.name);
+    }
+}
 class test {
     static get body() {
         if (!test._body) {
@@ -12,10 +46,28 @@ class test {
         }
         return test._ul;
     }
-    static println(msg) {
-        let li = document.createElement("li");
-        li.textContent = msg;
-        test.ul.appendChild(li);
+    static async run(func) {
+        return new Promise((resolve, _reject) => {
+            globalThis.setTimeout(() => {
+                func();
+                resolve();
+            }, 0);
+        });
+    }
+    static async begin(name) {
+        this.run(() => {
+            let li = document.createElement("li");
+            li.style.fontWeight = "bold";
+            li.textContent = `--- Begin ${name} Test ---`;
+            test.ul.appendChild(li);
+        });
+    }
+    static async println(msg) {
+        this.run(() => {
+            let li = document.createElement("li");
+            li.textContent = msg;
+            test.ul.appendChild(li);
+        });
     }
     static error(err) {
         test.body.style.background = "red";
@@ -44,13 +96,16 @@ class test {
 }
 test._body = null;
 test._ul = null;
-function run_tests() {
+async function run_tests() {
     test.body.appendChild(document.createElement("ul"));
-    bst_set_test();
-    bst_map_test();
-    array_test();
-    u32_test();
-    xxhash32_test();
-    hasher_test();
     test.body.style.background = "lightgreen";
+    await bst_set_test();
+    await bst_map_test();
+    await array_test();
+    await u32_test();
+    await xxhash32_test();
+    await hasher_test();
+    await hash_set_test();
+    await hash_map_test();
+    await set_performance();
 }

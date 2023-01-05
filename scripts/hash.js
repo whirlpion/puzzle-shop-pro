@@ -156,6 +156,7 @@ class XXHash32 {
         result = u32.xor(result, u32.shr(result, 13));
         result = u32.mul(result, XXHash32.PRIME3);
         result = u32.xor(result, u32.shr(result, 16));
+        this.reset(u32.ZERO);
         return result;
     }
 }

@@ -47,11 +47,11 @@ class BSTMapValueIterator {
     }
 }
 class BSTMap {
-    constructor() {
-        this.data = new Array();
-    }
     get size() {
         return this.data.length;
+    }
+    constructor() {
+        this.data = new Array();
     }
     [Symbol.iterator]() {
         return this.entries();
