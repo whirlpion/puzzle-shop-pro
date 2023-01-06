@@ -96,7 +96,7 @@ enum Digit {
     Three,
     Four,
     Five,
-    Size,
+    Six,
     Seven,
     Eight,
     Nine,
@@ -111,23 +111,39 @@ namespace Digit {
     }
 }
 
-class PencilMark {
-    private digitFlags: number = 0;
-    constructor(...digits: Digit[]) {
-        for (let digit of digits) {
-            this.digitFlags |= (1 << digit);
-        }
+enum DigitFlag {
+    None =  0,
+    One =   (1 << (Digit.One - 1)),
+    Two =   (1 << (Digit.Two - 1)),
+    Three = (1 << (Digit.Three - 1)),
+    Four =  (1 << (Digit.Four - 1)),
+    Five =  (1 << (Digit.Five - 1)),
+    Six =   (1 << (Digit.Six - 1)),
+    Seven = (1 << (Digit.Seven - 1)),
+    Eight = (1 << (Digit.Eight - 1)),
+    Nine =  (1 << (Digit.Nine - 1)),
+}
+
+namespace DigitFlag {
+    export function fromDigit(digit: Digit): DigitFlag {
+        return (1 << (digit - 1));
     }
 
-    hasDigit(digit: Digit): boolean {
-        return (this.digitFlags & (1 << digit)) !== 0;
+    export function toString(flag: DigitFlag): string {
+        let retval: string = "";
+        for (let k = Digit.One; k <= Digit.Nine; k++) {
+            if (flag & DigitFlag.fromDigit(k)) {
+                retval += k.toString();
+            }
+        }
+        return retval;
     }
 }
 
 class CellValue {
     digit: Digit | null = null;
-    centerMark: PencilMark = new PencilMark();
-    cornerMark: PencilMark = new PencilMark();
+    centerMark: DigitFlag = DigitFlag.None;
+    cornerMark: DigitFlag = DigitFlag.None
     _locked: boolean = false;
     // if a cell is locked, it becomes a constraint
     get locked(): boolean {
@@ -135,6 +151,15 @@ class CellValue {
     }
 
     constructor() {}
+
+     clone(): CellValue {
+        let retval = new CellValue();
+        retval.digit = this.digit;
+        retval.centerMark = this.centerMark;
+        retval.cornerMark = this.cornerMark;
+        retval._locked = this._locked;
+        return retval;
+     }
 
     lock(): void {
         this._locked = true;

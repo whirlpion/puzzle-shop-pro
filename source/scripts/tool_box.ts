@@ -72,6 +72,8 @@ class ToolBox {
           ["rectangle_selection_tool", NoOpTool, undefined],
           ["grid_tool", GridTool, "KeyG"],
           ["digit_tool", DigitTool, "KeyZ"],
+          ["center_tool", CenterTool, "KeyC"],
+          ["corner_tool", NoOpTool, "KeyX"],
         ];
 
         for(let [id, toolConstructor, _code] of blueprints) {

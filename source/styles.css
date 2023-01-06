@@ -78,6 +78,14 @@ div#digit_tool {
     background-image: url("icons/123.svg")
 }
 
+div#corner_tool {
+    background-image: url("icons/123.svg")
+}
+
+div#center_tool {
+    background-image: url("icons/123.svg")
+}
+
 div#puzzle_canvas {
 /*    flex-grow: 1;*/
     width: var(--puzzle-canvas-width);

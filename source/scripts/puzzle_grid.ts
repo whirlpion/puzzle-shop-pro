@@ -50,7 +50,7 @@ class PuzzleGrid {
     // value: set of constraints affecting the cell
     private constraintMap: BSTMap<Cell, Set<IConstraint>> = new BSTMap();
     private violatedConstraints: Set<IConstraint> = new Set();
-    private cellMap: BSTMap<Cell, [CellValue, SVGTextElement]> = new BSTMap();
+    private cellMap: BSTMap<Cell, [CellValue, SVGGElement | SVGTextElement]> = new BSTMap();
 
     // root element for error highlights
     private errorHighlight: SVGGElement;
@@ -274,51 +274,63 @@ class PuzzleGrid {
 
     // Cell Settres/Getters
 
-    // returns the previous digit at that cell if present
-    setCellValue(cell: Cell, value: CellValue | null): CellValue | null {
+    setCellValue(cell: Cell, value: CellValue): void {
         let pair = this.cellMap.get(cell);
-        let prevValue: CellValue | null = null;
         if (pair) {
-            // pair[0] : PencilMark
-            // pair[1] : SVGTextElement
-            prevValue = pair[0];
-            // new digit to write
-            if (value) {
-                pair[0] = value;
-                if (value.digit) {
-                    pair[1].textContent = `${value.digit}`;
-                } else {
-                    pair[1].textContent = '';
+            this.cellMap.delete(cell);
+            let [_value, svg] = pair;
+            this.sceneManager.removeElement(svg);
+        }
+
+        if (value.digit) {
+            // digit
+            let text = this.sceneManager.createElement("text", SVGTextElement, RenderLayer.PencilMark);
+            text.setAttributes(
+                ["text-anchor", "middle"],
+                ["dominant-baseline", "central"],
+                ["x", `${cell.j * CELL_SIZE + CELL_SIZE/2}`],
+                ["y", `${cell.i * CELL_SIZE + CELL_SIZE/2}`],
+                ["font-size", `${CELL_SIZE * 3 / 4}`],
+                ["font-family", "sans-serif"]);
+            text.innerHTML = `${value.digit}`;
+
+            this.cellMap.set(cell, [value, text]);
+        } else if (value.centerMark || value.cornerMark) {
+            // pencil marks
+            let pencilMarks = this.sceneManager.createElement("g", SVGGElement, RenderLayer.PencilMark);
+            if (value.centerMark) {
+                let digitFlagStr = DigitFlag.toString(value.centerMark);
+                let text = this.sceneManager.createElement("text", SVGTextElement);
+                let fontSize = CELL_SIZE * 1 / 2;
+                if (digitFlagStr.length >= 3) {
+                    fontSize *= 3 / digitFlagStr.length;
                 }
-            // otherwise delete entry
-            } else {
-                this.sceneManager.removeElement(pair[1]);
-                this.cellMap.delete(cell);
-            }
-        } else {
-            // new digit to write
-            if (value) {
-                let text = this.sceneManager.createElement("text", SVGTextElement, RenderLayer.PencilMark);
                 text.setAttributes(
                     ["text-anchor", "middle"],
                     ["dominant-baseline", "central"],
                     ["x", `${cell.j * CELL_SIZE + CELL_SIZE/2}`],
                     ["y", `${cell.i * CELL_SIZE + CELL_SIZE/2}`],
-                    ["font-size", `${CELL_SIZE * 3 / 4}`],
+                    ["font-size", `${fontSize}`],
                     ["font-family", "sans-serif"]);
-                text.innerHTML = `${value.digit}`;
-                if (value.digit) {
-                    text.textContent = `${value.digit}`;
-                } else {
-                    text.textContent = '';
-                }
-
-                this.cellMap.set(cell, [value, text]);
+                text.innerHTML = digitFlagStr;
+                pencilMarks.appendChild(text);
             }
+            if (value.cornerMark) {
+
+            }
+            this.cellMap.set(cell, [value, pencilMarks]);
         }
 
         this.checkCellsForConstraintViolations(cell);
-        return prevValue;
+    }
+
+    deleteCellValue(cell: Cell): void {
+        let pair = this.cellMap.get(cell);
+        if (pair) {
+            let [_value, svg] = pair;
+            this.sceneManager.removeElement(svg);
+            this.cellMap.delete(cell);
+        }
     }
 
     getCellsWithDigit(digit: Digit) : Array<Cell> {
@@ -338,6 +350,11 @@ class PuzzleGrid {
             return value.digit;
         }
         return null;
+    }
+
+    getCellValue(cell: Cell): CellValue | null {
+        const value = this.cellMap.get(cell);
+        return value ? value[0] : null;
     }
 }
 

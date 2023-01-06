@@ -4,7 +4,15 @@ abstract class CellTool extends ITool {
         super(puzzleGrid, actionStack, sceneManager);
     }
 
-    protected abstract writeDigit(digit: Digit | null): void;
+    protected abstract writeDigit(digit: Digit): void;
+
+    deleteDigit(): void {
+        let cells = this.puzzleGrid.getHighlightedCells();
+        if (cells.length > 0) {
+            const action = new DeleteCellValueAction(this.puzzleGrid, cells);
+            this.actionStack.doAction(action);
+        }
+    }
 
     override handlePutDown(nextTool: ITool) {
         if (!(nextTool instanceof CellTool)) {
@@ -76,7 +84,7 @@ abstract class CellTool extends ITool {
                 this.writeDigit(Digit.parse(event.key));
                 break;
             case "Backspace": case "Delete":
-                this.writeDigit(null);
+                this.deleteDigit();;
                 break;
             case "ArrowUp":
                 this.puzzleGrid.moveFocus(Direction.Up, !event.shiftKey);
@@ -95,6 +103,177 @@ abstract class CellTool extends ITool {
                 return;
             }
             event.preventDefault();
+        }
+    }
+}
+
+class WriteCellValueAction extends IAction {
+    override apply(): void {
+        const length = this.cells.length;
+        for (let k = 0; k < length; k++) {
+            const cell = this.cells[k];
+            const value = this.newValues[k];
+            this.puzzleGrid.setCellValue(cell, value);
+        }
+    }
+    override revert(): void {
+        const length = this.cells.length;
+        for (let k = 0; k < length; k++) {
+            const cell = this.cells[k];
+            const value = this.oldValues[k];
+            if (value !== null) {
+                this.puzzleGrid.setCellValue(cell, value);
+            } else {
+                this.puzzleGrid.deleteCellValue(cell);
+            }
+        }
+    }
+
+    puzzleGrid: PuzzleGrid;
+    cells: Array<Cell>;
+    newValues: Array<CellValue>;
+    oldValues: Array<CellValue | null>;
+
+    constructor(puzzleGrid: PuzzleGrid, cells: Array<Cell>, values: Array<CellValue>) {
+        super(`writing values to cells: ${cells.map(cell => cell.toString()).join()}`);
+        throwIfNotEqual(cells.length, values.length);
+        this.puzzleGrid = puzzleGrid;
+        this.cells = cells;
+        this.newValues = values;
+        this.oldValues = new Array();
+        for (let cell of cells) {
+            const value = puzzleGrid.getCellValue(cell);
+            this.oldValues.push(value ? value : null);
+        }
+    }
+}
+
+class DeleteCellValueAction extends IAction {
+    override apply(): void {
+        for (let cell of this.cells) {
+            this.puzzleGrid.deleteCellValue(cell);
+        }
+    }
+
+    override revert(): void {
+        throwIfNotEqual(this.cells.length, this.oldValues.length);
+        const length = this.cells.length;
+        for (let k = 0; k < length; k++) {
+            const cell = this.cells[k];
+            const value = this.oldValues[k];
+            this.puzzleGrid.setCellValue(cell, value);
+        }
+    }
+
+    puzzleGrid: PuzzleGrid;
+    cells: Array<Cell> = new Array();
+    oldValues: Array<CellValue> = new Array();
+
+    constructor(puzzleGrid: PuzzleGrid, cells: Array<Cell>) {
+        super(`deleting cells: ${cells.map(c => c.toString()).join()}`);
+        this.puzzleGrid = puzzleGrid;
+        for (let cell of cells) {
+            let value = puzzleGrid.getCellValue(cell);
+            if (value) {
+                this.cells.push(cell);
+                this.oldValues.push(value);
+            }
+        }
+    }
+}
+
+class DigitTool extends CellTool {
+
+    constructor(puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
+        super(puzzleGrid, actionStack, sceneManager);
+    }
+
+    // writes a digit to the highlighted cells
+    override writeDigit(digit: Digit): void {
+        let cells: Array<Cell> = new Array();
+        let values: Array<CellValue> = new Array();
+        for (let cell of this.puzzleGrid.getHighlightedCells()) {
+            let value = this.puzzleGrid.getCellValue(cell);
+            // update existing cell
+            if (value?.digit === digit) {
+                continue;
+            }
+
+            cells.push(cell);
+            value = new CellValue();
+            value.digit = digit;
+            values.push(value);
+        }
+        throwIfNotEqual(cells.length, values.length);
+        if (cells.length > 0) {
+            const action = new WriteCellValueAction(this.puzzleGrid, cells, values);
+            this.actionStack.doAction(action);
+        }
+    }
+}
+
+class CenterTool extends CellTool {
+
+    constructor(puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
+        super(puzzleGrid, actionStack, sceneManager);
+    }
+
+    // write a center mark to the high lighted cells
+    override writeDigit(digit: Digit): void {
+        const digitFlag = DigitFlag.fromDigit(digit);
+
+        // first determine if we are adding or removing
+        const highlightedCells = this.puzzleGrid.getHighlightedCells();
+        let addingDigit: boolean = false;
+        for (let cell of highlightedCells) {
+            let value = this.puzzleGrid.getCellValue(cell);
+            if ((value === null) || !(value.centerMark & digitFlag)) {
+                addingDigit = true;
+                break;
+            }
+        }
+
+        console.log(`addingDigit: ${addingDigit}`);
+
+        // next create our new cell/cell value pairs
+        let cells: Array<Cell> = new Array();
+        let values: Array<CellValue> = new Array();
+        for (let cell of highlightedCells) {
+            let value = this.puzzleGrid.getCellValue(cell);
+            // update existing cell
+            if (value) {
+                if (value.digit) {
+                    continue;
+                }
+                if (addingDigit && (value.centerMark & digitFlag)) {
+                    continue;
+                }
+                if (!addingDigit && !(value.centerMark & digitFlag)) {
+                    continue;
+                }
+
+                cells.push(cell);
+                value = value.clone();
+                if (addingDigit) {
+                    console.log('adding digit');
+                    value.centerMark |= digitFlag;
+                } else {
+                    console.log('removing digit');
+                    value.centerMark ^= digitFlag;
+                }
+                values.push(value);
+            // new cell
+            } else {
+                cells.push(cell);
+                value = new CellValue();
+                value.centerMark |= digitFlag;
+                values.push(value);
+            }
+        }
+        throwIfNotEqual(cells.length, values.length);
+        if (cells.length > 0) {
+            let action = new WriteCellValueAction(this.puzzleGrid, cells, values);
+            this.actionStack.doAction(action);
         }
     }
 }
