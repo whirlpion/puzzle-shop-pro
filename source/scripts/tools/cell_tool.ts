@@ -123,6 +123,7 @@ class WriteCellValueAction extends IAction {
             const value = this.newValues[k];
             this.puzzleGrid.setCellValue(cell, value);
         }
+        this.puzzleGrid.checkCellsForConstraintViolations(...this.cells);
     }
     override revert(): void {
         const length = this.cells.length;
@@ -135,6 +136,7 @@ class WriteCellValueAction extends IAction {
                 this.puzzleGrid.deleteCellValue(cell);
             }
         }
+        this.puzzleGrid.checkCellsForConstraintViolations(...this.cells);
     }
 
     puzzleGrid: PuzzleGrid;
@@ -161,6 +163,7 @@ class DeleteCellValueAction extends IAction {
         for (let cell of this.cells) {
             this.puzzleGrid.deleteCellValue(cell);
         }
+        this.puzzleGrid.checkCellsForConstraintViolations(...this.cells);
     }
 
     override revert(): void {
@@ -171,6 +174,7 @@ class DeleteCellValueAction extends IAction {
             const value = this.oldValues[k];
             this.puzzleGrid.setCellValue(cell, value);
         }
+        this.puzzleGrid.checkCellsForConstraintViolations(...this.cells);
     }
 
     puzzleGrid: PuzzleGrid;

@@ -272,9 +272,9 @@ class PuzzleGrid {
         }
     }
 
-    // Cell Settres/Getters
+    // Cell Setters/Getters
 
-    setCellValue(cell: Cell, value: CellValue): void {
+    setCellValue(cell: Cell, value: CellValue, checkViolations?: boolean): void {
         let pair = this.cellMap.get(cell);
         if (pair) {
             this.cellMap.delete(cell);
@@ -406,15 +406,21 @@ class PuzzleGrid {
             this.cellMap.set(cell, [value, pencilMarks]);
         }
 
-        this.checkCellsForConstraintViolations(cell);
+        if (checkViolations) {
+            this.checkCellsForConstraintViolations(cell);
+        }
     }
 
-    deleteCellValue(cell: Cell): void {
+    deleteCellValue(cell: Cell, checkViolations?: boolean): void {
         let pair = this.cellMap.get(cell);
         if (pair) {
             let [_value, svg] = pair;
             this.sceneManager.removeElement(svg);
             this.cellMap.delete(cell);
+        }
+
+        if (checkViolations) {
+            this.checkCellsForConstraintViolations(cell);
         }
     }
 
