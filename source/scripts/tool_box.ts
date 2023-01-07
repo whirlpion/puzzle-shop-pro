@@ -19,19 +19,19 @@ abstract class ITool {
     // when user switches to another tool
     handlePutDown(_nextTool: ITool) {}
     // when the canvas receives click event with this tool
-    handleMouseClick(_event: MouseEvent) {}
+    handleMouseClick(_event: MouseEvent): boolean {return false;}
     // when the canvas receives dblclick event with this tool
-    handleMouseDoubleClick(_event: MouseEvent) {}
+    handleMouseDoubleClick(_event: MouseEvent): boolean {return false;}
     // when the canvas recevies mousedown event with this tool
-    handleMouseDown(_event: MouseEvent) {}
+    handleMouseDown(_event: MouseEvent): boolean {return false;}
     // when the canvas receives mouseup event with this tool
-    handleMouseUp(_event: MouseEvent) {}
+    handleMouseUp(_event: MouseEvent): boolean {return false;}
     // when the canvas receives mousemove event with this tool
-    handleMouseMove(_event: MouseEvent) {}
+    handleMouseMove(_event: MouseEvent): boolean {return false;}
     // when the canvas receives keydown event with this tool
-    handleKeyDown(_event: KeyboardEvent) {}
+    handleKeyDown(_event: KeyboardEvent): boolean {return false;}
     // when the canvas receives keyup event with this tool
-    handleKeyUp(_event: KeyboardEvent) {}
+    handleKeyUp(_event: KeyboardEvent): boolean {return false;}
 }
 
 class NoOpTool extends ITool {
@@ -94,19 +94,34 @@ class ToolBox {
         let svg = <SVGSVGElement>document.querySelector("svg#canvas_root");
         throwIfNull(svg);
         svg.addEventListener("click", (event: Event) => {
-            this.currentTool.handleMouseClick(<MouseEvent>event);
+            if (this.currentTool.handleMouseClick(<MouseEvent>event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
         });
         svg.addEventListener("dblclick", (event: Event) => {
-            this.currentTool.handleMouseDoubleClick(<MouseEvent>event);
+            if (this.currentTool.handleMouseDoubleClick(<MouseEvent>event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
         });
         svg.addEventListener("mousedown", (event: Event) => {
-            this.currentTool.handleMouseDown(<MouseEvent>event);
+            if (this.currentTool.handleMouseDown(<MouseEvent>event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
         });
         svg.addEventListener("mouseup", (event: Event) => {
-            this.currentTool.handleMouseUp(<MouseEvent>event);
+            if (this.currentTool.handleMouseUp(<MouseEvent>event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
         });
         svg.addEventListener("mousemove", (event: Event) => {
-            this.currentTool.handleMouseMove(<MouseEvent>event);
+            if (this.currentTool.handleMouseMove(<MouseEvent>event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
         });
         document.addEventListener("keydown", (event: Event) => {
             // check for tool switching
@@ -120,6 +135,7 @@ class ToolBox {
                     let [_id, _toolConstructor, code] = blueprints[k];
                     if (code && keyboardEvent.code === code) {
                         this.switchToTool(this.tools[k]);
+                        event.preventDefault();
                         event.stopPropagation();
                         return;
                     }
@@ -138,10 +154,16 @@ class ToolBox {
             }
 
             // propagate to tools
-            this.currentTool.handleKeyDown(keyboardEvent);
+            if (this.currentTool.handleKeyDown(keyboardEvent)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
         },{capture: true});
         document.addEventListener("keyup", (event: Event) => {
-            this.currentTool.handleKeyUp(<KeyboardEvent>event);
+            if (this.currentTool.handleKeyUp(<KeyboardEvent>event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
         }, {capture: true});
     }
 }

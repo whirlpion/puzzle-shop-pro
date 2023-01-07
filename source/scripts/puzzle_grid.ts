@@ -418,10 +418,10 @@ class PuzzleGrid {
         }
     }
 
-    getCellsWithDigit(digit: Digit) : Array<Cell> {
+    getCellsWithCondition(filter: {(value: CellValue): boolean}): Array<Cell> {
         let retval = new Array();
         for (let [cell, [value, _element]] of this.cellMap) {
-            if (digit === value.digit) {
+            if (filter(value)) {
                 retval.push(cell);
             }
         }
@@ -441,5 +441,6 @@ class PuzzleGrid {
         const value = this.cellMap.get(cell);
         return value ? value[0] : null;
     }
+
 }
 

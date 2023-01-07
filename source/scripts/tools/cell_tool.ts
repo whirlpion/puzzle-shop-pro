@@ -20,30 +20,31 @@ abstract class CellTool extends ITool {
         }
     }
 
-    override handleMouseDoubleClick(event: MouseEvent): void {
+    override handleMouseDoubleClick(event: MouseEvent): boolean {
         const cell = Cell.fromMouseEvent(event);
         const digit = this.puzzleGrid.getDigitAtCell(cell);
         if (digit) {
-            const matchingCells = this.puzzleGrid.getCellsWithDigit(digit);
+            const matchingCells = this.puzzleGrid.getCellsWithCondition((value: CellValue) => value.digit == digit);
 
             this.puzzleGrid.highlightCells(HighlightCellsFlags.Focus | HighlightCellsFlags.Clear, ...matchingCells);
         } else {
             this.puzzleGrid.highlightCells(HighlightCellsFlags.Focus | HighlightCellsFlags.Clear, cell);
         }
+        return true;
     }
 
     // ctrl+click toggles individual cells
     // shift+click should select all cells between current and previous click
     // click clears current selection set and sets current cell
-    override handleMouseDown(event: MouseEvent) {
+    override handleMouseDown(event: MouseEvent): boolean {
         // only care about 'left' click
         if (!event.primaryButton) {
-            return;
+            return false;
         }
 
         // unclear which thing the user wants to do, so best to do nothing
         if (event.shiftKey && event.shortcutKey) {
-            return;
+            return false;
         }
 
         const cell = Cell.fromMouseEvent(event);
@@ -57,21 +58,19 @@ abstract class CellTool extends ITool {
         } else {
             this.puzzleGrid.highlightCells(HighlightCellsFlags.Focus | HighlightCellsFlags.Clear, cell);
         }
+        return true;
     }
 
-    override handleMouseUp(_event: MouseEvent) {
-        // console.log(`mouseup: ${event.offsetX},${event.offsetY}`);
-    }
-
-    override handleMouseMove(event: MouseEvent) {
+    override handleMouseMove(event: MouseEvent): boolean {
         // only care about click and drag
         if (!event.primaryButton || !this.puzzleGrid.focusedCell) {
-            return;
+            return false;
         }
 
         const cell = Cell.fromMouseEvent(event);
         const line = Cell.bresenhamLine(this.puzzleGrid.focusedCell, cell);
         this.puzzleGrid.highlightCells(HighlightCellsFlags.Focus, ...line);
+        return true;
     }
 
     override handleKeyDown(event: KeyboardEvent) {
@@ -82,28 +81,37 @@ abstract class CellTool extends ITool {
             case "4": case "5": case "6":
             case "7": case "8": case "9":
                 this.writeDigit(Digit.parse(event.key));
-                break;
+                return true;
             case "Backspace": case "Delete":
-                this.deleteDigit();;
-                break;
+                this.deleteDigit();
+                return true;
             case "ArrowUp":
                 this.puzzleGrid.moveFocus(Direction.Up, !event.shiftKey);
-                break;
+                return true;
             case "ArrowRight":
                 this.puzzleGrid.moveFocus(Direction.Right, !event.shiftKey);
-                break;
+                return true;
             case "ArrowDown":
                 this.puzzleGrid.moveFocus(Direction.Down, !event.shiftKey);
-                break;
+                return true;
             case "ArrowLeft":
                 this.puzzleGrid.moveFocus(Direction.Left, !event.shiftKey);
-                break;
-            default:
-                console.log(`unhandled key press: ${event.key}`);
-                return;
+                return true;
             }
-            event.preventDefault();
         }
+        if (event.shortcutKey) {
+            switch (event.code) {
+            case "KeyA":
+                // select all cells with values
+                {
+                    const cells = this.puzzleGrid.getCellsWithCondition((_value: CellValue) => true);
+                    this.puzzleGrid.highlightCells(HighlightCellsFlags.Clear, ...cells);
+                    return true;
+                }
+                return true;
+            }
+        }
+        return false;
     }
 }
 
