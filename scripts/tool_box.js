@@ -16,19 +16,19 @@ class ITool {
     // when user switches to another tool
     handlePutDown(_nextTool) { }
     // when the canvas receives click event with this tool
-    handleMouseClick(_event) { }
+    handleMouseClick(_event) { return false; }
     // when the canvas receives dblclick event with this tool
-    handleMouseDoubleClick(_event) { }
+    handleMouseDoubleClick(_event) { return false; }
     // when the canvas recevies mousedown event with this tool
-    handleMouseDown(_event) { }
+    handleMouseDown(_event) { return false; }
     // when the canvas receives mouseup event with this tool
-    handleMouseUp(_event) { }
+    handleMouseUp(_event) { return false; }
     // when the canvas receives mousemove event with this tool
-    handleMouseMove(_event) { }
+    handleMouseMove(_event) { return false; }
     // when the canvas receives keydown event with this tool
-    handleKeyDown(_event) { }
+    handleKeyDown(_event) { return false; }
     // when the canvas receives keyup event with this tool
-    handleKeyUp(_event) { }
+    handleKeyUp(_event) { return false; }
 }
 class NoOpTool extends ITool {
     constructor(puzzleGrid, actionStack, sceneManager) {
@@ -58,6 +58,8 @@ class ToolBox {
             ["rectangle_selection_tool", NoOpTool, undefined],
             ["grid_tool", GridTool, "KeyG"],
             ["digit_tool", DigitTool, "KeyZ"],
+            ["center_tool", CenterTool, "KeyC"],
+            ["corner_tool", CornerTool, "KeyX"],
         ];
         for (let [id, toolConstructor, _code] of blueprints) {
             let tool = new toolConstructor(puzzleGrid, actionStack, sceneManager);
@@ -74,19 +76,34 @@ class ToolBox {
         let svg = document.querySelector("svg#canvas_root");
         throwIfNull(svg);
         svg.addEventListener("click", (event) => {
-            this.currentTool.handleMouseClick(event);
+            if (this.currentTool.handleMouseClick(event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
         });
         svg.addEventListener("dblclick", (event) => {
-            this.currentTool.handleMouseDoubleClick(event);
+            if (this.currentTool.handleMouseDoubleClick(event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
         });
         svg.addEventListener("mousedown", (event) => {
-            this.currentTool.handleMouseDown(event);
+            if (this.currentTool.handleMouseDown(event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
         });
         svg.addEventListener("mouseup", (event) => {
-            this.currentTool.handleMouseUp(event);
+            if (this.currentTool.handleMouseUp(event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
         });
         svg.addEventListener("mousemove", (event) => {
-            this.currentTool.handleMouseMove(event);
+            if (this.currentTool.handleMouseMove(event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
         });
         document.addEventListener("keydown", (event) => {
             // check for tool switching
@@ -99,6 +116,7 @@ class ToolBox {
                     let [_id, _toolConstructor, code] = blueprints[k];
                     if (code && keyboardEvent.code === code) {
                         this.switchToTool(this.tools[k]);
+                        event.preventDefault();
                         event.stopPropagation();
                         return;
                     }
@@ -117,10 +135,16 @@ class ToolBox {
                 return;
             }
             // propagate to tools
-            this.currentTool.handleKeyDown(keyboardEvent);
+            if (this.currentTool.handleKeyDown(keyboardEvent)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
         }, { capture: true });
         document.addEventListener("keyup", (event) => {
-            this.currentTool.handleKeyUp(event);
+            if (this.currentTool.handleKeyUp(event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
         }, { capture: true });
     }
 }

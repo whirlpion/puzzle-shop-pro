@@ -82,7 +82,7 @@ var Digit;
     Digit[Digit["Three"] = 3] = "Three";
     Digit[Digit["Four"] = 4] = "Four";
     Digit[Digit["Five"] = 5] = "Five";
-    Digit[Digit["Size"] = 6] = "Size";
+    Digit[Digit["Six"] = 6] = "Six";
     Digit[Digit["Seven"] = 7] = "Seven";
     Digit[Digit["Eight"] = 8] = "Eight";
     Digit[Digit["Nine"] = 9] = "Nine";
@@ -96,17 +96,39 @@ var Digit;
     }
     Digit.parse = parse;
 })(Digit || (Digit = {}));
-class PencilMark {
-    constructor(...digits) {
-        this.digitFlags = 0;
-        for (let digit of digits) {
-            this.digitFlags |= (1 << digit);
+var DigitFlag;
+(function (DigitFlag) {
+    DigitFlag[DigitFlag["None"] = 0] = "None";
+    DigitFlag[DigitFlag["One"] = 1] = "One";
+    DigitFlag[DigitFlag["Two"] = 2] = "Two";
+    DigitFlag[DigitFlag["Three"] = 4] = "Three";
+    DigitFlag[DigitFlag["Four"] = 8] = "Four";
+    DigitFlag[DigitFlag["Five"] = 16] = "Five";
+    DigitFlag[DigitFlag["Six"] = 32] = "Six";
+    DigitFlag[DigitFlag["Seven"] = 64] = "Seven";
+    DigitFlag[DigitFlag["Eight"] = 128] = "Eight";
+    DigitFlag[DigitFlag["Nine"] = 256] = "Nine";
+})(DigitFlag || (DigitFlag = {}));
+(function (DigitFlag) {
+    function fromDigit(digit) {
+        return (1 << (digit - 1));
+    }
+    DigitFlag.fromDigit = fromDigit;
+    function toString(flag) {
+        return DigitFlag.toDigits(flag).join("");
+    }
+    DigitFlag.toString = toString;
+    function toDigits(flag) {
+        let digits = new Array();
+        for (let k = Digit.One; k <= Digit.Nine; k++) {
+            if (flag & DigitFlag.fromDigit(k)) {
+                digits.push(k);
+            }
         }
+        return digits;
     }
-    hasDigit(digit) {
-        return (this.digitFlags & (1 << digit)) !== 0;
-    }
-}
+    DigitFlag.toDigits = toDigits;
+})(DigitFlag || (DigitFlag = {}));
 class CellValue {
     // if a cell is locked, it becomes a constraint
     get locked() {
@@ -114,9 +136,17 @@ class CellValue {
     }
     constructor() {
         this.digit = null;
-        this.centerMark = new PencilMark();
-        this.cornerMark = new PencilMark();
+        this.centerMark = DigitFlag.None;
+        this.cornerMark = DigitFlag.None;
         this._locked = false;
+    }
+    clone() {
+        let retval = new CellValue();
+        retval.digit = this.digit;
+        retval.centerMark = this.centerMark;
+        retval.cornerMark = this.cornerMark;
+        retval._locked = this._locked;
+        return retval;
     }
     lock() {
         this._locked = true;

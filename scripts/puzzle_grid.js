@@ -215,53 +215,134 @@ class PuzzleGrid {
             this.checkCellsForConstraintViolations(...constraint.cells);
         }
     }
-    // Cell Settres/Getters
-    // returns the previous digit at that cell if present
-    setCellValue(cell, value) {
+    // Cell Setters/Getters
+    setCellValue(cell, value, checkViolations) {
         let pair = this.cellMap.get(cell);
-        let prevValue = null;
         if (pair) {
-            // pair[0] : PencilMark
-            // pair[1] : SVGTextElement
-            prevValue = pair[0];
-            // new digit to write
-            if (value) {
-                pair[0] = value;
-                if (value.digit) {
-                    pair[1].textContent = `${value.digit}`;
-                }
-                else {
-                    pair[1].textContent = '';
-                }
-                // otherwise delete entry
-            }
-            else {
-                this.sceneManager.removeElement(pair[1]);
-                this.cellMap.delete(cell);
-            }
+            this.cellMap.delete(cell);
+            let [_value, svg] = pair;
+            this.sceneManager.removeElement(svg);
         }
-        else {
-            // new digit to write
-            if (value) {
-                let text = this.sceneManager.createElement("text", SVGTextElement, RenderLayer.PencilMark);
-                text.setAttributes(["text-anchor", "middle"], ["dominant-baseline", "central"], ["x", `${cell.j * CELL_SIZE + CELL_SIZE / 2}`], ["y", `${cell.i * CELL_SIZE + CELL_SIZE / 2}`], ["font-size", `${CELL_SIZE * 3 / 4}`], ["font-family", "sans-serif"]);
-                text.innerHTML = `${value.digit}`;
-                if (value.digit) {
-                    text.textContent = `${value.digit}`;
-                }
-                else {
-                    text.textContent = '';
-                }
-                this.cellMap.set(cell, [value, text]);
-            }
+        const baseFontSize = CELL_SIZE * 4 / 5;
+        if (value.digit) {
+            // digit
+            let text = this.sceneManager.createElement("text", SVGTextElement, RenderLayer.PencilMark);
+            text.setAttributes(["text-anchor", "middle"], ["dominant-baseline", "central"], ["x", `${cell.j * CELL_SIZE + CELL_SIZE / 2}`], ["y", `${cell.i * CELL_SIZE + CELL_SIZE / 2}`], ["font-size", `${baseFontSize}`], ["font-family", "sans-serif"]);
+            text.innerHTML = `${value.digit}`;
+            this.cellMap.set(cell, [value, text]);
         }
-        this.checkCellsForConstraintViolations(cell);
-        return prevValue;
+        else if (value.centerMark || value.cornerMark) {
+            // pencil marks
+            let pencilMarks = this.sceneManager.createElement("g", SVGGElement, RenderLayer.PencilMark);
+            if (value.centerMark) {
+                let digitFlagStr = DigitFlag.toString(value.centerMark);
+                let text = this.sceneManager.createElement("text", SVGTextElement);
+                const fontSize = baseFontSize * 1.5 / Math.max(4, digitFlagStr.length);
+                text.setAttributes(["text-anchor", "middle"], ["dominant-baseline", "central"], ["x", `${cell.j * CELL_SIZE + CELL_SIZE / 2}`], ["y", `${cell.i * CELL_SIZE + CELL_SIZE / 2}`], ["font-size", `${fontSize}`], ["font-family", "sans-serif"]);
+                text.textContent = digitFlagStr;
+                pencilMarks.appendChild(text);
+            }
+            if (value.cornerMark) {
+                let digits = DigitFlag.toDigits(value.cornerMark);
+                const count = digits.length;
+                throwIfFalse(count > 0 && count <= 9);
+                let coords = new Array();
+                const fontSize = baseFontSize / 4;
+                switch (count) {
+                    case 1:
+                        coords.push([0.15, 0.2]);
+                        break;
+                    case 2:
+                        coords.push([0.15, 0.2]);
+                        coords.push([0.85, 0.2]);
+                        break;
+                    case 3:
+                        coords.push([0.15, 0.2]);
+                        coords.push([0.85, 0.2]);
+                        coords.push([0.15, 0.8]);
+                        break;
+                    case 4:
+                        coords.push([0.15, 0.2]);
+                        coords.push([0.85, 0.2]);
+                        coords.push([0.15, 0.8]);
+                        coords.push([0.85, 0.8]);
+                        break;
+                    case 5:
+                        coords.push([0.15, 0.2]);
+                        coords.push([0.5, 0.2]);
+                        coords.push([0.85, 0.2]);
+                        coords.push([0.15, 0.8]);
+                        coords.push([0.85, 0.8]);
+                        break;
+                    case 6:
+                        coords.push([0.15, 0.2]);
+                        coords.push([0.5, 0.2]);
+                        coords.push([0.85, 0.2]);
+                        coords.push([0.15, 0.8]);
+                        coords.push([0.5, 0.8]);
+                        coords.push([0.85, 0.8]);
+                        break;
+                    case 7:
+                        coords.push([0.15, 0.2]);
+                        coords.push([0.3833, 0.2]);
+                        coords.push([0.6167, 0.2]);
+                        coords.push([0.85, 0.2]);
+                        coords.push([0.15, 0.8]);
+                        coords.push([0.5, 0.8]);
+                        coords.push([0.85, 0.8]);
+                        break;
+                    case 8:
+                        coords.push([0.15, 0.2]);
+                        coords.push([0.3833, 0.2]);
+                        coords.push([0.6167, 0.2]);
+                        coords.push([0.85, 0.2]);
+                        coords.push([0.15, 0.8]);
+                        coords.push([0.3833, 0.8]);
+                        coords.push([0.6167, 0.8]);
+                        coords.push([0.85, 0.8]);
+                        break;
+                    case 9:
+                        coords.push([0.15, 0.2]);
+                        coords.push([0.325, 0.2]);
+                        coords.push([0.5, 0.2]);
+                        coords.push([0.675, 0.2]);
+                        coords.push([0.85, 0.2]);
+                        coords.push([0.15, 0.8]);
+                        coords.push([0.3833, 0.8]);
+                        coords.push([0.6167, 0.8]);
+                        coords.push([0.85, 0.8]);
+                        break;
+                }
+                for (let k = 0; k < count; k++) {
+                    const [x, y] = coords[k];
+                    const digit = digits[k];
+                    let text = this.sceneManager.createElement("text", SVGTextElement);
+                    text.setAttributes(["text-anchor", "middle"], ["dominant-baseline", "central"], ["x", `${cell.j * CELL_SIZE + CELL_SIZE * x}`], ["y", `${cell.i * CELL_SIZE + CELL_SIZE * y}`], ["font-size", `${fontSize}`], ["font-family", "sans-serif"]);
+                    text.textContent = `${digit}`;
+                    pencilMarks.appendChild(text);
+                }
+            }
+            this.cellMap.set(cell, [value, pencilMarks]);
+        }
+        if (checkViolations) {
+            this.checkCellsForConstraintViolations(cell);
+        }
     }
-    getCellsWithDigit(digit) {
+    deleteCellValue(cell, checkViolations) {
+        let pair = this.cellMap.get(cell);
+        if (pair) {
+            let [_value, svg] = pair;
+            this.sceneManager.removeElement(svg);
+            this.cellMap.delete(cell);
+        }
+        if (checkViolations) {
+            this.checkCellsForConstraintViolations(cell);
+        }
+    }
+    getCellsWithCondition(filter) {
         let retval = new Array();
         for (let [cell, [value, _element]] of this.cellMap) {
-            if (digit === value.digit) {
+            if (filter(value)) {
                 retval.push(cell);
             }
         }
@@ -274,5 +355,9 @@ class PuzzleGrid {
             return value.digit;
         }
         return null;
+    }
+    getCellValue(cell) {
+        const value = this.cellMap.get(cell);
+        return value ? value[0] : null;
     }
 }

@@ -37,6 +37,7 @@ class GridTool extends ITool {
     // when the canvas receives click event with this tool
     handleMouseClick(event) {
         this.insertGrid(Cell.fromXY(event.offsetX, event.offsetY));
+        return true;
     }
     //
     // Private methods
