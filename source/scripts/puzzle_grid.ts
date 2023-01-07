@@ -282,6 +282,8 @@ class PuzzleGrid {
             this.sceneManager.removeElement(svg);
         }
 
+        const baseFontSize = CELL_SIZE * 4 / 5;
+
         if (value.digit) {
             // digit
             let text = this.sceneManager.createElement("text", SVGTextElement, RenderLayer.PencilMark);
@@ -290,7 +292,7 @@ class PuzzleGrid {
                 ["dominant-baseline", "central"],
                 ["x", `${cell.j * CELL_SIZE + CELL_SIZE/2}`],
                 ["y", `${cell.i * CELL_SIZE + CELL_SIZE/2}`],
-                ["font-size", `${CELL_SIZE * 3 / 4}`],
+                ["font-size", `${baseFontSize}`],
                 ["font-family", "sans-serif"]);
             text.innerHTML = `${value.digit}`;
 
@@ -301,10 +303,9 @@ class PuzzleGrid {
             if (value.centerMark) {
                 let digitFlagStr = DigitFlag.toString(value.centerMark);
                 let text = this.sceneManager.createElement("text", SVGTextElement);
-                let fontSize = CELL_SIZE * 1 / 2;
-                if (digitFlagStr.length >= 3) {
-                    fontSize *= 3 / digitFlagStr.length;
-                }
+
+                const fontSize = baseFontSize * 1.5 / Math.max(4, digitFlagStr.length);
+
                 text.setAttributes(
                     ["text-anchor", "middle"],
                     ["dominant-baseline", "central"],
@@ -312,11 +313,95 @@ class PuzzleGrid {
                     ["y", `${cell.i * CELL_SIZE + CELL_SIZE/2}`],
                     ["font-size", `${fontSize}`],
                     ["font-family", "sans-serif"]);
-                text.innerHTML = digitFlagStr;
+                text.textContent = digitFlagStr;
                 pencilMarks.appendChild(text);
             }
             if (value.cornerMark) {
+                let digits = DigitFlag.toDigits(value.cornerMark);
+                const count = digits.length;
+                throwIfFalse(count > 0 && count <= 9);
+                let coords: Array<[number,number]> = new Array();
+                const fontSize = baseFontSize / 4;
 
+                switch(count) {
+                case 1:
+                    coords.push([0.15,0.2]);
+                    break;
+                case 2:
+                    coords.push([0.15,0.2]);
+                    coords.push([0.85,0.2]);
+                    break;
+                case 3:
+                    coords.push([0.15,0.2]);
+                    coords.push([0.85,0.2]);
+                    coords.push([0.15,0.8]);
+                    break;
+                case 4:
+                    coords.push([0.15,0.2]);
+                    coords.push([0.85,0.2]);
+                    coords.push([0.15,0.8]);
+                    coords.push([0.85,0.8]);
+                    break;
+                case 5:
+                    coords.push([0.15,0.2]);
+                    coords.push([0.5,0.2]);
+                    coords.push([0.85,0.2]);
+                    coords.push([0.15,0.8]);
+                    coords.push([0.85,0.8]);
+                    break;
+                case 6:
+                    coords.push([0.15,0.2]);
+                    coords.push([0.5,0.2]);
+                    coords.push([0.85,0.2]);
+                    coords.push([0.15,0.8]);
+                    coords.push([0.5,0.8]);
+                    coords.push([0.85,0.8]);
+                    break;
+                case 7:
+                    coords.push([0.15,0.2]);
+                    coords.push([0.3833,0.2]);
+                    coords.push([0.6167,0.2]);
+                    coords.push([0.85,0.2]);
+                    coords.push([0.15,0.8]);
+                    coords.push([0.5,0.8]);
+                    coords.push([0.85,0.8]);
+                    break;
+                case 8:
+                    coords.push([0.15,0.2]);
+                    coords.push([0.3833,0.2]);
+                    coords.push([0.6167,0.2]);
+                    coords.push([0.85,0.2]);
+                    coords.push([0.15,0.8]);
+                    coords.push([0.3833,0.8]);
+                    coords.push([0.6167,0.8]);
+                    coords.push([0.85,0.8]);
+                    break;
+                case 9:
+                    coords.push([0.15,0.2]);
+                    coords.push([0.325,0.2]);
+                    coords.push([0.5,0.2]);
+                    coords.push([0.675,0.2]);
+                    coords.push([0.85,0.2]);
+                    coords.push([0.15,0.8]);
+                    coords.push([0.3833,0.8]);
+                    coords.push([0.6167,0.8]);
+                    coords.push([0.85,0.8]);
+                    break;
+                }
+                for (let k = 0; k < count; k++) {
+                    const [x,y] = coords[k];
+                    const digit = digits[k];
+                    let text = this.sceneManager.createElement("text", SVGTextElement);
+                    text.setAttributes(
+                        ["text-anchor", "middle"],
+                        ["dominant-baseline", "central"],
+                        ["x", `${cell.j * CELL_SIZE + CELL_SIZE * x}`],
+                        ["y", `${cell.i * CELL_SIZE + CELL_SIZE * y}`],
+                        ["font-size", `${fontSize}`],
+                        ["font-family", "sans-serif"]);
+                    text.textContent = `${digit}`;
+                    pencilMarks.appendChild(text);
+                }
             }
             this.cellMap.set(cell, [value, pencilMarks]);
         }

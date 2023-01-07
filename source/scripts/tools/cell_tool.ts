@@ -233,8 +233,6 @@ class CenterTool extends CellTool {
             }
         }
 
-        console.log(`addingDigit: ${addingDigit}`);
-
         // next create our new cell/cell value pairs
         let cells: Array<Cell> = new Array();
         let values: Array<CellValue> = new Array();
@@ -255,10 +253,8 @@ class CenterTool extends CellTool {
                 cells.push(cell);
                 value = value.clone();
                 if (addingDigit) {
-                    console.log('adding digit');
                     value.centerMark |= digitFlag;
                 } else {
-                    console.log('removing digit');
                     value.centerMark ^= digitFlag;
                 }
                 values.push(value);
@@ -267,6 +263,68 @@ class CenterTool extends CellTool {
                 cells.push(cell);
                 value = new CellValue();
                 value.centerMark |= digitFlag;
+                values.push(value);
+            }
+        }
+        throwIfNotEqual(cells.length, values.length);
+        if (cells.length > 0) {
+            let action = new WriteCellValueAction(this.puzzleGrid, cells, values);
+            this.actionStack.doAction(action);
+        }
+    }
+}
+
+class CornerTool extends CellTool {
+
+    constructor(puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
+        super(puzzleGrid, actionStack, sceneManager);
+    }
+
+    // write a center mark to the high lighted cells
+    override writeDigit(digit: Digit): void {
+        const digitFlag = DigitFlag.fromDigit(digit);
+
+        // first determine if we are adding or removing
+        const highlightedCells = this.puzzleGrid.getHighlightedCells();
+        let addingDigit: boolean = false;
+        for (let cell of highlightedCells) {
+            let value = this.puzzleGrid.getCellValue(cell);
+            if ((value === null) || !(value.cornerMark & digitFlag)) {
+                addingDigit = true;
+                break;
+            }
+        }
+
+        // next create our new cell/cell value pairs
+        let cells: Array<Cell> = new Array();
+        let values: Array<CellValue> = new Array();
+        for (let cell of highlightedCells) {
+            let value = this.puzzleGrid.getCellValue(cell);
+            // update existing cell
+            if (value) {
+                if (value.digit) {
+                    continue;
+                }
+                if (addingDigit && (value.cornerMark & digitFlag)) {
+                    continue;
+                }
+                if (!addingDigit && !(value.cornerMark & digitFlag)) {
+                    continue;
+                }
+
+                cells.push(cell);
+                value = value.clone();
+                if (addingDigit) {
+                    value.cornerMark |= digitFlag;
+                } else {
+                    value.cornerMark ^= digitFlag;
+                }
+                values.push(value);
+            // new cell
+            } else {
+                cells.push(cell);
+                value = new CellValue();
+                value.cornerMark |= digitFlag;
                 values.push(value);
             }
         }

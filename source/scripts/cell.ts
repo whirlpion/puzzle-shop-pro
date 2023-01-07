@@ -109,6 +109,8 @@ namespace Digit {
         throwIfFalse(integer >= 1 && integer <= 9);
         return integer;
     }
+
+
 }
 
 enum DigitFlag {
@@ -130,13 +132,17 @@ namespace DigitFlag {
     }
 
     export function toString(flag: DigitFlag): string {
-        let retval: string = "";
-        for (let k = Digit.One; k <= Digit.Nine; k++) {
+        return DigitFlag.toDigits(flag).join("");
+    }
+
+    export function toDigits(flag: DigitFlag): Array<Digit> {
+        let digits: Array<Digit> = new Array();
+        for(let k = Digit.One; k <= Digit.Nine; k++) {
             if (flag & DigitFlag.fromDigit(k)) {
-                retval += k.toString();
+                digits.push(k);
             }
         }
-        return retval;
+        return digits;
     }
 }
 
