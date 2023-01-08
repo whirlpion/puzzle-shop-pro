@@ -1,6 +1,6 @@
 enum RenderLayer {
     // the very back layer
-    Bottom,
+    Background,
     // background colour
     Fill,
     // puzzle grids
@@ -12,7 +12,7 @@ enum RenderLayer {
     // render on top
     Overlay,
     // the very top layer
-    Top,
+    Foregrouond,
     // the number of layers
     Count,
 }
@@ -20,36 +20,60 @@ enum RenderLayer {
 // the canvas view keeps track of the parent svg element of each renderable 'thing' on the canvas
 class SceneManager {
     svg: SVGSVGElement;
+    backgroundGrid: SVGRectElement;
     layers: Array<SVGGElement> = new Array();
 
     // center of viewport in world space
     private lookX: number = 0.0;
     private lookY: number = 0.0;
     // number of view pixels per world pixel
-    private zoom: number = 1.5;
+    private zoom: number = 1.0;
 
     // resize observer to update our viewport dimensions
     private resizeObserver: ResizeObserver;
 
     constructor(parent: HTMLElement) {
-        const svg = <SVGSVGElement>document.createElementNS(SVG_NAMESPACE, "svg");
+        const svg = <SVGSVGElement>this.createElement("svg", SVGSVGElement);
         svg.setAttribute("id", "canvas_root");
-
         parent.appendChild(svg);
         this.svg = svg;
-        this.updateViewBox();
 
-        this.resizeObserver = new ResizeObserver(() => {
-            this.updateViewBox();
-        });
-        this.resizeObserver.observe(this.svg);
-
+        // create our render layer groups
         for (let k = 0; k < RenderLayer.Count; k++) {
             let layer = this.createElement("g", SVGGElement);
             layer.setAttribute("id", RenderLayer[k].toSnakeCase());
             this.layers.push(layer);
             this.svg.appendChild(layer);
         }
+
+        // create background grid pattern
+        const defs = <SVGDefsElement>this.createElement("defs", SVGDefsElement);
+        this.svg.appendChild(defs);
+        const pattern = <SVGPatternElement>this.createElement("pattern", SVGPatternElement);
+        pattern.setAttributes(
+            ["id", "grid_pattern"],
+            ["patternUnits","userSpaceOnUse"],
+            ["width", `${CELL_SIZE}`],
+            ["height", `${CELL_SIZE}`]);
+        defs.appendChild(pattern);
+        const patternRect  = <SVGRectElement>this.createElement("rect", SVGRectElement);
+        patternRect.setAttributes(
+            ["width",`${CELL_SIZE}`],
+            ["height",`${CELL_SIZE}`],
+            ["fill", "transparent"],
+            ["stroke", Colour.LightGrey.toString()],
+            ["stroke-width", "1"]);
+        pattern.appendChild(patternRect);
+
+        const backgroundGrid = <SVGRectElement>this.createElement("rect", SVGRectElement, RenderLayer.Background);
+        backgroundGrid.setAttribute("fill", "url(#grid_pattern)");
+        this.backgroundGrid = backgroundGrid;
+
+        this.resizeObserver = new ResizeObserver(() => {
+            this.updateViewBox();
+        });
+        this.resizeObserver.observe(parent);
+        this.updateViewBox();
     }
 
     // size of the svg in screen space
@@ -73,8 +97,12 @@ class SceneManager {
 
     private updateViewBox(): void {
         const viewBox = this.viewBox;
-        console.log(this.viewPort);
-        console.log(this.viewBox);
+        this.backgroundGrid.setAttributes(
+            ["x", `${viewBox.x}`],
+            ["y", `${viewBox.y}`],
+            ["width", `${viewBox.width}`],
+            ["height", `${viewBox.height}`]);
+
         this.svg.setAttribute("viewBox", `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
     }
 
@@ -116,7 +144,7 @@ class SceneManager {
         let element = document.createElementNS(SVG_NAMESPACE, tag);
         throwIfNotType<SVGElement>(element, SVGElement);
         throwIfNotType<T>(element, type);
-        if (layer) {
+        if (layer !== undefined) {
             this.addElement(element, layer);
         }
         return element;

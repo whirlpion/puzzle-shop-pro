@@ -22,6 +22,7 @@ class Colour {
     }
 
     public static readonly White = new Colour(255, 255, 255);
+    public static readonly LightGrey = new Colour(196, 196, 196);
     public static readonly Grey = new Colour(128, 128, 128);
     public static readonly Black = new Colour(0, 0, 0);
 
