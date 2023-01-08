@@ -123,6 +123,12 @@ class ToolBox {
                 event.stopPropagation();
             }
         });
+        svg.addEventListener("wheel", (event: Event) => {
+            if (this.sceneManager.handleWheel(<WheelEvent>event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
         document.addEventListener("keydown", (event: Event) => {
             // check for tool switching
             let keyboardEvent = <KeyboardEvent>event;

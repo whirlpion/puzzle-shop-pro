@@ -130,9 +130,49 @@ class SceneManager {
     // sets the zoom level
     zoomViewport(zoom: number): void {
         throwIfFalse(zoom > 0);
-        this.zoom = zoom;
 
+        this.zoom = Math.clamp(0.25, zoom, 4.0);
         this.updateViewBox();
+    }
+
+    handleWheel(event: WheelEvent): boolean {
+        let deltaX = event.deltaX;
+        let deltaY = event.deltaY;
+
+        if (event.shortcutKey) {
+            switch (event.deltaMode) {
+            case WheelEvent.DOM_DELTA_PIXEL:
+                deltaY /= CELL_SIZE;
+                break;
+            case WheelEvent.DOM_DELTA_LINE:
+                break;
+            case WheelEvent.DOM_DELTA_PAGE:
+                deltaY /= 5
+                break;
+            }
+            let zoom = this.zoom;
+            if (deltaY > 0) {
+                zoom *= Math.pow(1.10, deltaY);
+            } else {
+                zoom *= Math.pow(1/1.10, -deltaY);
+            }
+            this.zoomViewport(zoom);
+        } else {
+            switch (event.deltaMode) {
+            case WheelEvent.DOM_DELTA_PIXEL:
+                break;
+            case WheelEvent.DOM_DELTA_LINE:
+                deltaX *= CELL_SIZE;
+                deltaY *= CELL_SIZE;
+                break;
+            case WheelEvent.DOM_DELTA_PAGE:
+                deltaX *= CELL_SIZE * 5;
+                deltaY *= CELL_SIZE * 5;
+                break;
+            }
+            this.translateViewport(deltaX, deltaY);
+        }
+        return true;
     }
 
     // convert the screen space xy coordinates to a cell coordinate

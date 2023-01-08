@@ -289,6 +289,25 @@ if (globalThis.navigator.isMacOS) {
         }});
 }
 
+// Wheel Event
+
+interface WheelEvent {
+    // abstract away control vs command
+    get shortcutKey(): boolean;
+}
+
+if (globalThis.navigator.isMacOS) {
+    Object.defineProperty(WheelEvent.prototype, "shortcutKey", {
+        get:function(): boolean {
+            return this.metaKey;
+        }});
+} else {
+    Object.defineProperty(WheelEvent.prototype, "shortcutKey", {
+        get:function(): boolean {
+            return this.ctrlKey;
+        }});
+}
+
 // KeyboardEvent
 
 interface KeyboardEvent {
