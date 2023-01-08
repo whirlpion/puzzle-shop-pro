@@ -27,6 +27,8 @@ class SceneManager {
         this.lookY = 0.0;
         // number of screen coordinates per world coordinate
         this.zoom = 1.0;
+        // value of zoom at gesture start
+        this.zoomStart = -1;
         const svg = this.createElement("svg", SVGSVGElement);
         svg.setAttribute("id", "canvas_root");
         parent.appendChild(svg);
@@ -137,6 +139,14 @@ class SceneManager {
             }
             this.translateViewport(deltaX, deltaY);
         }
+        return true;
+    }
+    handleGestureStart(_event) {
+        this.zoomStart = this.zoom;
+        return true;
+    }
+    handleGestureChange(event) {
+        this.zoomViewport(this.zoomStart / event.scale);
         return true;
     }
     // convert the screen space xy coordinates to a cell coordinate

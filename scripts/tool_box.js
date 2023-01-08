@@ -111,6 +111,18 @@ class ToolBox {
                 event.stopPropagation();
             }
         });
+        svg.addEventListener("gesturestart", (event) => {
+            if (this.sceneManager.handleGestureStart(event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
+        svg.addEventListener("gesturechange", (event) => {
+            if (this.sceneManager.handleGestureChange(event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
         document.addEventListener("keydown", (event) => {
             // check for tool switching
             let keyboardEvent = event;
