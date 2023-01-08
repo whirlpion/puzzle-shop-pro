@@ -28,6 +28,8 @@ class SceneManager {
     private lookY: number = 0.0;
     // number of screen coordinates per world coordinate
     private zoom: number = 1.0;
+    // value of zoom at gesture start
+    private zoomStart: number = -1;
 
     // resize observer to update our viewport dimensions
     private resizeObserver: ResizeObserver;
@@ -172,6 +174,16 @@ class SceneManager {
             }
             this.translateViewport(deltaX, deltaY);
         }
+        return true;
+    }
+
+    handleGestureStart(_event: GestureEvent): boolean {
+        this.zoomStart = this.zoom;
+        return true;
+    }
+
+    handleGestureChange(event: GestureEvent): boolean {
+        this.zoomViewport(this.zoomStart / event.scale);
         return true;
     }
 

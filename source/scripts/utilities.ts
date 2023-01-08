@@ -256,6 +256,12 @@ interface Navigator {
 
 Navigator.prototype.isMacOS = globalThis.navigator.userAgent.includes("Mac OS");
 
+// GestureEvent
+
+interface GestureEvent extends UIEvent {
+    scale: number;
+}
+
 // MouseEvent
 
 interface MouseEvent {
