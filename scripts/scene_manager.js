@@ -148,7 +148,7 @@ class SceneManager {
         return true;
     }
     handleGestureChange(event) {
-        this.zoomViewport(this.zoomStart / event.scale);
+        this.zoomViewport(this.zoomStart * event.scale);
         return true;
     }
     handleTouchStart(event) {
@@ -170,7 +170,7 @@ class SceneManager {
             const distance = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
             // calculate the scale change based on the difference between the start and current distances
             const scale = distance / this.distanceStart;
-            this.zoomViewport(this.zoomStart / scale);
+            this.zoomViewport(this.zoomStart * scale);
             return true;
         }
         return false;
