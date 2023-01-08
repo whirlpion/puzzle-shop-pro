@@ -111,18 +111,34 @@ class ToolBox {
                 event.stopPropagation();
             }
         });
-        svg.addEventListener("gesturestart", (event) => {
-            if (this.sceneManager.handleGestureStart(event)) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-        });
-        svg.addEventListener("gesturechange", (event) => {
-            if (this.sceneManager.handleGestureChange(event)) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-        });
+        if ("ongesturestart" in globalThis && "ongesturechange" in globalThis) {
+            svg.addEventListener("gesturestart", (event) => {
+                if (this.sceneManager.handleGestureStart(event)) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            });
+            svg.addEventListener("gesturechange", (event) => {
+                if (this.sceneManager.handleGestureChange(event)) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            });
+        }
+        else {
+            svg.addEventListener("touchstart", (event) => {
+                if (this.sceneManager.handleTouchStart(event)) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            });
+            svg.addEventListener("touchmove", (event) => {
+                if (this.sceneManager.handleTouchMove(event)) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            });
+        }
         document.addEventListener("keydown", (event) => {
             // check for tool switching
             let keyboardEvent = event;
