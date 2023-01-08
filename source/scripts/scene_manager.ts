@@ -26,7 +26,7 @@ class SceneManager {
     // center of viewport in world space
     private lookX: number = 0.0;
     private lookY: number = 0.0;
-    // number of view pixels per world pixel
+    // number of screen coordinates per world coordinate
     private zoom: number = 1.0;
 
     // resize observer to update our viewport dimensions
@@ -120,13 +120,19 @@ class SceneManager {
     }
 
     // move the look at vector in terms of screen-space coordinates
-    translateViewport(_x: number, _y: number): void {
+    translateViewport(x: number, y: number): void {
+        this.lookX += x / this.zoom;
+        this.lookY += y / this.zoom;
 
+        this.updateViewBox();
     }
 
     // sets the zoom level
-    zoomViewport(_zoom: number): void {
+    zoomViewport(zoom: number): void {
+        throwIfFalse(zoom > 0);
+        this.zoom = zoom;
 
+        this.updateViewBox();
     }
 
     // convert the screen space xy coordinates to a cell coordinate
