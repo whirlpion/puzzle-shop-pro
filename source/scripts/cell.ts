@@ -13,8 +13,8 @@ class Cell implements IOrdered, IEquals {
     }
 
     constructor(i: number, j: number) {
-        throwIfFalse(Number.isInteger(i) && i >= 0);
-        throwIfFalse(Number.isInteger(j) && j >= 0);
+        throwIfFalse(Number.isInteger(i));
+        throwIfFalse(Number.isInteger(j));
 
         this._i = i;
         this._j = j;
@@ -72,10 +72,6 @@ class Cell implements IOrdered, IEquals {
         let j = Math.floor(x / CELL_SIZE);
 
         return new Cell(i, j);
-    }
-
-    static fromMouseEvent(event: MouseEvent): Cell {
-        return Cell.fromXY(event.offsetX, event.offsetY);
     }
 
     toString(): string {

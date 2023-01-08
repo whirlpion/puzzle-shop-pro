@@ -21,39 +21,35 @@ class RegionConstraint extends IConstraint {
         return false;
     }
 
-    static RowRegion(row: number, column: number, size: number): RegionConstraint {
+    static RowRegion(cell: Cell, size: number): RegionConstraint {
         throwIfFalse(size >= 1 && size <= 9);
-        throwIfFalse(row >= 0);
-        throwIfFalse(column >= 0);
 
         let cells: Array<Cell> = new Array(size);
         for (let k = 0; k < size; k++) {
-            cells[k] = new Cell(row, column + k);
+            cells[k] = new Cell(cell.i, cell.j + k);
         }
 
         return new RegionConstraint(cells);
     }
 
-    static ColumnRegion(row: number, column: number, size: number): RegionConstraint {
+    static ColumnRegion(cell: Cell, size: number): RegionConstraint {
         throwIfFalse(size >= 1 && size <= 9);
-        throwIfFalse(row >= 0);
-        throwIfFalse(column >= 0);
 
         let cells: Array<Cell> = new Array(size);
         for (let k = 0; k < size; k++) {
-            cells[k] = new Cell(row + k, column);
+            cells[k] = new Cell(cell.i + k, cell.j);
         }
 
         return new RegionConstraint(cells);
     }
 
-    static SquareRegion(row: number, column: number, width: number): RegionConstraint {
+    static SquareRegion(cell: Cell, width: number): RegionConstraint {
         throwIfFalse(width >= 1 && width <= 3);
 
         let cells: Array<Cell> = new Array(width*width);
         for (let i = 0; i < width; i++) {
             for (let j = 0; j < width; j++) {
-                cells[i*width + j] = new Cell(row + i, column + j);
+                cells[i*width + j] = new Cell(cell.i + i, cell.j + j);
             }
         }
 

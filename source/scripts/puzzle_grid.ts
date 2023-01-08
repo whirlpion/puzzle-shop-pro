@@ -152,24 +152,16 @@ class PuzzleGrid {
         let newFocus: Cell | null = null;
         switch(direction) {
         case Direction.Up:
-            if (this.focusedCell.i - 1 >= 0) {
-                newFocus = new Cell(this.focusedCell.i - 1, this.focusedCell.j);
-            }
+            newFocus = new Cell(this.focusedCell.i - 1, this.focusedCell.j);
             break;
         case Direction.Right:
-            if (this.focusedCell.j + 1 < this.columns) {
-                newFocus = new Cell(this.focusedCell.i, this.focusedCell.j + 1);
-            }
+            newFocus = new Cell(this.focusedCell.i, this.focusedCell.j + 1);
             break;
         case Direction.Down:
-            if (this.focusedCell.i + 1 < this.rows) {
-                newFocus = new Cell(this.focusedCell.i + 1, this.focusedCell.j);
-            }
+            newFocus = new Cell(this.focusedCell.i + 1, this.focusedCell.j);
             break;
         case Direction.Left:
-            if (this.focusedCell.j - 1 >= 0) {
-                newFocus = new Cell(this.focusedCell.i, this.focusedCell.j - 1);
-            }
+            newFocus = new Cell(this.focusedCell.i, this.focusedCell.j - 1);
             break;
         default:
             throwMessage(`Unexpected Direction: ${direction}`);

@@ -8,13 +8,9 @@ class PuzzleShopPro {
     constructor() {
         let parent = document.querySelector("div#puzzle_canvas");
         throwIfNull(parent);
-        let svg = <SVGSVGElement>document.createElementNS(SVG_NAMESPACE, "svg");
-        svg.setAttribute("id", "canvas_root");
-        svg.setAttribute("width", `${DEFAULT_GRID_SIZE * CELL_SIZE}`);
-        svg.setAttribute("height", `${DEFAULT_GRID_SIZE * CELL_SIZE}`);
-        svg.setAttribute("focusable", "true");
-        parent.appendChild(svg);
-        this.sceneManager = new SceneManager(svg);
+        throwIfNotType(parent, HTMLElement);
+
+        this.sceneManager = new SceneManager(parent);
 
         this.actionStack = new UndoRedoStack();
         this.puzzleGrid = new PuzzleGrid(this.sceneManager, DEFAULT_GRID_SIZE, DEFAULT_GRID_SIZE);

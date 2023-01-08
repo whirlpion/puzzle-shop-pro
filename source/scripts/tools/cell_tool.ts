@@ -21,7 +21,7 @@ abstract class CellTool extends ITool {
     }
 
     override handleMouseDoubleClick(event: MouseEvent): boolean {
-        const cell = Cell.fromMouseEvent(event);
+        const cell = this.sceneManager.cellAtMouseEvent(event);
         const digit = this.puzzleGrid.getDigitAtCell(cell);
         if (digit) {
             const matchingCells = this.puzzleGrid.getCellsWithCondition((value: CellValue) => value.digit == digit);
@@ -47,7 +47,7 @@ abstract class CellTool extends ITool {
             return false;
         }
 
-        const cell = Cell.fromMouseEvent(event);
+        const cell = this.sceneManager.cellAtMouseEvent(event);
 
         if (event.shortcutKey) {
             this.puzzleGrid.toggleCell(cell);
@@ -67,7 +67,7 @@ abstract class CellTool extends ITool {
             return false;
         }
 
-        const cell = Cell.fromMouseEvent(event);
+        const cell = this.sceneManager.cellAtMouseEvent(event);
         const line = Cell.bresenhamLine(this.puzzleGrid.focusedCell, cell);
         this.puzzleGrid.highlightCells(HighlightCellsFlags.Focus, ...line);
         return true;
