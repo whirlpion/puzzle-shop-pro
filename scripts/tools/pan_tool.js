@@ -40,7 +40,7 @@ class PanTool extends ITool {
         return false;
     }
     handleMouseUp(event) {
-        if (event.primaryButton) {
+        if (!event.primaryButton) {
             this.sceneManager.setMouseCursor(Cursor.Grab);
             return true;
         }
