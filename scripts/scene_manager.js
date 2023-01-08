@@ -170,7 +170,12 @@ class SceneManager {
             const distance = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
             // calculate the scale change based on the difference between the start and current distances
             const scale = distance / this.distanceStart;
-            this.zoomViewport(this.zoomStart * scale);
+            this.zoom = this.zoomStart * scale;
+            // update look at to the middle of the touch event
+            const look = this.screenSpaceToWorldSpace((touch1.clientX + touch2.clientX) / 2.0, (touch1.clientY + touch2.clientY) / 2.0);
+            this.lookX = look.x;
+            this.lookY = look.y;
+            this.updateViewBox();
             return true;
         }
         return false;
