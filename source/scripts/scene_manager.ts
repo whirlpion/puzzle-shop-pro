@@ -29,8 +29,9 @@ class SceneManager {
     // number of screen coordinates per world coordinate
     private zoom: number = 1.0;
     // value of zoom at gesture start
-    private zoomStart: number = -1;
-
+    private zoomStart: number = 1.0;
+    // the initial distance between two fingers for pinch to zoom
+    private distanceStart: number = 0;
     // resize observer to update our viewport dimensions
     private resizeObserver: ResizeObserver;
 
@@ -185,6 +186,34 @@ class SceneManager {
     handleGestureChange(event: GestureEvent): boolean {
         this.zoomViewport(this.zoomStart / event.scale);
         return true;
+    }
+
+    handleTouchStart(event: TouchEvent): boolean {
+        if (event.touches.length === 2) {
+            // calculate the distance between the two touches
+            const touch1 = event.touches[0];
+            const touch2 = event.touches[1];
+            this.distanceStart = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
+            this.zoomStart = this.zoom;
+            return true;
+        }
+        return false;
+    }
+
+    handleTouchMove(event: TouchEvent): boolean {
+        if (event.touches.length === 2) {
+            // calculate the current distance between the two touches
+            const touch1 = event.touches[0];
+            const touch2 = event.touches[1];
+            const distance = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
+
+            // calculate the scale change based on the difference between the start and current distances
+            const scale = distance / this.distanceStart;
+            this.zoomViewport(this.zoomStart / scale);
+
+            return true;
+        }
+        return false;
     }
 
     // convert the screen space xy coordinates to a cell coordinate
