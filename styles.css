@@ -91,9 +91,14 @@ div#puzzle_canvas {
     width: var(--puzzle-canvas-width);
     height: var(--puzzle-canvas-height);
     background: gray;
-    overflow: scroll;
+    overflow: none;
     padding : 0;
     margin : 0;
+}
+
+div#puzzle_canvas > svg#canvas_root {
+    width: 100%;
+    height: 100%;
 }
 
 svg#canvas_root{

@@ -190,6 +190,20 @@ else {
     });
 }
 if (globalThis.navigator.isMacOS) {
+    Object.defineProperty(WheelEvent.prototype, "shortcutKey", {
+        get: function () {
+            return this.metaKey;
+        }
+    });
+}
+else {
+    Object.defineProperty(WheelEvent.prototype, "shortcutKey", {
+        get: function () {
+            return this.ctrlKey;
+        }
+    });
+}
+if (globalThis.navigator.isMacOS) {
     Object.defineProperty(KeyboardEvent.prototype, "shortcutKey", {
         get: function () {
             return this.metaKey;

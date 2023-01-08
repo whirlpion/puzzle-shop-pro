@@ -105,6 +105,12 @@ class ToolBox {
                 event.stopPropagation();
             }
         });
+        svg.addEventListener("wheel", (event) => {
+            if (this.sceneManager.handleWheel(event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
         document.addEventListener("keydown", (event) => {
             // check for tool switching
             let keyboardEvent = event;

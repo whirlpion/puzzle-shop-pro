@@ -16,6 +16,7 @@ class Colour {
     }
 }
 Colour.White = new Colour(255, 255, 255);
+Colour.LightGrey = new Colour(196, 196, 196);
 Colour.Grey = new Colour(128, 128, 128);
 Colour.Black = new Colour(0, 0, 0);
 Colour.Pink = new Colour(245, 169, 184);

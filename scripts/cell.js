@@ -7,8 +7,8 @@ class Cell {
         return this._j;
     }
     constructor(i, j) {
-        throwIfFalse(Number.isInteger(i) && i >= 0);
-        throwIfFalse(Number.isInteger(j) && j >= 0);
+        throwIfFalse(Number.isInteger(i));
+        throwIfFalse(Number.isInteger(j));
         this._i = i;
         this._j = j;
     }
@@ -59,9 +59,6 @@ class Cell {
         let i = Math.floor(y / CELL_SIZE);
         let j = Math.floor(x / CELL_SIZE);
         return new Cell(i, j);
-    }
-    static fromMouseEvent(event) {
-        return Cell.fromXY(event.offsetX, event.offsetY);
     }
     toString() {
         return `r${this.i}c${this.j}`;

@@ -59,16 +59,16 @@ class Grid9x9Constraint extends IConstraint {
         // generate our list of constraints
         // rows
         for (let i = 0; i < 9; i++) {
-            this.regionConstraints.push(RegionConstraint.RowRegion(row + i, column, 9));
+            this.regionConstraints.push(RegionConstraint.RowRegion(new Cell(row + i, column), 9));
         }
         // columns
         for (let j = 0; j < 9; j++) {
-            this.regionConstraints.push(RegionConstraint.ColumnRegion(row, column + j, 9));
+            this.regionConstraints.push(RegionConstraint.ColumnRegion(new Cell(row, column + j), 9));
         }
         // squares
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
-                this.regionConstraints.push(RegionConstraint.SquareRegion(row + 3 * i, column + 3 * j, 3));
+                this.regionConstraints.push(RegionConstraint.SquareRegion(new Cell(row + 3 * i, column + 3 * j), 3));
             }
         }
     }

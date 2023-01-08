@@ -19,32 +19,28 @@ class RegionConstraint extends IConstraint {
         }
         return false;
     }
-    static RowRegion(row, column, size) {
+    static RowRegion(cell, size) {
         throwIfFalse(size >= 1 && size <= 9);
-        throwIfFalse(row >= 0);
-        throwIfFalse(column >= 0);
         let cells = new Array(size);
         for (let k = 0; k < size; k++) {
-            cells[k] = new Cell(row, column + k);
+            cells[k] = new Cell(cell.i, cell.j + k);
         }
         return new RegionConstraint(cells);
     }
-    static ColumnRegion(row, column, size) {
+    static ColumnRegion(cell, size) {
         throwIfFalse(size >= 1 && size <= 9);
-        throwIfFalse(row >= 0);
-        throwIfFalse(column >= 0);
         let cells = new Array(size);
         for (let k = 0; k < size; k++) {
-            cells[k] = new Cell(row + k, column);
+            cells[k] = new Cell(cell.i + k, cell.j);
         }
         return new RegionConstraint(cells);
     }
-    static SquareRegion(row, column, width) {
+    static SquareRegion(cell, width) {
         throwIfFalse(width >= 1 && width <= 3);
         let cells = new Array(width * width);
         for (let i = 0; i < width; i++) {
             for (let j = 0; j < width; j++) {
-                cells[i * width + j] = new Cell(row + i, column + j);
+                cells[i * width + j] = new Cell(cell.i + i, cell.j + j);
             }
         }
         return new RegionConstraint(cells);
