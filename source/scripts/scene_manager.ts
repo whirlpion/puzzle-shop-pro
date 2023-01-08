@@ -17,6 +17,12 @@ enum RenderLayer {
     Count,
 }
 
+enum Cursor {
+    Default = "default",
+    Grab = "grab",
+    Grabbing = "grabbing",
+}
+
 // the canvas view keeps track of the parent svg element of each renderable 'thing' on the canvas
 class SceneManager {
     svg: SVGSVGElement;
@@ -247,5 +253,10 @@ class SceneManager {
     removeElement(element: SVGElement): void {
         throwIfNull(element.parentNode);
         element.parentNode.removeChild(element);
+    }
+
+    // set the mouse cursor over the puzzle canvas
+    setMouseCursor(cursor: Cursor): void {
+        this.svg.style.cursor = cursor;
     }
 }

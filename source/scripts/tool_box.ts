@@ -5,17 +5,20 @@ enum Tool {
 }
 
 abstract class ITool {
-    protected sceneManager: SceneManager;
-    protected actionStack: UndoRedoStack;
+    protected toolBox: ToolBox;
     protected puzzleGrid: PuzzleGrid;
-    constructor(puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
+    protected actionStack: UndoRedoStack;
+    protected sceneManager: SceneManager;
+
+    constructor(toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
+        this.toolBox = toolBox;
         this.puzzleGrid = puzzleGrid;
         this.actionStack = actionStack;
         this.sceneManager = sceneManager;
     }
 
     // when user switches to this tool
-    handlePickUp(_prevTool: ITool) {}
+    handlePickUp(_prevTool: ITool, _switchMethod: SwitchMethod) {}
     // when user switches to another tool
     handlePutDown(_nextTool: ITool) {}
     // when the canvas receives click event with this tool
@@ -35,9 +38,14 @@ abstract class ITool {
 }
 
 class NoOpTool extends ITool {
-    constructor(puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
-        super(puzzleGrid, actionStack, sceneManager)
+    constructor(toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
+        super(toolBox, puzzleGrid, actionStack, sceneManager)
     }
+}
+
+enum SwitchMethod {
+    Mouse,
+    Keyboard,
 }
 
 class ToolBox {
@@ -47,7 +55,7 @@ class ToolBox {
     tools: Array<ITool> = new Array();
     currentTool: ITool;
 
-    private switchToTool(tool: ITool): void {
+    switchToTool(tool: ITool, switchMethod: SwitchMethod): void {
         if (tool == this.currentTool) {
             return;
         }
@@ -57,7 +65,7 @@ class ToolBox {
 
         this.currentTool.handlePutDown(nextTool);
         this.currentTool = tool;
-        this.currentTool.handlePickUp(prevTool);
+        this.currentTool.handlePickUp(prevTool, switchMethod);
         console.debug(`Switching to ${tool.constructor.name}`);
     }
 
@@ -65,25 +73,26 @@ class ToolBox {
         this.puzzleGrid = puzzleGrid;
         this.actionStack = actionStack;
         this.sceneManager = sceneManager;
-        this.currentTool = new NoOpTool(puzzleGrid, actionStack, sceneManager);
+        this.currentTool = new NoOpTool(this, puzzleGrid, actionStack, sceneManager);
 
-        const blueprints: Array<[string, new (puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) => any, string | undefined]> = [
+        const blueprints: Array<[string, new (toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) => any, string | undefined]> = [
           ["object_selection_tool", ObjectSelectionTool, "KeyO"],
           ["rectangle_selection_tool", NoOpTool, undefined],
           ["grid_tool", GridTool, "KeyG"],
           ["digit_tool", DigitTool, "KeyZ"],
           ["center_tool", CenterTool, "KeyC"],
           ["corner_tool", CornerTool, "KeyX"],
+          ["pan_tool", PanTool, "Space"],
         ];
 
         for(let [id, toolConstructor, _code] of blueprints) {
-            let tool = <ITool>new toolConstructor(puzzleGrid, actionStack, sceneManager);
+            let tool = <ITool>new toolConstructor(this, puzzleGrid, actionStack, sceneManager);
             this.tools.push(tool);
 
             let button = document.querySelector(`div#${id}`);
             throwIfNull(button);
             button.addEventListener("click", () => {
-                this.switchToTool(tool);
+                this.switchToTool(tool, SwitchMethod.Mouse);
             });
         }
 
@@ -159,7 +168,8 @@ class ToolBox {
         document.addEventListener("keydown", (event: Event) => {
             // check for tool switching
             let keyboardEvent = <KeyboardEvent>event;
-            if (!keyboardEvent.shiftKey &&
+            if (!keyboardEvent.repeat &&
+                !keyboardEvent.shiftKey &&
                 !keyboardEvent.metaKey &&
                 !keyboardEvent.ctrlKey &&
                 !keyboardEvent.altKey) {
@@ -167,7 +177,7 @@ class ToolBox {
                 for(let k = 0; k < blueprints.length; k++) {
                     let [_id, _toolConstructor, code] = blueprints[k];
                     if (code && keyboardEvent.code === code) {
-                        this.switchToTool(this.tools[k]);
+                        this.switchToTool(this.tools[k], SwitchMethod.Keyboard);
                         event.preventDefault();
                         event.stopPropagation();
                         return;
@@ -190,6 +200,7 @@ class ToolBox {
             if (this.currentTool.handleKeyDown(keyboardEvent)) {
                 event.preventDefault();
                 event.stopPropagation();
+                return;
             }
         },{capture: true});
         document.addEventListener("keyup", (event: Event) => {

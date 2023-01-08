@@ -1,7 +1,7 @@
 abstract class CellTool extends ITool {
 
-    constructor(puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
-        super(puzzleGrid, actionStack, sceneManager);
+    constructor(toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
+        super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
 
     protected abstract writeDigit(digit: Digit): void;
@@ -196,8 +196,8 @@ class DeleteCellValueAction extends IAction {
 
 class DigitTool extends CellTool {
 
-    constructor(puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
-        super(puzzleGrid, actionStack, sceneManager);
+    constructor(toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
+        super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
 
     // writes a digit to the highlighted cells
@@ -226,8 +226,8 @@ class DigitTool extends CellTool {
 
 class CenterTool extends CellTool {
 
-    constructor(puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
-        super(puzzleGrid, actionStack, sceneManager);
+    constructor(toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
+        super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
 
     // write a center mark to the high lighted cells
@@ -288,8 +288,8 @@ class CenterTool extends CellTool {
 
 class CornerTool extends CellTool {
 
-    constructor(puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
-        super(puzzleGrid, actionStack, sceneManager);
+    constructor(toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
+        super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
 
     // write a center mark to the high lighted cells
