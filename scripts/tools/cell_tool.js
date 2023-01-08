@@ -1,7 +1,7 @@
 "use strict";
 class CellTool extends ITool {
-    constructor(puzzleGrid, actionStack, sceneManager) {
-        super(puzzleGrid, actionStack, sceneManager);
+    constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
+        super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
     deleteDigit() {
         let cells = this.puzzleGrid.getHighlightedCells();
@@ -180,8 +180,8 @@ class DeleteCellValueAction extends IAction {
     }
 }
 class DigitTool extends CellTool {
-    constructor(puzzleGrid, actionStack, sceneManager) {
-        super(puzzleGrid, actionStack, sceneManager);
+    constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
+        super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
     // writes a digit to the highlighted cells
     writeDigit(digit) {
@@ -206,8 +206,8 @@ class DigitTool extends CellTool {
     }
 }
 class CenterTool extends CellTool {
-    constructor(puzzleGrid, actionStack, sceneManager) {
-        super(puzzleGrid, actionStack, sceneManager);
+    constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
+        super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
     // write a center mark to the high lighted cells
     writeDigit(digit) {
@@ -264,8 +264,8 @@ class CenterTool extends CellTool {
     }
 }
 class CornerTool extends CellTool {
-    constructor(puzzleGrid, actionStack, sceneManager) {
-        super(puzzleGrid, actionStack, sceneManager);
+    constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
+        super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
     // write a center mark to the high lighted cells
     writeDigit(digit) {

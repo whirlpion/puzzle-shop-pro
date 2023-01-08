@@ -86,6 +86,10 @@ div#center_tool {
     background-image: url("icons/123.svg")
 }
 
+div#pan_tool {
+    background-image: url("icons/hand-regular.svg")
+}
+
 div#puzzle_canvas {
 /*    flex-grow: 1;*/
     width: var(--puzzle-canvas-width);

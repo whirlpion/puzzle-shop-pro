@@ -28,8 +28,8 @@ class InsertGridAction extends IAction {
     }
 }
 class GridTool extends ITool {
-    constructor(puzzleGrid, actionStack, sceneManager) {
-        super(puzzleGrid, actionStack, sceneManager);
+    constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
+        super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
     //
     // ITool interface

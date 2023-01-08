@@ -18,6 +18,12 @@ var RenderLayer;
     // the number of layers
     RenderLayer[RenderLayer["Count"] = 7] = "Count";
 })(RenderLayer || (RenderLayer = {}));
+var Cursor;
+(function (Cursor) {
+    Cursor["Default"] = "default";
+    Cursor["Grab"] = "grab";
+    Cursor["Grabbing"] = "grabbing";
+})(Cursor || (Cursor = {}));
 // the canvas view keeps track of the parent svg element of each renderable 'thing' on the canvas
 class SceneManager {
     constructor(parent) {
@@ -202,5 +208,9 @@ class SceneManager {
     removeElement(element) {
         throwIfNull(element.parentNode);
         element.parentNode.removeChild(element);
+    }
+    // set the mouse cursor over the puzzle canvas
+    setMouseCursor(cursor) {
+        this.svg.style.cursor = cursor;
     }
 }

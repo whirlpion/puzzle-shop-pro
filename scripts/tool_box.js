@@ -6,13 +6,14 @@ var Tool;
     Tool[Tool["GridInsertion"] = 2] = "GridInsertion";
 })(Tool || (Tool = {}));
 class ITool {
-    constructor(puzzleGrid, actionStack, sceneManager) {
+    constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
+        this.toolBox = toolBox;
         this.puzzleGrid = puzzleGrid;
         this.actionStack = actionStack;
         this.sceneManager = sceneManager;
     }
     // when user switches to this tool
-    handlePickUp(_prevTool) { }
+    handlePickUp(_prevTool, _switchMethod) { }
     // when user switches to another tool
     handlePutDown(_nextTool) { }
     // when the canvas receives click event with this tool
@@ -31,12 +32,17 @@ class ITool {
     handleKeyUp(_event) { return false; }
 }
 class NoOpTool extends ITool {
-    constructor(puzzleGrid, actionStack, sceneManager) {
-        super(puzzleGrid, actionStack, sceneManager);
+    constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
+        super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
 }
+var SwitchMethod;
+(function (SwitchMethod) {
+    SwitchMethod[SwitchMethod["Mouse"] = 0] = "Mouse";
+    SwitchMethod[SwitchMethod["Keyboard"] = 1] = "Keyboard";
+})(SwitchMethod || (SwitchMethod = {}));
 class ToolBox {
-    switchToTool(tool) {
+    switchToTool(tool, switchMethod) {
         if (tool == this.currentTool) {
             return;
         }
@@ -44,7 +50,7 @@ class ToolBox {
         const nextTool = tool;
         this.currentTool.handlePutDown(nextTool);
         this.currentTool = tool;
-        this.currentTool.handlePickUp(prevTool);
+        this.currentTool.handlePickUp(prevTool, switchMethod);
         console.debug(`Switching to ${tool.constructor.name}`);
     }
     constructor(puzzleGrid, actionStack, sceneManager) {
@@ -52,7 +58,7 @@ class ToolBox {
         this.puzzleGrid = puzzleGrid;
         this.actionStack = actionStack;
         this.sceneManager = sceneManager;
-        this.currentTool = new NoOpTool(puzzleGrid, actionStack, sceneManager);
+        this.currentTool = new NoOpTool(this, puzzleGrid, actionStack, sceneManager);
         const blueprints = [
             ["object_selection_tool", ObjectSelectionTool, "KeyO"],
             ["rectangle_selection_tool", NoOpTool, undefined],
@@ -60,14 +66,15 @@ class ToolBox {
             ["digit_tool", DigitTool, "KeyZ"],
             ["center_tool", CenterTool, "KeyC"],
             ["corner_tool", CornerTool, "KeyX"],
+            ["pan_tool", PanTool, "Space"],
         ];
         for (let [id, toolConstructor, _code] of blueprints) {
-            let tool = new toolConstructor(puzzleGrid, actionStack, sceneManager);
+            let tool = new toolConstructor(this, puzzleGrid, actionStack, sceneManager);
             this.tools.push(tool);
             let button = document.querySelector(`div#${id}`);
             throwIfNull(button);
             button.addEventListener("click", () => {
-                this.switchToTool(tool);
+                this.switchToTool(tool, SwitchMethod.Mouse);
             });
         }
         // always start with the object selection tool
@@ -142,14 +149,15 @@ class ToolBox {
         document.addEventListener("keydown", (event) => {
             // check for tool switching
             let keyboardEvent = event;
-            if (!keyboardEvent.shiftKey &&
+            if (!keyboardEvent.repeat &&
+                !keyboardEvent.shiftKey &&
                 !keyboardEvent.metaKey &&
                 !keyboardEvent.ctrlKey &&
                 !keyboardEvent.altKey) {
                 for (let k = 0; k < blueprints.length; k++) {
                     let [_id, _toolConstructor, code] = blueprints[k];
                     if (code && keyboardEvent.code === code) {
-                        this.switchToTool(this.tools[k]);
+                        this.switchToTool(this.tools[k], SwitchMethod.Keyboard);
                         event.preventDefault();
                         event.stopPropagation();
                         return;
@@ -172,6 +180,7 @@ class ToolBox {
             if (this.currentTool.handleKeyDown(keyboardEvent)) {
                 event.preventDefault();
                 event.stopPropagation();
+                return;
             }
         }, { capture: true });
         document.addEventListener("keyup", (event) => {
