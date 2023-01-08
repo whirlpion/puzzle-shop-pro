@@ -184,7 +184,7 @@ class SceneManager {
     }
 
     handleGestureChange(event: GestureEvent): boolean {
-        this.zoomViewport(this.zoomStart / event.scale);
+        this.zoomViewport(this.zoomStart * event.scale);
         return true;
     }
 
@@ -209,7 +209,7 @@ class SceneManager {
 
             // calculate the scale change based on the difference between the start and current distances
             const scale = distance / this.distanceStart;
-            this.zoomViewport(this.zoomStart / scale);
+            this.zoomViewport(this.zoomStart * scale);
 
             return true;
         }
