@@ -33,7 +33,12 @@ class SceneManager {
     private lookX: number = 0.0;
     private lookY: number = 0.0;
     // number of screen coordinates per world coordinate
-    private zoom: number = 1.0;
+    private _zoom: number = 1.0;
+
+    get zoom(): number {
+        return this._zoom;
+    }
+
     // value of zoom at gesture start
     private zoomStart: number = 1.0;
     // the initial distance between two fingers for pinch to zoom
@@ -140,9 +145,11 @@ class SceneManager {
     zoomViewport(zoom: number): void {
         throwIfFalse(zoom > 0);
 
-        this.zoom = Math.clamp(0.25, zoom, 4.0);
+        this._zoom = Math.clamp(0.25, zoom, 4.0);
         this.updateViewBox();
     }
+
+    // Input Handling
 
     handleWheel(event: WheelEvent): boolean {
         let deltaX = event.deltaX;

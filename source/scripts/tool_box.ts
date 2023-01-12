@@ -82,6 +82,7 @@ class ToolBox {
           ["digit_tool", DigitTool, "KeyZ"],
           ["center_tool", CenterTool, "KeyC"],
           ["corner_tool", CornerTool, "KeyX"],
+          ["zoom_tool", ZoomTool, undefined],
           ["pan_tool", PanTool, "Space"],
         ];
 
