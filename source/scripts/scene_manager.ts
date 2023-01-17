@@ -1,4 +1,4 @@
-enum RenderLayer {
+    enum RenderLayer {
     // the very back layer
     Background,
     // background colour
@@ -45,6 +45,12 @@ class SceneManager {
     private distanceStart: number = 0;
     // resize observer to update our viewport dimensions
     private resizeObserver: ResizeObserver;
+
+    // previous cursor when SceneManager take changes it
+    private previousCursor: Cursor = Cursor.Default;
+
+    // is the 'Space' key pressed
+    private canDrag: boolean = false;
 
     constructor(parent: HTMLElement) {
         const svg = <SVGSVGElement>this.createElement("svg", SVGSVGElement);
@@ -168,9 +174,9 @@ class SceneManager {
             }
             let zoom = this.zoom;
             if (deltaY > 0) {
-                zoom *= Math.pow(1.10, deltaY);
+                zoom *= Math.pow(1.10, -deltaY);
             } else {
-                zoom *= Math.pow(1/1.10, -deltaY);
+                zoom *= Math.pow(1/1.10, deltaY);
             }
             this.zoomViewport(zoom);
         } else {
@@ -224,6 +230,51 @@ class SceneManager {
             const scale = distance / this.distanceStart;
             this.zoomViewport(this.zoomStart * scale);
 
+            return true;
+        }
+        return false;
+    }
+
+    // Space + Click + Drag
+
+    handleKeyDown(event: KeyboardEvent): boolean {
+        if (!event.repeat && event.code === "Space") {
+            this.previousCursor = <Cursor>this.svg.style.cursor;
+            this.setMouseCursor(Cursor.Grab);
+            this.canDrag = true;
+            return true;
+        }
+        return false;
+    }
+
+    handleKeyUp(event: KeyboardEvent): boolean {
+        if (event.code === "Space" && this.canDrag) {
+            this.setMouseCursor(this.previousCursor);
+            this.canDrag = false;
+            return true;
+        }
+        return false;
+    }
+
+    handleMouseDown(event: MouseEvent): boolean {
+        if (event.primaryButton && this.canDrag) {
+            this.setMouseCursor(Cursor.Grabbing);
+            return true;
+        }
+        return false;
+    }
+
+    handleMouseClick(_event: MouseEvent): boolean {
+        if (this.canDrag) {
+            this.setMouseCursor(Cursor.Grab);
+            return true;
+        }
+        return false;
+    }
+
+    handleMouseMove(event: MouseEvent): boolean {
+        if (event.primaryButton && this.canDrag) {
+            this.translateViewport(-event.movementX, -event.movementY);
             return true;
         }
         return false;
