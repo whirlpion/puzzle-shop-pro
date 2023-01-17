@@ -10,6 +10,28 @@ class BoundingBox {
         return `{ i: ${this.i}, j: ${this.j}, rows: ${this.rows}, columns: ${this.columns} }`;
     }
 
+    static fromCells(first: Cell, ...cells: Cell[]) {
+        let min_i = first.i;
+        let min_j = first.j;
+        let max_i = min_i;
+        let max_j = min_j;
+
+        for(let k = 1; k < cells.length; k++) {
+            let cell = cells[k];
+            min_i = Math.min(min_i, cell.i);
+            max_i = Math.max(max_i, cell.i);
+            min_j = Math.min(min_j, cell.j);
+            max_j = Math.max(max_j, cell.j);
+        }
+
+        const i = min_i;
+        const j = min_j;
+        const rows = max_i - min_i + 1;
+        const columns = max_j - min_j + 1;
+
+        return new BoundingBox(i, j, rows, columns);
+    }
+
     static union(boundingBoxes: BoundingBox[]): BoundingBox {
         return boundingBoxes.reduce((left, right) => {
             const i = Math.min(left.i, right.i);
