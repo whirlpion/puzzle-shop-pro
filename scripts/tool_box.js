@@ -13,7 +13,7 @@ class ITool {
         this.sceneManager = sceneManager;
     }
     // when user switches to this tool
-    handlePickUp(_prevTool, _switchMethod) { }
+    handlePickUp(_prevTool) { }
     // when user switches to another tool
     handlePutDown(_nextTool) { }
     // when the canvas receives click event with this tool
@@ -36,13 +36,8 @@ class NoOpTool extends ITool {
         super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
 }
-var SwitchMethod;
-(function (SwitchMethod) {
-    SwitchMethod[SwitchMethod["Mouse"] = 0] = "Mouse";
-    SwitchMethod[SwitchMethod["Keyboard"] = 1] = "Keyboard";
-})(SwitchMethod || (SwitchMethod = {}));
 class ToolBox {
-    switchToTool(tool, switchMethod) {
+    switchToTool(tool) {
         if (tool == this.currentTool) {
             return;
         }
@@ -50,7 +45,7 @@ class ToolBox {
         const nextTool = tool;
         this.currentTool.handlePutDown(nextTool);
         this.currentTool = tool;
-        this.currentTool.handlePickUp(prevTool, switchMethod);
+        this.currentTool.handlePickUp(prevTool);
         console.debug(`Switching to ${tool.constructor.name}`);
     }
     constructor(puzzleGrid, actionStack, sceneManager) {
@@ -66,7 +61,8 @@ class ToolBox {
             ["digit_tool", DigitTool, "KeyZ"],
             ["center_tool", CenterTool, "KeyC"],
             ["corner_tool", CornerTool, "KeyX"],
-            ["pan_tool", PanTool, "Space"],
+            ["zoom_tool", ZoomTool, undefined],
+            ["pan_tool", PanTool, undefined],
         ];
         for (let [id, toolConstructor, _code] of blueprints) {
             let tool = new toolConstructor(this, puzzleGrid, actionStack, sceneManager);
@@ -74,7 +70,7 @@ class ToolBox {
             let button = document.querySelector(`div#${id}`);
             throwIfNull(button);
             button.addEventListener("click", () => {
-                this.switchToTool(tool, SwitchMethod.Mouse);
+                this.switchToTool(tool);
             });
         }
         // always start with the object selection tool
@@ -83,9 +79,15 @@ class ToolBox {
         let svg = document.querySelector("svg#canvas_root");
         throwIfNull(svg);
         svg.addEventListener("click", (event) => {
+            if (this.sceneManager.handleMouseClick(event)) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
             if (this.currentTool.handleMouseClick(event)) {
                 event.preventDefault();
                 event.stopPropagation();
+                return;
             }
         });
         svg.addEventListener("dblclick", (event) => {
@@ -95,21 +97,37 @@ class ToolBox {
             }
         });
         svg.addEventListener("mousedown", (event) => {
-            if (this.currentTool.handleMouseDown(event)) {
+            const mouseEvent = event;
+            if (this.sceneManager.handleMouseDown(mouseEvent)) {
                 event.preventDefault();
                 event.stopPropagation();
+                return;
+            }
+            if (this.currentTool.handleMouseDown(mouseEvent)) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
             }
         });
         svg.addEventListener("mouseup", (event) => {
-            if (this.currentTool.handleMouseUp(event)) {
+            const mouseEvent = event;
+            if (this.currentTool.handleMouseUp(mouseEvent)) {
                 event.preventDefault();
                 event.stopPropagation();
+                return;
             }
         });
         svg.addEventListener("mousemove", (event) => {
+            const mouseEvent = event;
+            if (this.sceneManager.handleMouseMove(mouseEvent)) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
             if (this.currentTool.handleMouseMove(event)) {
                 event.preventDefault();
                 event.stopPropagation();
+                return;
             }
         });
         svg.addEventListener("wheel", (event) => {
@@ -157,12 +175,17 @@ class ToolBox {
                 for (let k = 0; k < blueprints.length; k++) {
                     let [_id, _toolConstructor, code] = blueprints[k];
                     if (code && keyboardEvent.code === code) {
-                        this.switchToTool(this.tools[k], SwitchMethod.Keyboard);
+                        this.switchToTool(this.tools[k]);
                         event.preventDefault();
                         event.stopPropagation();
                         return;
                     }
                 }
+            }
+            if (this.sceneManager.handleKeyDown(keyboardEvent)) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
             }
             // check for undo/redo
             if (keyboardEvent.shortcutKey && keyboardEvent.code === "KeyZ") {
@@ -184,9 +207,16 @@ class ToolBox {
             }
         }, { capture: true });
         document.addEventListener("keyup", (event) => {
-            if (this.currentTool.handleKeyUp(event)) {
+            const keyboardEvent = event;
+            if (this.sceneManager.handleKeyUp(keyboardEvent)) {
                 event.preventDefault();
                 event.stopPropagation();
+                return;
+            }
+            if (this.currentTool.handleKeyUp(keyboardEvent)) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
             }
         }, { capture: true });
     }

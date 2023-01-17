@@ -86,6 +86,10 @@ div#center_tool {
     background-image: url("icons/123.svg")
 }
 
+div#zoom_tool {
+    background-image: url("icons/zoom.svg")
+}
+
 div#pan_tool {
     background-image: url("icons/hand-regular.svg")
 }

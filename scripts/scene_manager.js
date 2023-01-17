@@ -26,17 +26,24 @@ var Cursor;
 })(Cursor || (Cursor = {}));
 // the canvas view keeps track of the parent svg element of each renderable 'thing' on the canvas
 class SceneManager {
+    get zoom() {
+        return this._zoom;
+    }
     constructor(parent) {
         this.layers = new Array();
         // center of viewport in world space
         this.lookX = 0.0;
         this.lookY = 0.0;
         // number of screen coordinates per world coordinate
-        this.zoom = 1.0;
+        this._zoom = 1.0;
         // value of zoom at gesture start
         this.zoomStart = 1.0;
         // the initial distance between two fingers for pinch to zoom
         this.distanceStart = 0;
+        // previous cursor when SceneManager take changes it
+        this.previousCursor = Cursor.Default;
+        // is the 'Space' key pressed
+        this.canDrag = false;
         const svg = this.createElement("svg", SVGSVGElement);
         svg.setAttribute("id", "canvas_root");
         parent.appendChild(svg);
@@ -106,9 +113,10 @@ class SceneManager {
     // sets the zoom level
     zoomViewport(zoom) {
         throwIfFalse(zoom > 0);
-        this.zoom = Math.clamp(0.25, zoom, 4.0);
+        this._zoom = Math.clamp(0.25, zoom, 4.0);
         this.updateViewBox();
     }
+    // Input Handling
     handleWheel(event) {
         let deltaX = event.deltaX;
         let deltaY = event.deltaY;
@@ -125,10 +133,10 @@ class SceneManager {
             }
             let zoom = this.zoom;
             if (deltaY > 0) {
-                zoom *= Math.pow(1.10, deltaY);
+                zoom *= Math.pow(1.10, -deltaY);
             }
             else {
-                zoom *= Math.pow(1 / 1.10, -deltaY);
+                zoom *= Math.pow(1 / 1.10, deltaY);
             }
             this.zoomViewport(zoom);
         }
@@ -177,6 +185,45 @@ class SceneManager {
             // calculate the scale change based on the difference between the start and current distances
             const scale = distance / this.distanceStart;
             this.zoomViewport(this.zoomStart * scale);
+            return true;
+        }
+        return false;
+    }
+    // Space + Click + Drag
+    handleKeyDown(event) {
+        if (!event.repeat && event.code === "Space") {
+            this.previousCursor = this.svg.style.cursor;
+            this.setMouseCursor(Cursor.Grab);
+            this.canDrag = true;
+            return true;
+        }
+        return false;
+    }
+    handleKeyUp(event) {
+        if (event.code === "Space" && this.canDrag) {
+            this.setMouseCursor(this.previousCursor);
+            this.canDrag = false;
+            return true;
+        }
+        return false;
+    }
+    handleMouseDown(event) {
+        if (event.primaryButton && this.canDrag) {
+            this.setMouseCursor(Cursor.Grabbing);
+            return true;
+        }
+        return false;
+    }
+    handleMouseClick(_event) {
+        if (this.canDrag) {
+            this.setMouseCursor(Cursor.Grab);
+            return true;
+        }
+        return false;
+    }
+    handleMouseMove(event) {
+        if (event.primaryButton && this.canDrag) {
+            this.translateViewport(-event.movementX, -event.movementY);
             return true;
         }
         return false;
