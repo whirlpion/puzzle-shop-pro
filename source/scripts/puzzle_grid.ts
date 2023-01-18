@@ -21,8 +21,8 @@ abstract class IConstraint {
         this._svg = svg;
     }
 
-    // returns true if the consraint is currently violated, false otherwise
-    abstract isConstraintViolated(puzzleGrid: PuzzleGrid): boolean
+    // returns a set of cells which violate the constraint
+    abstract getViolatedCells(puzzleGrid: PuzzleGrid): BSTSet<Cell>;
 }
 
 enum HighlightCellsFlags {
@@ -179,27 +179,29 @@ class PuzzleGrid {
     // Constraint Functions
 
     checkCellsForConstraintViolations(...cells: Cell[]) {
-        // checks each of the requested cells
-        for(let cell of cells) {
-            // identify all the constraints affecting the current cell
-            let constraintsOnCell = this.constraintMap.get(cell);
-            if (constraintsOnCell) {
-                // determine if the constraint is violated
-                for (let constraint of constraintsOnCell) {
-                    if (constraint.isConstraintViolated(this)) {
-                        this.violatedConstraints.add(constraint);
-                    } else {
-                        this.violatedConstraints.delete(constraint);
-                    }
-                }
+        // construct our set of constraints affecting the given cells
+        let constraints: Set<IConstraint> = new Set();
+        // start with our set of already violated constraints
+        constraints = Set.union(constraints, this.violatedConstraints);
+        for (let cell of cells) {
+            const currentConstraints = this.constraintMap.get(cell);
+            if (currentConstraints) {
+                constraints = Set.union(constraints, currentConstraints);
             }
         }
 
-        // now construct set of all cells within the violated constraints area
+        // now identify which constraints are violated and which cells
+        // in the constraints are violated
         let affectedCells: BSTSet<Cell> = new BSTSet();
-        for (let constraint of this.violatedConstraints) {
-            for (let cell of constraint.cells) {
-                affectedCells.add(cell);
+
+        // start with our
+        for (let constraint of constraints) {
+            let cells = constraint.getViolatedCells(this);
+            if (cells.size > 0) {
+                affectedCells = BSTSet.union(affectedCells,cells);
+                this.violatedConstraints.add(constraint);
+            } else {
+                this.violatedConstraints.delete(constraint);
             }
         }
 

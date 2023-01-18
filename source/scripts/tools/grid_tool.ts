@@ -1,9 +1,7 @@
 class InsertGridAction extends IAction {
     override apply(): void {
         // register the constrained cells
-        for (let constraint of this.gridConstraint.regionConstraints) {
-            this.puzzleGrid.addConstraint(constraint);
-        }
+        this.puzzleGrid.addConstraint(this.gridConstraint);
         // check for constraint violations
         this.puzzleGrid.checkCellsForConstraintViolations(...this.gridConstraint.cells);
         // add the svg
@@ -11,9 +9,7 @@ class InsertGridAction extends IAction {
     }
     override revert(): void {
         // remove the constrained cells
-        for (let constraint of this.gridConstraint.regionConstraints) {
-            this.puzzleGrid.removeConstraint(constraint);
-        }
+        this.puzzleGrid.removeConstraint(this.gridConstraint);
         // check for constraint violations
         this.puzzleGrid.checkCellsForConstraintViolations(...this.gridConstraint.cells);
         // remove the svg

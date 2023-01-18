@@ -13,7 +13,7 @@ class Grid9x9Constraint extends IConstraint {
                 // create cell list
                 for (let i = 0; i < 9; i++) {
                     for (let j = 0; j < 9; j++) {
-                        cells[i*9 + j] = new Cell(row + i, column + i);
+                        cells[i*9 + j] = new Cell(row + i, column + j);
                     }
                 }
                 return cells;
@@ -110,7 +110,11 @@ class Grid9x9Constraint extends IConstraint {
         }
     }
 
-    override isConstraintViolated(_puzzleGrid: PuzzleGrid): boolean {
-        throwMessage("not implemented");
+    override getViolatedCells(puzzleGrid: PuzzleGrid): BSTSet<Cell> {
+        let retval: BSTSet<Cell> = new BSTSet();
+        for (let constraint of this.regionConstraints) {
+            retval = BSTSet.union(retval,constraint.getViolatedCells(puzzleGrid));
+        }
+        return retval;
     }
 }

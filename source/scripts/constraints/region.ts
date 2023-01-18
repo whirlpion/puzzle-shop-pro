@@ -4,21 +4,21 @@ class RegionConstraint extends IConstraint {
         super(cells, null);
     }
 
-    override isConstraintViolated(puzzleGrid: PuzzleGrid): boolean {
+    override getViolatedCells(puzzleGrid: PuzzleGrid): BSTSet<Cell> {
         let digitsInRegion: Set<Digit> = new Set();
 
         for (let cell of this._cells) {
             let digit = puzzleGrid.getDigitAtCell(cell);
             if (digit !== null) {
                 if (digitsInRegion.has(digit)) {
-                    return true;
+                    return new BSTSet(this._cells)
                 } else {
                     digitsInRegion.add(digit);
                 }
             }
         }
 
-        return false;
+        return new BSTSet();
     }
 
     static RowRegion(cell: Cell, size: number): RegionConstraint {
