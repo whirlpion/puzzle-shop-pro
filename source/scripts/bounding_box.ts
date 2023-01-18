@@ -10,7 +10,10 @@ class BoundingBox {
         return `{ i: ${this.i}, j: ${this.j}, rows: ${this.rows}, columns: ${this.columns} }`;
     }
 
-    static fromCells(first: Cell, ...cells: Cell[]) {
+    static fromCells(...cells: Cell[]) {
+        const first = cells.first();
+        throwIfUndefined(first);
+
         let min_i = first.i;
         let min_j = first.j;
         let max_i = min_i;
@@ -32,7 +35,8 @@ class BoundingBox {
         return new BoundingBox(i, j, rows, columns);
     }
 
-    static union(boundingBoxes: BoundingBox[]): BoundingBox {
+    static union(...boundingBoxes: BoundingBox[]): BoundingBox {
+        throwIfEmpty(boundingBoxes);
         return boundingBoxes.reduce((left, right) => {
             const i = Math.min(left.i, right.i);
             const j = Math.min(left.j, right.j);
