@@ -15,7 +15,7 @@ class BSTSetIterator<T extends IOrdered> {
 }
 
 class BSTSet<T extends IOrdered> {
-    private data: Array<T>;
+    private data: Array<T> = new Array();
 
     get size(): number {
         return this.data.length;
@@ -23,10 +23,9 @@ class BSTSet<T extends IOrdered> {
 
     constructor(data?: Array<T>) {
         if (data) {
-            this.data = data.clone();
-            this.data.sort((a: T, b: T): Ordering => a.compare(b));
-        } else {
-            this.data = new Array();
+            for (let val of data) {
+                this.add(val);
+            }
         }
     }
 
@@ -43,10 +42,33 @@ class BSTSet<T extends IOrdered> {
         return this;
     }
 
-    merge(that: BSTSet<T>): BSTSet<T> {
-        let retval: BSTSet<T> = new BSTSet();
-        retval.data = this.data.merge(that.data);
-        return retval;
+    static union<T extends IOrdered>(left: BSTSet<T>, right: BSTSet<T>): BSTSet<T> {
+        let result: BSTSet<T> = new BSTSet();
+
+        let left_index = 0;
+        let right_index = 0;
+        while(left_index < left.data.length && right_index < right.data.length) {
+            switch(left.data[left_index].compare(right.data[right_index])) {
+                case Ordering.LessThan:
+                    result.data.push(left.data[left_index++]);
+                    break;
+                case Ordering.GreaterThan:
+                    result.data.push(right.data[right_index++]);
+                    break;
+                case Ordering.Equal:
+                    left_index++;   // don't add identical
+                    result.data.push(right.data[right_index++]);
+                    break;
+            }
+        }
+        while(left_index < left.data.length) {
+            result.data.push(left.data[left_index++]);
+        }
+        while(right_index < right.data.length) {
+            result.data.push(right.data[right_index++]);
+        }
+
+        return result;
     }
 
     clear(): undefined {

@@ -69,6 +69,23 @@ async function bst_set_test() {
             throwIfNotEqual(array[index].age, person.age);
             index++;
         }
+
+        await test.println("should return union of sets");
+        let evens: BSTSet<number> = new BSTSet([0,2,4]);
+        let odds: BSTSet<number> = new BSTSet([1,3,5]);
+
+        // should contain all the numbers
+        let union = Array.collect(BSTSet.union(evens,odds).entries());
+        throwIfFalse(union.equals([0,1,2,3,4,5]));
+
+        // should contain just the even numbers
+        union = Array.collect(BSTSet.union(evens,evens).entries());
+        throwIfFalse(union.equals([0,2,4]));
+
+        // should contain just the odd numbes
+        union = Array.collect(BSTSet.union(odds,odds).entries());
+        throwIfFalse(union.equals([1,3,5]));
+
     } catch (err) {
         test.error(err);
     }
