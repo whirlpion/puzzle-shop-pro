@@ -1,5 +1,6 @@
 class ObjectSelectionTool extends ITool {
     selectionBox: SVGRectElement;
+    selectedConstraints: Set<IConstraint> = new Set();
 
     constructor(toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
         super(toolBox, puzzleGrid, actionStack, sceneManager);
@@ -38,10 +39,36 @@ class ObjectSelectionTool extends ITool {
         // get all the constraints at this cell
         let constraints = this.puzzleGrid.getConstraintsAtCell(cell);
 
-        if (constraints.length > 0) {
+        if (event.shortcutKey) {
+            // we need to determine if we are adding or removing constraints
+            // if any of the constraings at the cell are alreayd in our set,
+            // then remove them
+            let addAll: boolean = true;
+            for (let constraint of constraints) {
+                if (this.selectedConstraints.has(constraint)) {
+                    addAll = false;
+                    this.selectedConstraints.delete(constraint);
+                }
+            }
+
+            // otherwise add them all
+            if (addAll) {
+                for (let constraint of constraints) {
+                    this.selectedConstraints.add(constraint);
+                }
+            }
+
+        } else {
+            this.selectedConstraints.clear();
+            for (let constraint of constraints) {
+                this.selectedConstraints.add(constraint);
+            }
+        }
+
+        if (this.selectedConstraints.size > 0) {
             // construct list of bounding boxes
             let boundingBoxes: Array<BoundingBox> = new Array();
-            for (let constraint of constraints) {
+            for (let constraint of this.selectedConstraints) {
                 boundingBoxes.push(constraint.boundingBox);
             }
 
