@@ -3,11 +3,17 @@
 abstract class IConstraint {
     // list of cells [row,column] affected by this constraint
     protected readonly _cells: Array<Cell>;
+    // bounding box of cells in this constraint
+    protected readonly _boundingBox: BoundingBox;
     // handle for an svg element from the CanvasView that
     private _svg: SVGElement | null;
 
     get cells(): Array<Cell> {
         return this._cells;
+    }
+
+    get boundingBox(): BoundingBox {
+        return this._boundingBox;
     }
 
     get svg(): SVGElement {
@@ -16,9 +22,10 @@ abstract class IConstraint {
     }
 
     //  takes in a list of cells affected by this constraint and an svg element for display
-    constructor(cells: Array<Cell>, svg: SVGElement | null) {
+    constructor(cells: Array<Cell>, boundingBox: BoundingBox, svg: SVGElement | null) {
         this._cells = cells;
         this._svg = svg;
+        this._boundingBox = boundingBox
     }
 
     // returns a set of cells which violate the constraint
@@ -177,6 +184,15 @@ class PuzzleGrid {
     }
 
     // Constraint Functions
+
+    getConstraintsAtCell(cell: Cell): Array<IConstraint> {
+        let constraints = this.constraintMap.get(cell);
+        if (constraints) {
+            return Array.collect(constraints.values());
+        } else {
+            return new Array();
+        }
+    }
 
     checkCellsForConstraintViolations(...cells: Cell[]) {
         // construct our set of constraints affecting the given cells

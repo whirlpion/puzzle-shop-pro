@@ -18,6 +18,8 @@ class Grid9x9Constraint extends IConstraint {
                 }
                 return cells;
             })(),
+            // boundingBox
+            new BoundingBox(cell.i, cell.j, 9, 9),
             // svg
             (() => {
                 // generate the svg for this constraint

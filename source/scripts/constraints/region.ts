@@ -1,7 +1,7 @@
 // a puzzle object is the 'owner' of the visual and logical aspects of a puzzle piece
 class RegionConstraint extends IConstraint {
-    constructor(cells: Array<Cell>) {
-        super(cells, null);
+    private constructor(cells: Array<Cell>, boundingBox: BoundingBox) {
+        super(cells, boundingBox, null);
     }
 
     override getViolatedCells(puzzleGrid: PuzzleGrid): BSTSet<Cell> {
@@ -29,7 +29,7 @@ class RegionConstraint extends IConstraint {
             cells[k] = new Cell(cell.i, cell.j + k);
         }
 
-        return new RegionConstraint(cells);
+        return new RegionConstraint(cells, new BoundingBox(cell.i, cell.j, 1, size));
     }
 
     static ColumnRegion(cell: Cell, size: number): RegionConstraint {
@@ -40,7 +40,7 @@ class RegionConstraint extends IConstraint {
             cells[k] = new Cell(cell.i + k, cell.j);
         }
 
-        return new RegionConstraint(cells);
+        return new RegionConstraint(cells, new BoundingBox(cell.i, cell.j, size, 1));
     }
 
     static SquareRegion(cell: Cell, width: number): RegionConstraint {
@@ -53,7 +53,7 @@ class RegionConstraint extends IConstraint {
             }
         }
 
-        return new RegionConstraint(cells);
+        return new RegionConstraint(cells, new BoundingBox(cell.i, cell.j, width, width));
     }
 
     static IrregularRegion(cells: Array<Cell>): RegionConstraint {
@@ -64,6 +64,6 @@ class RegionConstraint extends IConstraint {
             cellSet.add(cell);
         }
 
-        return new RegionConstraint(cells);
+        return new RegionConstraint(cells, BoundingBox.fromCells(...cells));
     }
 }
