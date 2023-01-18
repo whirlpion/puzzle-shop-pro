@@ -58,13 +58,20 @@ class ObjectSelectionTool extends ITool {
                 }
             }
 
+        } else if (event.shiftKey) {
+            // add all clicked
+            for (let constraint of constraints) {
+                this.selectedConstraints.add(constraint);
+            }
         } else {
+            // replace selection with current
             this.selectedConstraints.clear();
             for (let constraint of constraints) {
                 this.selectedConstraints.add(constraint);
             }
         }
 
+        // update our visual selection box
         if (this.selectedConstraints.size > 0) {
             // construct list of bounding boxes
             let boundingBoxes: Array<BoundingBox> = new Array();
