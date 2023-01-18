@@ -57,12 +57,6 @@ async function array_test() {
         array1 = [1,2,3,4,5];
         throwIfNotEqual(array1.last(), 5);
 
-        await test.println("should return a new array with all of the values from both arrays using merge");
-        array1 = [1,3,5,7,9];
-        array2 = [2,4,6,8,10];
-        let merged: Array<number> = array1.merge(array2);
-        throwIfFalse(merged.equals([1,2,3,4,5,6,7,8,9,10]));
-
         await test.println("should remove the element at the specified index using remove");
         array1 = [1,2,3,4,5];
         array1.remove(2);

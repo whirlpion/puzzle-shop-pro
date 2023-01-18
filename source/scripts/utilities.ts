@@ -27,7 +27,6 @@ interface Array<T> {
     first(): T | undefined;
     insert(index: number, ...values: T[]): void;
     last(): T | undefined;
-    merge<T extends IOrdered>(that: Array<T>): Array<T>;
     remove(index: number): void;
 }
 
@@ -121,30 +120,6 @@ Array.prototype.remove = function<T>(this: Array<T>, index: number): void {
     this.splice(index, 1);
 }
 
-Array.prototype.merge = function<T extends IOrdered>(this: Array<T>, that: Array<T>): Array<T> {
-    let merged: Array<T> = new Array();
-    let this_index = 0;
-    let that_index = 0;
-    while(this_index < this.length && that_index < that.length) {
-        switch(this[this_index].compare(that[that_index])) {
-            case Ordering.LessThan:
-                merged.push(this[this_index++]);
-                break;
-            case Ordering.GreaterThan:
-            case Ordering.Equal:
-                merged.push(that[that_index++]);
-                break;
-        }
-    }
-    while(this_index < this.length) {
-        merged.push(this[this_index++]);
-    }
-    while(that_index < that.length) {
-        merged.push(that[that_index++]);
-    }
-    return merged;
-}
-
 interface ArrayConstructor {
     collect<T>(iterator: Iterator<T>): Array<T>;
 }
@@ -156,6 +131,22 @@ Array.collect = function<T>(it: Iterator<T>): Array<T> {
     }
     return data;
 }
+
+interface SetConstructor {
+    union<T>(left: Set<T>, right: Set<T>): Set<T>;
+}
+
+Set.union = function<T>(left: Set<T>, right: Set<T>): Set<T> {
+    let result: Set<T> = new Set();
+    for (let val of left ) {
+        result.add(val);
+    }
+    for (let val of right) {
+        result.add(val);
+    }
+    return result;
+}
+
 
 // String
 
