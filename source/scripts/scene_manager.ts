@@ -12,7 +12,7 @@
     // render on top
     Overlay,
     // the very top layer
-    Foregrouond,
+    Foreground,
     // the number of layers
     Count,
 }
