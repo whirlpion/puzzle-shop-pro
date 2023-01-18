@@ -301,13 +301,13 @@ class SceneManager {
         return element;
     }
 
-    // add the element to the root of our SVG document
+    // add the element to the specified layer of the SVG document
     addElement(element: SVGElement, layer: RenderLayer): void {
         throwIfEqual(layer, RenderLayer.Count);
         this.layers[layer].appendChild(element);
     }
 
-    // remove the element from the root of our SVG document
+    // remove the element from its parent
     removeElement(element: SVGElement): void {
         throwIfNull(element.parentNode);
         element.parentNode.removeChild(element);
