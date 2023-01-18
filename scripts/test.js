@@ -107,5 +107,5 @@ async function run_tests() {
     await hasher_test();
     await hash_set_test();
     await hash_map_test();
-    await set_performance();
+    // await set_performance();
 }

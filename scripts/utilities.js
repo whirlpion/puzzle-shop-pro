@@ -89,35 +89,22 @@ Array.prototype.last = function () {
 Array.prototype.remove = function (index) {
     this.splice(index, 1);
 };
-Array.prototype.merge = function (that) {
-    let merged = new Array();
-    let this_index = 0;
-    let that_index = 0;
-    while (this_index < this.length && that_index < that.length) {
-        switch (this[this_index].compare(that[that_index])) {
-            case Ordering.LessThan:
-                merged.push(this[this_index++]);
-                break;
-            case Ordering.GreaterThan:
-            case Ordering.Equal:
-                merged.push(that[that_index++]);
-                break;
-        }
-    }
-    while (this_index < this.length) {
-        merged.push(this[this_index++]);
-    }
-    while (that_index < that.length) {
-        merged.push(that[that_index++]);
-    }
-    return merged;
-};
 Array.collect = function (it) {
     let data = new Array();
     for (let entry = it.next(); !entry.done; entry = it.next()) {
         data.push(entry.value);
     }
     return data;
+};
+Set.union = function (left, right) {
+    let result = new Set();
+    for (let val of left) {
+        result.add(val);
+    }
+    for (let val of right) {
+        result.add(val);
+    }
+    return result;
 };
 String.prototype.toSnakeCase = function () {
     return this.replace(/[a-z0-9]([A-Z])/g, (match) => `${match.charAt(0)}_${match.charAt(1)}`).toLowerCase();

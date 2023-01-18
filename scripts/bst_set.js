@@ -16,12 +16,11 @@ class BSTSet {
         return this.data.length;
     }
     constructor(data) {
+        this.data = new Array();
         if (data) {
-            this.data = data.clone();
-            this.data.sort((a, b) => a.compare(b));
-        }
-        else {
-            this.data = new Array();
+            for (let val of data) {
+                this.add(val);
+            }
         }
     }
     [Symbol.iterator]() {
@@ -35,10 +34,31 @@ class BSTSet {
         }
         return this;
     }
-    merge(that) {
-        let retval = new BSTSet();
-        retval.data = this.data.merge(that.data);
-        return retval;
+    static union(left, right) {
+        let result = new BSTSet();
+        let left_index = 0;
+        let right_index = 0;
+        while (left_index < left.data.length && right_index < right.data.length) {
+            switch (left.data[left_index].compare(right.data[right_index])) {
+                case Ordering.LessThan:
+                    result.data.push(left.data[left_index++]);
+                    break;
+                case Ordering.GreaterThan:
+                    result.data.push(right.data[right_index++]);
+                    break;
+                case Ordering.Equal:
+                    left_index++; // don't add identical
+                    result.data.push(right.data[right_index++]);
+                    break;
+            }
+        }
+        while (left_index < left.data.length) {
+            result.data.push(left.data[left_index++]);
+        }
+        while (right_index < right.data.length) {
+            result.data.push(right.data[right_index++]);
+        }
+        return result;
     }
     clear() {
         this.data = new Array();
