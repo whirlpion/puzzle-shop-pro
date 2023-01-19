@@ -57,6 +57,12 @@ class PuzzleGrid {
     // value: set of constraints affecting the cell
     private constraintMap: BSTMap<Cell, Set<IConstraint>> = new BSTMap();
     private violatedConstraints: Set<IConstraint> = new Set();
+
+    // the set of constraints currently selectd
+    private selectedConstraints: Set<IConstraint> = new Set();
+    // svg bounding box for the selected elements
+    private selectionBox: SVGRectElement;
+
     private cellMap: BSTMap<Cell, [CellValue, SVGGElement | SVGTextElement]> = new BSTMap();
 
     // root element for error highlights
@@ -70,7 +76,7 @@ class PuzzleGrid {
     get hasHighlightedCells(): boolean {
         return this.highlightedCells.size > 0;
     }
-    // the cell that has focus
+    // the cell that has focus currently
     private _focusedCell: Cell | null = null;
 
     public get focusedCell(): Cell | null {
@@ -86,6 +92,14 @@ class PuzzleGrid {
         this.sceneManager = sceneManager;
         this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
         this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
+        this.selectionBox = sceneManager.createElement("rect", SVGRectElement, RenderLayer.Foreground);
+        this.selectionBox.setAttributes(
+            ["fill", "none"],
+            ["stroke", "black"],
+            ["stroke-dasharray", "5,6,10,6,5,0"],
+            ["stroke-width", "2"],
+            ["visibility", "hidden"]);
+
     }
 
     // Highlight Functions
@@ -191,6 +205,52 @@ class PuzzleGrid {
             return Array.collect(constraints.values());
         } else {
             return new Array();
+        }
+    }
+
+    isConstraintSelected(constraint: IConstraint): boolean {
+        return this.selectedConstraints.has(constraint);
+    }
+
+    selectConstraint(constraint: IConstraint): void {
+        this.selectedConstraints.add(constraint);
+    }
+
+    unselectConstraint(constraint: IConstraint): void {
+        this.selectedConstraints.delete(constraint);
+    }
+
+    clearSelectedConstraints(): void {
+        this.selectedConstraints.clear();
+    }
+
+    updateSelectionBox(): void {
+        // update our visual selection box
+        if (this.selectedConstraints.size > 0) {
+            // construct list of bounding boxes
+            let boundingBoxes: Array<BoundingBox> = new Array();
+            for (let constraint of this.selectedConstraints) {
+                boundingBoxes.push(constraint.boundingBox);
+            }
+
+            // join them all together
+            const boundingBox = BoundingBox.union(...boundingBoxes);
+
+            const MARGIN = CELL_SIZE / 4;
+            let x = boundingBox.j * CELL_SIZE - MARGIN;
+            let y = boundingBox.i * CELL_SIZE - MARGIN;
+            let width = boundingBox.columns * CELL_SIZE + 2 * MARGIN;
+            let height = boundingBox.rows * CELL_SIZE + 2 * MARGIN;;
+
+            this.selectionBox.setAttributes(
+                ["x", `${x}`],
+                ["y", `${y}`],
+                ["width", `${width}`],
+                ["height", `${height}`],
+                ["visibility", "visible"]);
+        } else {
+            this.selectionBox.setAttributes(
+                ["visibility", "hidden"]);
         }
     }
 
