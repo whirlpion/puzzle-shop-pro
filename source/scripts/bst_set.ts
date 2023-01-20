@@ -33,11 +33,13 @@ class BSTSet<T extends IOrdered> {
         return this.entries();
     }
 
-    add(value: T): BSTSet<T> {
-        let index = this.data.binarySearch(value);
-        if (index < 0) {
-            index = -(index + 1);
-            this.data.insert(index, value);
+    add(...values: T[]): BSTSet<T> {
+        for (let value of values) {
+            let index = this.data.binarySearch(value);
+            if (index < 0) {
+                index = -(index + 1);
+                this.data.insert(index, value);
+            }
         }
         return this;
     }
