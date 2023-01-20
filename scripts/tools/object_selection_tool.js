@@ -22,7 +22,6 @@ class DeleteConstraintsAction extends IAction {
     }
     constructor(puzzleGrid, affectedCells, constraints) {
         super(`deleting constraints: ${constraints.map(c => c.name).join(", ")}`);
-        console.log(constraints.length);
         this.puzzleGrid = puzzleGrid;
         this.affectedCells = affectedCells;
         this.constraints = constraints;
