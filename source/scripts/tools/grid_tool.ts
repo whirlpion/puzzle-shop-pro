@@ -6,6 +6,8 @@ class InsertGridAction extends IAction {
         this.puzzleGrid.checkCellsForConstraintViolations(...this.gridConstraint.cells);
         // add the svg
         this.sceneManager.addElement(this.gridConstraint.svg, RenderLayer.Grid);
+        // update the selection box
+        this.puzzleGrid.updateSelectionBox();
     }
     override revert(): void {
         // remove the constrained cells
@@ -14,6 +16,8 @@ class InsertGridAction extends IAction {
         this.puzzleGrid.checkCellsForConstraintViolations(...this.gridConstraint.cells);
         // remove the svg
         this.sceneManager.removeElement(this.gridConstraint.svg);
+        // update the selection box
+        this.puzzleGrid.updateSelectionBox();
     }
 
     puzzleGrid: PuzzleGrid;

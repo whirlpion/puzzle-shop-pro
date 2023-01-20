@@ -1,4 +1,5 @@
 class Grid9x9Constraint extends IConstraint {
+    private static counter: number = 0;
     regionConstraints: Array<RegionConstraint> = new Array();
 
     constructor(sceneManager: SceneManager, cell: Cell) {
@@ -90,7 +91,8 @@ class Grid9x9Constraint extends IConstraint {
                     group.appendChild(rect);
                 }
                 return group;
-            })());
+            })(),
+            `grid9x9_${Grid9x9Constraint.counter++}`);
 
         const row = cell.i;
         const column = cell.j;

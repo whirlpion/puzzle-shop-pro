@@ -7,6 +7,8 @@ abstract class IConstraint {
     protected readonly _boundingBox: BoundingBox;
     // handle for an svg element from the CanvasView that
     private _svg: SVGElement | null;
+    // human readable name for constraint
+    protected readonly _name: string;
 
     get cells(): Array<Cell> {
         return this._cells;
@@ -21,11 +23,16 @@ abstract class IConstraint {
         return this._svg;
     }
 
+    get name(): string {
+        return this._name;
+    }
+
     //  takes in a list of cells affected by this constraint and an svg element for display
-    constructor(cells: Array<Cell>, boundingBox: BoundingBox, svg: SVGElement | null) {
+    constructor(cells: Array<Cell>, boundingBox: BoundingBox, svg: SVGElement | null, name: string) {
         this._cells = cells;
         this._svg = svg;
-        this._boundingBox = boundingBox
+        this._boundingBox = boundingBox;
+        this._name = name;
     }
 
     // returns a set of cells which violate the constraint
@@ -60,6 +67,11 @@ class PuzzleGrid {
 
     // the set of constraints currently selectd
     private selectedConstraints: Set<IConstraint> = new Set();
+    // are any constraints selected
+    get hasSelectedConstraints(): boolean {
+        return this.selectedConstraints.size > 0;
+    }
+
     // svg bounding box for the selected elements
     private selectionBox: SVGRectElement;
 
@@ -224,6 +236,10 @@ class PuzzleGrid {
         this.selectedConstraints.clear();
     }
 
+    getSelectedConstraints(): Array<IConstraint> {
+        return Array.collect(this.selectedConstraints.values());
+    }
+
     updateSelectionBox(): void {
         // update our visual selection box
         if (this.selectedConstraints.size > 0) {
@@ -336,6 +352,8 @@ class PuzzleGrid {
             // constraint is no longer in play so it can't be violated
             this.violatedConstraints.delete(constraint);
         }
+
+        this.selectedConstraints.delete(constraint);
 
         if (checkViolations) {
             this.checkCellsForConstraintViolations(...constraint.cells);

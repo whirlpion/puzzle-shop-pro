@@ -1,7 +1,8 @@
 // a puzzle object is the 'owner' of the visual and logical aspects of a puzzle piece
 class RegionConstraint extends IConstraint {
+    private static counter: number = 0;
     private constructor(cells: Array<Cell>, boundingBox: BoundingBox) {
-        super(cells, boundingBox, null);
+        super(cells, boundingBox, null, `region_${RegionConstraint.counter++}`);
     }
 
     override getViolatedCells(puzzleGrid: PuzzleGrid): BSTSet<Cell> {
