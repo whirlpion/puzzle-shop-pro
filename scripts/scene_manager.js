@@ -14,7 +14,7 @@ var RenderLayer;
     // render on top
     RenderLayer[RenderLayer["Overlay"] = 5] = "Overlay";
     // the very top layer
-    RenderLayer[RenderLayer["Foregrouond"] = 6] = "Foregrouond";
+    RenderLayer[RenderLayer["Foreground"] = 6] = "Foreground";
     // the number of layers
     RenderLayer[RenderLayer["Count"] = 7] = "Count";
 })(RenderLayer || (RenderLayer = {}));
@@ -246,12 +246,12 @@ class SceneManager {
         }
         return element;
     }
-    // add the element to the root of our SVG document
+    // add the element to the specified layer of the SVG document
     addElement(element, layer) {
         throwIfEqual(layer, RenderLayer.Count);
         this.layers[layer].appendChild(element);
     }
-    // remove the element from the root of our SVG document
+    // remove the element from its parent
     removeElement(element) {
         throwIfNull(element.parentNode);
         element.parentNode.removeChild(element);

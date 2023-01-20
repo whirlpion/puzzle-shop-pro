@@ -2,23 +2,23 @@
 class InsertGridAction extends IAction {
     apply() {
         // register the constrained cells
-        for (let constraint of this.gridConstraint.regionConstraints) {
-            this.puzzleGrid.addConstraint(constraint);
-        }
+        this.puzzleGrid.addConstraint(this.gridConstraint);
         // check for constraint violations
         this.puzzleGrid.checkCellsForConstraintViolations(...this.gridConstraint.cells);
         // add the svg
         this.sceneManager.addElement(this.gridConstraint.svg, RenderLayer.Grid);
+        // update the selection box
+        this.puzzleGrid.updateSelectionBox();
     }
     revert() {
         // remove the constrained cells
-        for (let constraint of this.gridConstraint.regionConstraints) {
-            this.puzzleGrid.removeConstraint(constraint);
-        }
+        this.puzzleGrid.removeConstraint(this.gridConstraint);
         // check for constraint violations
         this.puzzleGrid.checkCellsForConstraintViolations(...this.gridConstraint.cells);
         // remove the svg
         this.sceneManager.removeElement(this.gridConstraint.svg);
+        // update the selection box
+        this.puzzleGrid.updateSelectionBox();
     }
     constructor(puzzleGrid, sceneManager, cell) {
         super(`insert 9x9 grid at ${cell}`);

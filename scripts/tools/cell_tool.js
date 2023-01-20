@@ -64,7 +64,6 @@ class CellTool extends ITool {
         return true;
     }
     handleKeyDown(event) {
-        console.log(`code: ${event.code} key: ${event.key}`);
         if (this.puzzleGrid.hasHighlightedCells) {
             switch (event.key) {
                 case "1":

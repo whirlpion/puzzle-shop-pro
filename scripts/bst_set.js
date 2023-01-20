@@ -26,11 +26,13 @@ class BSTSet {
     [Symbol.iterator]() {
         return this.entries();
     }
-    add(value) {
-        let index = this.data.binarySearch(value);
-        if (index < 0) {
-            index = -(index + 1);
-            this.data.insert(index, value);
+    add(...values) {
+        for (let value of values) {
+            let index = this.data.binarySearch(value);
+            if (index < 0) {
+                index = -(index + 1);
+                this.data.insert(index, value);
+            }
         }
         return this;
     }

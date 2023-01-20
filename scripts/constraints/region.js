@@ -1,23 +1,23 @@
 "use strict";
 // a puzzle object is the 'owner' of the visual and logical aspects of a puzzle piece
 class RegionConstraint extends IConstraint {
-    constructor(cells) {
-        super(cells, null);
+    constructor(cells, boundingBox) {
+        super(cells, boundingBox, null, `region_${RegionConstraint.counter++}`);
     }
-    isConstraintViolated(puzzleGrid) {
+    getViolatedCells(puzzleGrid) {
         let digitsInRegion = new Set();
         for (let cell of this._cells) {
             let digit = puzzleGrid.getDigitAtCell(cell);
             if (digit !== null) {
                 if (digitsInRegion.has(digit)) {
-                    return true;
+                    return new BSTSet(this._cells);
                 }
                 else {
                     digitsInRegion.add(digit);
                 }
             }
         }
-        return false;
+        return new BSTSet();
     }
     static RowRegion(cell, size) {
         throwIfFalse(size >= 1 && size <= 9);
@@ -25,7 +25,7 @@ class RegionConstraint extends IConstraint {
         for (let k = 0; k < size; k++) {
             cells[k] = new Cell(cell.i, cell.j + k);
         }
-        return new RegionConstraint(cells);
+        return new RegionConstraint(cells, new BoundingBox(cell.i, cell.j, 1, size));
     }
     static ColumnRegion(cell, size) {
         throwIfFalse(size >= 1 && size <= 9);
@@ -33,7 +33,7 @@ class RegionConstraint extends IConstraint {
         for (let k = 0; k < size; k++) {
             cells[k] = new Cell(cell.i + k, cell.j);
         }
-        return new RegionConstraint(cells);
+        return new RegionConstraint(cells, new BoundingBox(cell.i, cell.j, size, 1));
     }
     static SquareRegion(cell, width) {
         throwIfFalse(width >= 1 && width <= 3);
@@ -43,7 +43,7 @@ class RegionConstraint extends IConstraint {
                 cells[i * width + j] = new Cell(cell.i + i, cell.j + j);
             }
         }
-        return new RegionConstraint(cells);
+        return new RegionConstraint(cells, new BoundingBox(cell.i, cell.j, width, width));
     }
     static IrregularRegion(cells) {
         // ensure no repeats in provided cell list
@@ -52,6 +52,7 @@ class RegionConstraint extends IConstraint {
             throwIfTrue(cellSet.has(cell));
             cellSet.add(cell);
         }
-        return new RegionConstraint(cells);
+        return new RegionConstraint(cells, BoundingBox.fromCells(...cells));
     }
 }
+RegionConstraint.counter = 0;

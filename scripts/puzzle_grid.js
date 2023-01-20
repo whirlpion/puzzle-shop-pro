@@ -4,14 +4,22 @@ class IConstraint {
     get cells() {
         return this._cells;
     }
+    get boundingBox() {
+        return this._boundingBox;
+    }
     get svg() {
         throwIfNull(this._svg);
         return this._svg;
     }
+    get name() {
+        return this._name;
+    }
     //  takes in a list of cells affected by this constraint and an svg element for display
-    constructor(cells, svg) {
+    constructor(cells, boundingBox, svg, name) {
         this._cells = cells;
         this._svg = svg;
+        this._boundingBox = boundingBox;
+        this._name = name;
     }
 }
 var HighlightCellsFlags;
@@ -28,6 +36,10 @@ class PuzzleGrid {
     get columns() {
         return this._columns;
     }
+    // are any constraints selected
+    get hasSelectedConstraints() {
+        return this.selectedConstraints.size > 0;
+    }
     // are any cells highlighted
     get hasHighlightedCells() {
         return this.highlightedCells.size > 0;
@@ -40,10 +52,12 @@ class PuzzleGrid {
         // value: set of constraints affecting the cell
         this.constraintMap = new BSTMap();
         this.violatedConstraints = new Set();
+        // the set of constraints currently selectd
+        this.selectedConstraints = new Set();
         this.cellMap = new BSTMap();
         // the cells which are currently highlighted mapped to their associated SVG Rect
         this.highlightedCells = new BSTMap();
-        // the cell that has focus
+        // the cell that has focus currently
         this._focusedCell = null;
         throwIfFalse(Number.isInteger(rows));
         throwIfFalse(Number.isInteger(columns));
@@ -52,6 +66,8 @@ class PuzzleGrid {
         this.sceneManager = sceneManager;
         this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
         this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
+        this.selectionBox = sceneManager.createElement("rect", SVGRectElement, RenderLayer.Foreground);
+        this.selectionBox.setAttributes(["fill", "none"], ["stroke", "black"], ["stroke-dasharray", "5,6,10,6,5,0"], ["stroke-width", "2"], ["visibility", "hidden"]);
     }
     // Highlight Functions
     clearAllHighlights() {
@@ -134,28 +150,75 @@ class PuzzleGrid {
         }
     }
     // Constraint Functions
+    getConstraintsAtCell(cell) {
+        let constraints = this.constraintMap.get(cell);
+        if (constraints) {
+            return Array.collect(constraints.values());
+        }
+        else {
+            return new Array();
+        }
+    }
+    isConstraintSelected(constraint) {
+        return this.selectedConstraints.has(constraint);
+    }
+    selectConstraint(constraint) {
+        this.selectedConstraints.add(constraint);
+    }
+    unselectConstraint(constraint) {
+        this.selectedConstraints.delete(constraint);
+    }
+    clearSelectedConstraints() {
+        this.selectedConstraints.clear();
+    }
+    getSelectedConstraints() {
+        return Array.collect(this.selectedConstraints.values());
+    }
+    updateSelectionBox() {
+        // update our visual selection box
+        if (this.selectedConstraints.size > 0) {
+            // construct list of bounding boxes
+            let boundingBoxes = new Array();
+            for (let constraint of this.selectedConstraints) {
+                boundingBoxes.push(constraint.boundingBox);
+            }
+            // join them all together
+            const boundingBox = BoundingBox.union(...boundingBoxes);
+            const MARGIN = CELL_SIZE / 4;
+            let x = boundingBox.j * CELL_SIZE - MARGIN;
+            let y = boundingBox.i * CELL_SIZE - MARGIN;
+            let width = boundingBox.columns * CELL_SIZE + 2 * MARGIN;
+            let height = boundingBox.rows * CELL_SIZE + 2 * MARGIN;
+            ;
+            this.selectionBox.setAttributes(["x", `${x}`], ["y", `${y}`], ["width", `${width}`], ["height", `${height}`], ["visibility", "visible"]);
+        }
+        else {
+            this.selectionBox.setAttributes(["visibility", "hidden"]);
+        }
+    }
     checkCellsForConstraintViolations(...cells) {
-        // checks each of the requested cells
+        // construct our set of constraints affecting the given cells
+        let constraints = new Set();
+        // start with our set of already violated constraints
+        constraints = Set.union(constraints, this.violatedConstraints);
         for (let cell of cells) {
-            // identify all the constraints affecting the current cell
-            let constraintsOnCell = this.constraintMap.get(cell);
-            if (constraintsOnCell) {
-                // determine if the constraint is violated
-                for (let constraint of constraintsOnCell) {
-                    if (constraint.isConstraintViolated(this)) {
-                        this.violatedConstraints.add(constraint);
-                    }
-                    else {
-                        this.violatedConstraints.delete(constraint);
-                    }
-                }
+            const currentConstraints = this.constraintMap.get(cell);
+            if (currentConstraints) {
+                constraints = Set.union(constraints, currentConstraints);
             }
         }
-        // now construct set of all cells within the violated constraints area
+        // now identify which constraints are violated and which cells
+        // in the constraints are violated
         let affectedCells = new BSTSet();
-        for (let constraint of this.violatedConstraints) {
-            for (let cell of constraint.cells) {
-                affectedCells.add(cell);
+        // start with our
+        for (let constraint of constraints) {
+            let cells = constraint.getViolatedCells(this);
+            if (cells.size > 0) {
+                affectedCells = BSTSet.union(affectedCells, cells);
+                this.violatedConstraints.add(constraint);
+            }
+            else {
+                this.violatedConstraints.delete(constraint);
             }
         }
         // TODO: there's probably a smarter way to batch together cells into larger
@@ -203,6 +266,7 @@ class PuzzleGrid {
             // constraint is no longer in play so it can't be violated
             this.violatedConstraints.delete(constraint);
         }
+        this.selectedConstraints.delete(constraint);
         if (checkViolations) {
             this.checkCellsForConstraintViolations(...constraint.cells);
         }

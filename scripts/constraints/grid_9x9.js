@@ -11,11 +11,13 @@ class Grid9x9Constraint extends IConstraint {
             // create cell list
             for (let i = 0; i < 9; i++) {
                 for (let j = 0; j < 9; j++) {
-                    cells[i * 9 + j] = new Cell(row + i, column + i);
+                    cells[i * 9 + j] = new Cell(row + i, column + j);
                 }
             }
             return cells;
         })(), 
+        // boundingBox
+        new BoundingBox(cell.i, cell.j, 9, 9), 
         // svg
         (() => {
             // generate the svg for this constraint
@@ -52,7 +54,7 @@ class Grid9x9Constraint extends IConstraint {
                 group.appendChild(rect);
             }
             return group;
-        })());
+        })(), `grid9x9_${Grid9x9Constraint.counter++}`);
         this.regionConstraints = new Array();
         const row = cell.i;
         const column = cell.j;
@@ -72,7 +74,12 @@ class Grid9x9Constraint extends IConstraint {
             }
         }
     }
-    isConstraintViolated(_puzzleGrid) {
-        throwMessage("not implemented");
+    getViolatedCells(puzzleGrid) {
+        let retval = new BSTSet();
+        for (let constraint of this.regionConstraints) {
+            retval = BSTSet.union(retval, constraint.getViolatedCells(puzzleGrid));
+        }
+        return retval;
     }
 }
+Grid9x9Constraint.counter = 0;
