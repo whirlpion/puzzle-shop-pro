@@ -18,12 +18,6 @@ abstract class CellTool extends ITool {
         }
     }
 
-    override handlePutDown(nextTool: ITool) {
-        if (!(nextTool instanceof CellTool)) {
-            this.puzzleGrid.clearAllHighlights();
-        }
-    }
-
     override handleMouseDoubleClick(event: MouseEvent): boolean {
         const cell = this.sceneManager.cellAtMouseEvent(event);
         const digit = this.puzzleGrid.getDigitAtCell(cell);

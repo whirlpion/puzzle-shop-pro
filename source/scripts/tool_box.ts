@@ -66,6 +66,20 @@ class ToolBox {
             return;
         }
 
+        if (tool.mode != this.currentTool.mode) {
+            switch (this.currentTool.mode) {
+            case ToolMode.ConstraintEdit:
+                this.puzzleGrid.clearSelectedConstraints();
+                this.puzzleGrid.updateSelectionBox();
+                break;
+            case ToolMode.ConstraintInsert: break;
+            case ToolMode.CellEdit:
+                this.puzzleGrid.clearAllHighlights();
+                break;
+            case ToolMode.NoOp: break;
+            }
+        }
+
         const prevTool = this.currentTool;
         const nextTool = tool;
 
