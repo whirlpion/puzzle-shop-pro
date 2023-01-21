@@ -1,5 +1,17 @@
 class BoundingBox {
-    constructor(public i: number, public j: number, public rows: number, public columns: number) {
+    public readonly i: number;
+    public readonly j: number;
+    public readonly rows: number;
+    public readonly columns: number;
+
+    public static readonly Empty: BoundingBox = new BoundingBox(0,0,0,0);
+
+    constructor(i: number, j: number, rows: number, columns: number) {
+        throwIfFalse(Number.isInteger(i));
+        throwIfFalse(Number.isInteger(j));
+        throwIfFalse(Number.isInteger(rows));
+        throwIfFalse(Number.isInteger(columns));
+
         this.i = i;
         this.j = j;
         this.rows = rows;
