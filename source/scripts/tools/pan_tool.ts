@@ -4,6 +4,10 @@ class PanTool extends ITool {
         super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
 
+    get mode(): ToolMode {
+        return ToolMode.ConstraintEdit;
+    }
+
     override handlePickUp(_prevTool: ITool): void {
         this.sceneManager.setMouseCursor(Cursor.Grab);
     }

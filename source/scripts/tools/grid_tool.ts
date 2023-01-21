@@ -37,6 +37,10 @@ class GridTool extends ITool {
         super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
 
+    get mode(): ToolMode {
+        return ToolMode.ConstraintInsert;
+    }
+
     //
     // ITool interface
     //

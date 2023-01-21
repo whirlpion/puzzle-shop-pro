@@ -6,6 +6,10 @@ class ZoomTool extends ITool {
         super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
 
+    get mode() {
+        return ToolMode.NoOp;
+    }
+
     override handleMouseClick(event: MouseEvent): boolean {
         const zoom = this.sceneManager.zoom;
         if (event.shortcutKey) {

@@ -70,6 +70,10 @@ div#rectangle_selection_tool {
     background-image: url("icons/selection.svg");
 }
 
+div#move_tool {
+    background-image: url("icons/move.svg");
+}
+
 div#grid_tool {
     background-image: url("icons/2x2-cell.svg")
 }

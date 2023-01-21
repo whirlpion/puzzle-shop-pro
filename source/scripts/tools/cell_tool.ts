@@ -4,6 +4,10 @@ abstract class CellTool extends ITool {
         super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
 
+    get mode(): ToolMode {
+        return ToolMode.CellEdit;
+    }
+
     protected abstract writeDigit(digit: Digit): void;
 
     deleteDigit(): void {

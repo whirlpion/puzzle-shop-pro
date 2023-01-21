@@ -40,6 +40,10 @@ class ObjectSelectionTool extends ITool {
         super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
 
+    get mode(): ToolMode {
+        return ToolMode.ConstraintEdit;
+    }
+
     override handleMouseClick(event: MouseEvent): boolean {
         let cell = this.sceneManager.cellAtMouseEvent(event);
 

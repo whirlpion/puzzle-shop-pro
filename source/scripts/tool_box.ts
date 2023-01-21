@@ -1,7 +1,12 @@
-enum Tool {
-    ObjectSelection,
-    RectangleSelection,
-    GridInsertion,
+enum ToolMode {
+    // various selection tools
+    ConstraintEdit,
+    // various constraint insertion tools
+    ConstraintInsert,
+    // cell editing tools
+    CellEdit,
+    // no possible effect on puzzle state
+    NoOp,
 }
 
 abstract class ITool {
@@ -16,6 +21,8 @@ abstract class ITool {
         this.actionStack = actionStack;
         this.sceneManager = sceneManager;
     }
+
+    abstract get mode(): ToolMode;
 
     // when user switches to this tool
     handlePickUp(_prevTool: ITool) {}
@@ -40,6 +47,10 @@ abstract class ITool {
 class NoOpTool extends ITool {
     constructor(toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
         super(toolBox, puzzleGrid, actionStack, sceneManager)
+    }
+
+    get mode(): ToolMode {
+        return ToolMode.NoOp;
     }
 }
 
@@ -73,6 +84,7 @@ class ToolBox {
         const blueprints: Array<[string, new (toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) => any, string | undefined]> = [
           ["object_selection_tool", ObjectSelectionTool, "KeyO"],
           ["rectangle_selection_tool", NoOpTool, undefined],
+          ["move_tool", MoveTool, "KeyM"],
           ["grid_tool", GridTool, "KeyG"],
           ["digit_tool", DigitTool, "KeyZ"],
           ["center_tool", CenterTool, "KeyC"],
@@ -93,7 +105,7 @@ class ToolBox {
         }
 
         // always start with the object selection tool
-        this.currentTool = <ITool>this.tools[Tool.ObjectSelection];
+        this.currentTool = <ITool>this.tools.first();
 
         // register input events on the root svg element to forward to the tools
         let svg = <SVGSVGElement>document.querySelector("svg#canvas_root");
