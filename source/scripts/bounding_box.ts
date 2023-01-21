@@ -6,8 +6,29 @@ class BoundingBox {
         this.columns = columns;
     }
 
+    get left(): number {
+        return this.j;
+    }
+
+    get right(): number {
+        return this.j + this.columns - 1;
+    }
+
+    get top(): number {
+        return this.i;
+    }
+
+    get bottom(): number {
+        return this.i + this.rows - 1;
+    }
+
     toString(): string {
         return `{ i: ${this.i}, j: ${this.j}, rows: ${this.rows}, columns: ${this.columns} }`;
+    }
+
+    cellInBox(cell: Cell) : boolean {
+        return (cell.i >= this.top && cell.i <= this.bottom) &&
+               (cell.j >= this.left && cell.j <= this.right);
     }
 
     static fromCells(...cells: Cell[]) {
