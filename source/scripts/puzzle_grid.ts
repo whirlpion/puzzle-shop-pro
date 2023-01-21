@@ -2,9 +2,9 @@
 // a puzzle object is the 'owner' of the visual and logical aspects of a puzzle piece
 abstract class IConstraint {
     // list of cells [row,column] affected by this constraint
-    protected readonly _cells: Array<Cell>;
+    private _cells: Array<Cell>;
     // bounding box of cells in this constraint
-    protected readonly _boundingBox: BoundingBox;
+    private _boundingBox: BoundingBox;
     // handle for an svg element from the CanvasView that
     private _svg: SVGElement | null;
     // human readable name for constraint
@@ -37,6 +37,22 @@ abstract class IConstraint {
 
     // returns a set of cells which violate the constraint
     abstract getViolatedCells(puzzleGrid: PuzzleGrid): BSTSet<Cell>;
+
+    translate(rows: number, columns: number): void {
+        let cells: Array<Cell> = new Array();
+        for (let cell of this._cells) {
+            cells.push(new Cell(cell.i + rows, cell.j + columns));
+        }
+        this._cells = cells;
+
+        this._boundingBox = BoundingBox.fromCells(...this._cells);
+
+        if (this._svg) {
+            const x = this._boundingBox.left * CELL_SIZE;
+            const y = this._boundingBox.top * CELL_SIZE;
+            this._svg.setAttribute("transform", `translate(${x},${y})`);
+        }
+    }
 }
 
 enum HighlightCellsFlags {
@@ -72,9 +88,15 @@ class PuzzleGrid {
         return this.selectedConstraints.size > 0;
     }
 
+    // bounding box representation of the selections
+    private _selectionBoundingBox: BoundingBox = BoundingBox.Empty;
+    get selectionBoundingBox(): BoundingBox {
+        return this._selectionBoundingBox;
+    }
     // svg bounding box for the selected elements
     private selectionBox: SVGRectElement;
 
+    // digits in cells
     private cellMap: BSTMap<Cell, [CellValue, SVGGElement | SVGTextElement]> = new BSTMap();
 
     // root element for error highlights
@@ -252,6 +274,8 @@ class PuzzleGrid {
             // join them all together
             const boundingBox = BoundingBox.union(...boundingBoxes);
 
+            this._selectionBoundingBox = boundingBox;
+
             const MARGIN = CELL_SIZE / 4;
             let x = boundingBox.j * CELL_SIZE - MARGIN;
             let y = boundingBox.i * CELL_SIZE - MARGIN;
@@ -265,6 +289,8 @@ class PuzzleGrid {
                 ["height", `${height}`],
                 ["visibility", "visible"]);
         } else {
+            this._selectionBoundingBox = BoundingBox.Empty;
+
             this.selectionBox.setAttributes(
                 ["visibility", "hidden"]);
         }
@@ -357,6 +383,51 @@ class PuzzleGrid {
 
         if (checkViolations) {
             this.checkCellsForConstraintViolations(...constraint.cells);
+        }
+    }
+
+    translateSelectedConstraints(rows: number, columns: number): void {
+        if (rows != 0 || columns != 0) {
+            throwIfFalse(Number.isInteger(rows));
+            throwIfFalse(Number.isInteger(columns));
+
+            // translate all constraints, and note old locations
+            // remove all our violated constraints since we're going to re-check
+            const oldCells: BSTSet<Cell> = new BSTSet();
+            for (let constraint of this.selectedConstraints) {
+                oldCells.add(...constraint.cells);
+                constraint.translate(rows, columns);
+                this.violatedConstraints.delete(constraint);
+            }
+
+            // remove constraints from constraint map
+            for (let cell of oldCells) {
+                let constraintsAtCell = this.constraintMap.get(cell);
+                throwIfUndefined(constraintsAtCell);
+                for (let constraint of this.selectedConstraints) {
+                    constraintsAtCell.delete(constraint);
+                }
+            }
+
+            // add constraints to back to constraint map and note
+            // new locations
+            const newCells: BSTSet<Cell> = new BSTSet();
+            for (let constraint of this.selectedConstraints) {
+                for (let cell of constraint.cells) {
+                    newCells.add(cell);
+                    let constraintsAtCell = this.constraintMap.get(cell);
+                    if (constraintsAtCell === undefined) {
+                        constraintsAtCell = new Set<IConstraint>();
+                        this.constraintMap.set(cell, constraintsAtCell);
+                    }
+                    constraintsAtCell.add(constraint);
+                }
+            }
+
+            let cells = BSTSet.union(newCells, oldCells);
+
+            this.checkCellsForConstraintViolations(...cells);
+            this.updateSelectionBox();
         }
     }
 

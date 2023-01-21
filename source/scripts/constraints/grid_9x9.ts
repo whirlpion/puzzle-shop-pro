@@ -121,4 +121,12 @@ class Grid9x9Constraint extends IConstraint {
         }
         return retval;
     }
+
+    override translate(rows: number, columns: number): void {
+        for (let constraint of this.regionConstraints) {
+            constraint.translate(rows, columns);
+        }
+
+        super.translate(rows, columns);
+    }
 }
