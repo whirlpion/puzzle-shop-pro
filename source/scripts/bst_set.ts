@@ -78,13 +78,18 @@ class BSTSet<T extends IOrdered> {
         return undefined;
     }
 
-    delete(value: T): boolean {
-        let index = this.data.binarySearch(value);
-        if (index >= 0) {
-            this.data.remove(index);
-            return true;
+    delete(...values: T[]): boolean {
+        let result = false;
+
+        for(let value of values) {
+            let index = this.data.binarySearch(value);
+            if (index >= 0) {
+                this.data.remove(index);
+                result = true;
+            }
         }
-        return false;
+
+        return result;
     }
 
     entries(): BSTSetIterator<T> {
