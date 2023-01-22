@@ -4,8 +4,10 @@
     --main-bar-height: calc(100vh - (var(--menu-bar-height) + var(--configure-bar-height) + var(--status-bar-height)));
     --tool-bar-width: 3em;
     --tool-bar-height: var(--main-bar-height);
-    --puzzle-canvas-width: calc(100vw - var(--tool-bar-width));
+    --puzzle-canvas-width: calc(100vw - var(--tool-bar-width) - var(--side-bar-width));
     --puzzle-canvas-height: var(--main-bar-height);
+    --side-bar-width: 30em;
+    --side-bar-height: var(--main-bar-height);
     --status-bar-height: 3em;
 }
 
@@ -103,7 +105,6 @@ div#pan_tool {
 }
 
 div#puzzle_canvas {
-/*    flex-grow: 1;*/
     width: var(--puzzle-canvas-width);
     height: var(--puzzle-canvas-height);
     background: gray;
@@ -119,6 +120,12 @@ div#puzzle_canvas > svg#canvas_root {
 
 svg#canvas_root{
     background: white;
+}
+
+div#side_bar {
+    width: var(--side-bar-width);
+    height: var(--side-bar-height);
+    background: lightgreen;
 }
 
 div#status_bar {
