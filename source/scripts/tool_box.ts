@@ -81,6 +81,18 @@ class ToolBox {
     }
     currentToolId: ToolID = ToolID.ObjectSelection;
 
+    private readonly blueprints: Array<{id: string, toolConstructor: {new (toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager): any}, shortcut: string | undefined}> = [
+      {id: "object_selection_tool", toolConstructor: ObjectSelectionTool, shortcut: "KeyO"},
+      {id: "rectangle_selection_tool", toolConstructor: NoOpTool, shortcut: undefined},
+      {id: "move_tool", toolConstructor: MoveTool, shortcut: "KeyM"},
+      {id: "grid_tool", toolConstructor: GridTool, shortcut: "KeyG"},
+      {id: "digit_tool", toolConstructor: DigitTool, shortcut: "KeyZ"},
+      {id: "center_tool", toolConstructor: CenterTool, shortcut: "KeyC"},
+      {id: "corner_tool", toolConstructor: CornerTool, shortcut: "KeyX"},
+      {id: "zoom_tool", toolConstructor: ZoomTool, shortcut: undefined},
+      {id: "pan_tool", toolConstructor: PanTool, shortcut: undefined},
+    ];
+
     switchToTool(toolId: ToolID): void {
         if (toolId === this.currentToolId) {
             return;
@@ -105,7 +117,13 @@ class ToolBox {
 
         prevTool.handlePutDown(nextTool);
         nextTool.handlePickUp(prevTool);
+
+        // set selected state
+        document.querySelector(`div#${this.blueprints[this.currentToolId].id}`)?.classList.remove("selected");
+        document.querySelector(`div#${this.blueprints[toolId].id}`)?.classList.add("selected");
+
         this.currentToolId = toolId;
+
 
         console.debug(`Switching to ${nextTool.constructor.name}`);
     }
@@ -118,20 +136,8 @@ class ToolBox {
         this.currentToolId = ToolID.ObjectSelection;
 
         // construct our toolbox
-        const blueprints: Array<{id: string, toolConstructor: {new (toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager): any}, shortcut: string | undefined}> = [
-          {id: "object_selection_tool", toolConstructor: ObjectSelectionTool, shortcut: "KeyO"},
-          {id: "rectangle_selection_tool", toolConstructor: NoOpTool, shortcut: undefined},
-          {id: "move_tool", toolConstructor: MoveTool, shortcut: "KeyM"},
-          {id: "grid_tool", toolConstructor: GridTool, shortcut: "KeyG"},
-          {id: "digit_tool", toolConstructor: DigitTool, shortcut: "KeyZ"},
-          {id: "center_tool", toolConstructor: CenterTool, shortcut: "KeyC"},
-          {id: "corner_tool", toolConstructor: CornerTool, shortcut: "KeyX"},
-          {id: "zoom_tool", toolConstructor: ZoomTool, shortcut: undefined},
-          {id: "pan_tool", toolConstructor: PanTool, shortcut: undefined},
-        ];
-
         for (let k = ToolID.First; k < ToolID.Count; k++) {
-            let blueprint = blueprints[k];
+            let blueprint = this.blueprints[k];
             const id: string = blueprint.id;
             const toolConstructor = blueprint.toolConstructor;
             let tool = <ITool>new toolConstructor(this, puzzleGrid, actionStack, sceneManager);
@@ -248,7 +254,7 @@ class ToolBox {
                 !keyboardEvent.altKey) {
 
                 for(let k = ToolID.First; k < ToolID.Count; k++) {
-                    let blueprint = blueprints[k];
+                    let blueprint = this.blueprints[k];
                     const shortcut = blueprint.shortcut;
 
                     if (shortcut && keyboardEvent.code === shortcut) {

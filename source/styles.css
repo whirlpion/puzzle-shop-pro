@@ -58,6 +58,10 @@ div#tool_bar > div {
     background-size: calc(var(--tool-bar-width) - 16px);
 }
 
+div#tool_bar > div.selected {
+    background-color: darkgrey;
+}
+
 div#tool_bar > div:hover {
     background-color: darkturquoise;
 }
