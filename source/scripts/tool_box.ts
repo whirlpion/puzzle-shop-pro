@@ -9,6 +9,21 @@ enum ToolMode {
     NoOp,
 }
 
+enum ToolID {
+    First = 0,
+    ObjectSelection = First,
+    RectangleSelection,
+    Move,
+    Grid,
+    Digit,
+    Center,
+    Corner,
+    Zoom,
+    Pan,
+    // the number of tools
+    Count,
+}
+
 abstract class ITool {
     protected toolBox: ToolBox;
     protected puzzleGrid: PuzzleGrid;
@@ -59,14 +74,22 @@ class ToolBox {
     actionStack: UndoRedoStack;
     sceneManager: SceneManager;
     tools: Array<ITool> = new Array();
-    currentTool: ITool;
+    get currentTool(): ITool {
+        let tool = this.tools[this.currentToolId];
+        throwIfUndefined(tool);
+        return tool;
+    }
+    currentToolId: ToolID = ToolID.ObjectSelection;
 
-    switchToTool(tool: ITool): void {
-        if (tool == this.currentTool) {
+    switchToTool(toolId: ToolID): void {
+        if (toolId === this.currentToolId) {
             return;
         }
 
-        if (tool.mode != this.currentTool.mode) {
+        const nextTool = this.tools[toolId];
+        const prevTool = this.tools[this.currentToolId];
+
+        if (nextTool.mode != prevTool.mode) {
             switch (this.currentTool.mode) {
             case ToolMode.ConstraintEdit:
                 this.puzzleGrid.clearSelectedConstraints();
@@ -80,48 +103,48 @@ class ToolBox {
             }
         }
 
-        const prevTool = this.currentTool;
-        const nextTool = tool;
+        prevTool.handlePutDown(nextTool);
+        nextTool.handlePickUp(prevTool);
+        this.currentToolId = toolId;
 
-        this.currentTool.handlePutDown(nextTool);
-        this.currentTool = tool;
-        this.currentTool.handlePickUp(prevTool);
-        console.debug(`Switching to ${tool.constructor.name}`);
+        console.debug(`Switching to ${nextTool.constructor.name}`);
     }
 
     constructor(puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
         this.puzzleGrid = puzzleGrid;
         this.actionStack = actionStack;
         this.sceneManager = sceneManager;
-        this.currentTool = new NoOpTool(this, puzzleGrid, actionStack, sceneManager);
+        // always start with the object selection tool
+        this.currentToolId = ToolID.ObjectSelection;
 
-        const blueprints: Array<[string, new (toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) => any, string | undefined]> = [
-          ["object_selection_tool", ObjectSelectionTool, "KeyO"],
-          ["rectangle_selection_tool", NoOpTool, undefined],
-          ["move_tool", MoveTool, "KeyM"],
-          ["grid_tool", GridTool, "KeyG"],
-          ["digit_tool", DigitTool, "KeyZ"],
-          ["center_tool", CenterTool, "KeyC"],
-          ["corner_tool", CornerTool, "KeyX"],
-          ["zoom_tool", ZoomTool, undefined],
-          ["pan_tool", PanTool, undefined],
+        // construct our toolbox
+        const blueprints: Array<{id: string, toolConstructor: {new (toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager): any}, shortcut: string | undefined}> = [
+          {id: "object_selection_tool", toolConstructor: ObjectSelectionTool, shortcut: "KeyO"},
+          {id: "rectangle_selection_tool", toolConstructor: NoOpTool, shortcut: undefined},
+          {id: "move_tool", toolConstructor: MoveTool, shortcut: "KeyM"},
+          {id: "grid_tool", toolConstructor: GridTool, shortcut: "KeyG"},
+          {id: "digit_tool", toolConstructor: DigitTool, shortcut: "KeyZ"},
+          {id: "center_tool", toolConstructor: CenterTool, shortcut: "KeyC"},
+          {id: "corner_tool", toolConstructor: CornerTool, shortcut: "KeyX"},
+          {id: "zoom_tool", toolConstructor: ZoomTool, shortcut: undefined},
+          {id: "pan_tool", toolConstructor: PanTool, shortcut: undefined},
         ];
 
-        for(let [id, toolConstructor, _code] of blueprints) {
+        for (let k = ToolID.First; k < ToolID.Count; k++) {
+            let blueprint = blueprints[k];
+            const id: string = blueprint.id;
+            const toolConstructor = blueprint.toolConstructor;
             let tool = <ITool>new toolConstructor(this, puzzleGrid, actionStack, sceneManager);
             this.tools.push(tool);
 
             let button = document.querySelector(`div#${id}`);
             throwIfNull(button);
             button.addEventListener("click", () => {
-                this.switchToTool(tool);
+                this.switchToTool(k);
             });
         }
 
-        // always start with the object selection tool
-        this.currentTool = <ITool>this.tools.first();
-
-        // register input events on the root svg element to forward to the tools
+           // register input events on the root svg element to forward to the tools
         let svg = <SVGSVGElement>document.querySelector("svg#canvas_root");
         throwIfNull(svg);
         svg.addEventListener("click", (event: Event) => {
@@ -224,10 +247,12 @@ class ToolBox {
                 !keyboardEvent.ctrlKey &&
                 !keyboardEvent.altKey) {
 
-                for(let k = 0; k < blueprints.length; k++) {
-                    let [_id, _toolConstructor, code] = blueprints[k];
-                    if (code && keyboardEvent.code === code) {
-                        this.switchToTool(this.tools[k]);
+                for(let k = ToolID.First; k < ToolID.Count; k++) {
+                    let blueprint = blueprints[k];
+                    const shortcut = blueprint.shortcut;
+
+                    if (shortcut && keyboardEvent.code === shortcut) {
+                        this.switchToTool(k);
                         event.preventDefault();
                         event.stopPropagation();
                         return;
