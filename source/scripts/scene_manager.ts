@@ -21,6 +21,7 @@ enum Cursor {
     Default = "default",
     Grab = "grab",
     Grabbing = "grabbing",
+    Move = "move",
 }
 
 // the canvas view keeps track of the parent svg element of each renderable 'thing' on the canvas

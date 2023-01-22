@@ -39,6 +39,10 @@ class MoveTool extends ITool {
         return ToolMode.ConstraintEdit;
     }
 
+    override handlePutDown(): void {
+        this.sceneManager.setMouseCursor(Cursor.Default);
+    }
+
     override handleMouseDown(event: MouseEvent): boolean {
         if (event.primaryButton) {
             const cell = this.sceneManager.cellAtMouseEvent(event);
@@ -54,9 +58,15 @@ class MoveTool extends ITool {
     }
 
     override handleMouseMove(event: MouseEvent): boolean {
-        if (this.origin && event.primaryButton) {
-            const cell = this.sceneManager.cellAtMouseEvent(event);
+        // update the mouse cursor
+        const cell = this.sceneManager.cellAtMouseEvent(event);
+        if (this.puzzleGrid.selectionBoundingBox.cellInBox(cell)) {
+            this.sceneManager.setMouseCursor(Cursor.Move);
+        } else {
+            this.sceneManager.setMouseCursor(Cursor.Default);
+        }
 
+        if (this.origin && event.primaryButton) {
             let rows = cell.i - this.origin.i;
             let columns = cell.j - this.origin.j;
 
