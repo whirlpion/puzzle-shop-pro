@@ -1,12 +1,12 @@
 :root {
-    --menu-bar-height: 32px;
-    --configure-bar-height: 48px;
+    --menu-bar-height: 2em;
+    --configure-bar-height: 3em;
     --main-bar-height: calc(100vh - (var(--menu-bar-height) + var(--configure-bar-height) + var(--status-bar-height)));
-    --tool-bar-width: 48px;
+    --tool-bar-width: 3em;
     --tool-bar-height: var(--main-bar-height);
     --puzzle-canvas-width: calc(100vw - var(--tool-bar-width));
     --puzzle-canvas-height: var(--main-bar-height);
-    --status-bar-height: 32px;
+    --status-bar-height: 3em;
 }
 
 body {
