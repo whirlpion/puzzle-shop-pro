@@ -386,7 +386,7 @@ class PuzzleGrid {
         }
     }
 
-    translateSelectedConstraints(rows: number, columns: number): void {
+    translateConstraints(rows: number, columns: number, constraints: Array<IConstraint>): void {
         if (rows != 0 || columns != 0) {
             throwIfFalse(Number.isInteger(rows));
             throwIfFalse(Number.isInteger(columns));
@@ -394,7 +394,7 @@ class PuzzleGrid {
             // translate all constraints, and note old locations
             // remove all our violated constraints since we're going to re-check
             const oldCells: BSTSet<Cell> = new BSTSet();
-            for (let constraint of this.selectedConstraints) {
+            for (let constraint of constraints) {
                 oldCells.add(...constraint.cells);
                 constraint.translate(rows, columns);
                 this.violatedConstraints.delete(constraint);
@@ -404,7 +404,7 @@ class PuzzleGrid {
             for (let cell of oldCells) {
                 let constraintsAtCell = this.constraintMap.get(cell);
                 throwIfUndefined(constraintsAtCell);
-                for (let constraint of this.selectedConstraints) {
+                for (let constraint of constraints) {
                     constraintsAtCell.delete(constraint);
                 }
             }
@@ -412,7 +412,7 @@ class PuzzleGrid {
             // add constraints to back to constraint map and note
             // new locations
             const newCells: BSTSet<Cell> = new BSTSet();
-            for (let constraint of this.selectedConstraints) {
+            for (let constraint of constraints) {
                 for (let cell of constraint.cells) {
                     newCells.add(cell);
                     let constraintsAtCell = this.constraintMap.get(cell);
@@ -427,6 +427,12 @@ class PuzzleGrid {
             let cells = BSTSet.union(newCells, oldCells);
 
             this.checkCellsForConstraintViolations(...cells);
+        }
+    }
+
+    translateSelectedConstraints(rows: number, columns: number): void {
+        if (rows != 0 || columns != 0) {
+            this.translateConstraints(rows, columns, [...this.selectedConstraints]);
             this.updateSelectionBox();
         }
     }
