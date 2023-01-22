@@ -19,10 +19,17 @@ class UndoRedoStack {
     }
 
     doAction(action: IAction) {
-        console.debug(`do: ${action.description}`);
-        action.apply();
+        this.pushAction(action, true);
+    }
+
+    pushAction(action: IAction, doAction?: boolean) {
         this.undoStack.push(action);
-        this.redoStack = new Array();
+        if (doAction) {
+            console.debug(`do: ${action.description}`);
+            action.apply();
+
+            this.redoStack = new Array();
+        }
     }
 
     undo() {
