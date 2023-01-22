@@ -10,6 +10,21 @@ var ToolMode;
     // no possible effect on puzzle state
     ToolMode[ToolMode["NoOp"] = 3] = "NoOp";
 })(ToolMode || (ToolMode = {}));
+var ToolID;
+(function (ToolID) {
+    ToolID[ToolID["First"] = 0] = "First";
+    ToolID[ToolID["ObjectSelection"] = 0] = "ObjectSelection";
+    ToolID[ToolID["RectangleSelection"] = 1] = "RectangleSelection";
+    ToolID[ToolID["Move"] = 2] = "Move";
+    ToolID[ToolID["Grid"] = 3] = "Grid";
+    ToolID[ToolID["Digit"] = 4] = "Digit";
+    ToolID[ToolID["Center"] = 5] = "Center";
+    ToolID[ToolID["Corner"] = 6] = "Corner";
+    ToolID[ToolID["Zoom"] = 7] = "Zoom";
+    ToolID[ToolID["Pan"] = 8] = "Pan";
+    // the number of tools
+    ToolID[ToolID["Count"] = 9] = "Count";
+})(ToolID || (ToolID = {}));
 class ITool {
     constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
         this.toolBox = toolBox;
@@ -45,11 +60,19 @@ class NoOpTool extends ITool {
     }
 }
 class ToolBox {
-    switchToTool(tool) {
-        if (tool == this.currentTool) {
+    get currentTool() {
+        let tool = this.tools[this.currentToolId];
+        throwIfUndefined(tool);
+        return tool;
+    }
+    switchToTool(toolId) {
+        var _a, _b;
+        if (toolId === this.currentToolId) {
             return;
         }
-        if (tool.mode != this.currentTool.mode) {
+        const nextTool = this.tools[toolId];
+        const prevTool = this.tools[this.currentToolId];
+        if (nextTool.mode != prevTool.mode) {
             switch (this.currentTool.mode) {
                 case ToolMode.ConstraintEdit:
                     this.puzzleGrid.clearSelectedConstraints();
@@ -62,41 +85,46 @@ class ToolBox {
                 case ToolMode.NoOp: break;
             }
         }
-        const prevTool = this.currentTool;
-        const nextTool = tool;
-        this.currentTool.handlePutDown(nextTool);
-        this.currentTool = tool;
-        this.currentTool.handlePickUp(prevTool);
-        console.debug(`Switching to ${tool.constructor.name}`);
+        prevTool.handlePutDown(nextTool);
+        nextTool.handlePickUp(prevTool);
+        // set selected state
+        (_a = document.querySelector(`div#${this.blueprints[this.currentToolId].id}`)) === null || _a === void 0 ? void 0 : _a.classList.remove("selected");
+        (_b = document.querySelector(`div#${this.blueprints[toolId].id}`)) === null || _b === void 0 ? void 0 : _b.classList.add("selected");
+        this.currentToolId = toolId;
+        console.debug(`Switching to ${nextTool.constructor.name}`);
     }
     constructor(puzzleGrid, actionStack, sceneManager) {
         this.tools = new Array();
+        this.currentToolId = ToolID.ObjectSelection;
+        this.blueprints = [
+            { id: "object_selection_tool", toolConstructor: ObjectSelectionTool, shortcut: "KeyO" },
+            { id: "rectangle_selection_tool", toolConstructor: NoOpTool, shortcut: undefined },
+            { id: "move_tool", toolConstructor: MoveTool, shortcut: "KeyM" },
+            { id: "grid_tool", toolConstructor: GridTool, shortcut: "KeyG" },
+            { id: "digit_tool", toolConstructor: DigitTool, shortcut: "KeyZ" },
+            { id: "center_tool", toolConstructor: CenterTool, shortcut: "KeyC" },
+            { id: "corner_tool", toolConstructor: CornerTool, shortcut: "KeyX" },
+            { id: "zoom_tool", toolConstructor: ZoomTool, shortcut: undefined },
+            { id: "pan_tool", toolConstructor: PanTool, shortcut: undefined },
+        ];
         this.puzzleGrid = puzzleGrid;
         this.actionStack = actionStack;
         this.sceneManager = sceneManager;
-        this.currentTool = new NoOpTool(this, puzzleGrid, actionStack, sceneManager);
-        const blueprints = [
-            ["object_selection_tool", ObjectSelectionTool, "KeyO"],
-            ["rectangle_selection_tool", NoOpTool, undefined],
-            ["move_tool", MoveTool, "KeyM"],
-            ["grid_tool", GridTool, "KeyG"],
-            ["digit_tool", DigitTool, "KeyZ"],
-            ["center_tool", CenterTool, "KeyC"],
-            ["corner_tool", CornerTool, "KeyX"],
-            ["zoom_tool", ZoomTool, undefined],
-            ["pan_tool", PanTool, undefined],
-        ];
-        for (let [id, toolConstructor, _code] of blueprints) {
+        // always start with the object selection tool
+        this.currentToolId = ToolID.ObjectSelection;
+        // construct our toolbox
+        for (let k = ToolID.First; k < ToolID.Count; k++) {
+            let blueprint = this.blueprints[k];
+            const id = blueprint.id;
+            const toolConstructor = blueprint.toolConstructor;
             let tool = new toolConstructor(this, puzzleGrid, actionStack, sceneManager);
             this.tools.push(tool);
             let button = document.querySelector(`div#${id}`);
             throwIfNull(button);
             button.addEventListener("click", () => {
-                this.switchToTool(tool);
+                this.switchToTool(k);
             });
         }
-        // always start with the object selection tool
-        this.currentTool = this.tools.first();
         // register input events on the root svg element to forward to the tools
         let svg = document.querySelector("svg#canvas_root");
         throwIfNull(svg);
@@ -194,10 +222,11 @@ class ToolBox {
                 !keyboardEvent.metaKey &&
                 !keyboardEvent.ctrlKey &&
                 !keyboardEvent.altKey) {
-                for (let k = 0; k < blueprints.length; k++) {
-                    let [_id, _toolConstructor, code] = blueprints[k];
-                    if (code && keyboardEvent.code === code) {
-                        this.switchToTool(this.tools[k]);
+                for (let k = ToolID.First; k < ToolID.Count; k++) {
+                    let blueprint = this.blueprints[k];
+                    const shortcut = blueprint.shortcut;
+                    if (shortcut && keyboardEvent.code === shortcut) {
+                        this.switchToTool(k);
                         event.preventDefault();
                         event.stopPropagation();
                         return;
