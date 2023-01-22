@@ -10,10 +10,15 @@ class UndoRedoStack {
         this.redoStack = new Array();
     }
     doAction(action) {
-        console.debug(`do: ${action.description}`);
-        action.apply();
+        this.pushAction(action, true);
+    }
+    pushAction(action, doAction) {
         this.undoStack.push(action);
-        this.redoStack = new Array();
+        if (doAction) {
+            console.debug(`do: ${action.description}`);
+            action.apply();
+            this.redoStack = new Array();
+        }
     }
     undo() {
         let action = this.undoStack.pop();

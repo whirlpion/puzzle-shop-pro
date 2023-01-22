@@ -32,6 +32,9 @@ class ObjectSelectionTool extends ITool {
     constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
         super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
+    get mode() {
+        return ToolMode.ConstraintEdit;
+    }
     handleMouseClick(event) {
         let cell = this.sceneManager.cellAtMouseEvent(event);
         // get all the constraints at this cell

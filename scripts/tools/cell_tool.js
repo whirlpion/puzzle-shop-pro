@@ -3,16 +3,14 @@ class CellTool extends ITool {
     constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
         super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
+    get mode() {
+        return ToolMode.CellEdit;
+    }
     deleteDigit() {
         let cells = this.puzzleGrid.getHighlightedCells();
         if (cells.length > 0) {
             const action = new DeleteCellValueAction(this.puzzleGrid, cells);
             this.actionStack.doAction(action);
-        }
-    }
-    handlePutDown(nextTool) {
-        if (!(nextTool instanceof CellTool)) {
-            this.puzzleGrid.clearAllHighlights();
         }
     }
     handleMouseDoubleClick(event) {

@@ -81,5 +81,11 @@ class Grid9x9Constraint extends IConstraint {
         }
         return retval;
     }
+    translate(rows, columns) {
+        for (let constraint of this.regionConstraints) {
+            constraint.translate(rows, columns);
+        }
+        super.translate(rows, columns);
+    }
 }
 Grid9x9Constraint.counter = 0;

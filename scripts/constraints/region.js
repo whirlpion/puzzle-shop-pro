@@ -6,11 +6,11 @@ class RegionConstraint extends IConstraint {
     }
     getViolatedCells(puzzleGrid) {
         let digitsInRegion = new Set();
-        for (let cell of this._cells) {
+        for (let cell of this.cells) {
             let digit = puzzleGrid.getDigitAtCell(cell);
             if (digit !== null) {
                 if (digitsInRegion.has(digit)) {
-                    return new BSTSet(this._cells);
+                    return new BSTSet(this.cells);
                 }
                 else {
                     digitsInRegion.add(digit);

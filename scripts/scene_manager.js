@@ -23,6 +23,7 @@ var Cursor;
     Cursor["Default"] = "default";
     Cursor["Grab"] = "grab";
     Cursor["Grabbing"] = "grabbing";
+    Cursor["Move"] = "move";
 })(Cursor || (Cursor = {}));
 // the canvas view keeps track of the parent svg element of each renderable 'thing' on the canvas
 class SceneManager {

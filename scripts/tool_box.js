@@ -1,10 +1,15 @@
 "use strict";
-var Tool;
-(function (Tool) {
-    Tool[Tool["ObjectSelection"] = 0] = "ObjectSelection";
-    Tool[Tool["RectangleSelection"] = 1] = "RectangleSelection";
-    Tool[Tool["GridInsertion"] = 2] = "GridInsertion";
-})(Tool || (Tool = {}));
+var ToolMode;
+(function (ToolMode) {
+    // various selection tools
+    ToolMode[ToolMode["ConstraintEdit"] = 0] = "ConstraintEdit";
+    // various constraint insertion tools
+    ToolMode[ToolMode["ConstraintInsert"] = 1] = "ConstraintInsert";
+    // cell editing tools
+    ToolMode[ToolMode["CellEdit"] = 2] = "CellEdit";
+    // no possible effect on puzzle state
+    ToolMode[ToolMode["NoOp"] = 3] = "NoOp";
+})(ToolMode || (ToolMode = {}));
 class ITool {
     constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
         this.toolBox = toolBox;
@@ -35,11 +40,27 @@ class NoOpTool extends ITool {
     constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
         super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
+    get mode() {
+        return ToolMode.NoOp;
+    }
 }
 class ToolBox {
     switchToTool(tool) {
         if (tool == this.currentTool) {
             return;
+        }
+        if (tool.mode != this.currentTool.mode) {
+            switch (this.currentTool.mode) {
+                case ToolMode.ConstraintEdit:
+                    this.puzzleGrid.clearSelectedConstraints();
+                    this.puzzleGrid.updateSelectionBox();
+                    break;
+                case ToolMode.ConstraintInsert: break;
+                case ToolMode.CellEdit:
+                    this.puzzleGrid.clearAllHighlights();
+                    break;
+                case ToolMode.NoOp: break;
+            }
         }
         const prevTool = this.currentTool;
         const nextTool = tool;
@@ -57,6 +78,7 @@ class ToolBox {
         const blueprints = [
             ["object_selection_tool", ObjectSelectionTool, "KeyO"],
             ["rectangle_selection_tool", NoOpTool, undefined],
+            ["move_tool", MoveTool, "KeyM"],
             ["grid_tool", GridTool, "KeyG"],
             ["digit_tool", DigitTool, "KeyZ"],
             ["center_tool", CenterTool, "KeyC"],
@@ -74,7 +96,7 @@ class ToolBox {
             });
         }
         // always start with the object selection tool
-        this.currentTool = this.tools[Tool.ObjectSelection];
+        this.currentTool = this.tools.first();
         // register input events on the root svg element to forward to the tools
         let svg = document.querySelector("svg#canvas_root");
         throwIfNull(svg);

@@ -21,6 +21,19 @@ class IConstraint {
         this._boundingBox = boundingBox;
         this._name = name;
     }
+    translate(rows, columns) {
+        let cells = new Array();
+        for (let cell of this._cells) {
+            cells.push(new Cell(cell.i + rows, cell.j + columns));
+        }
+        this._cells = cells;
+        this._boundingBox = BoundingBox.fromCells(...this._cells);
+        if (this._svg) {
+            const x = this._boundingBox.left * CELL_SIZE;
+            const y = this._boundingBox.top * CELL_SIZE;
+            this._svg.setAttribute("transform", `translate(${x},${y})`);
+        }
+    }
 }
 var HighlightCellsFlags;
 (function (HighlightCellsFlags) {
@@ -40,6 +53,9 @@ class PuzzleGrid {
     get hasSelectedConstraints() {
         return this.selectedConstraints.size > 0;
     }
+    get selectionBoundingBox() {
+        return this._selectionBoundingBox;
+    }
     // are any cells highlighted
     get hasHighlightedCells() {
         return this.highlightedCells.size > 0;
@@ -54,6 +70,9 @@ class PuzzleGrid {
         this.violatedConstraints = new Set();
         // the set of constraints currently selectd
         this.selectedConstraints = new Set();
+        // bounding box representation of the selections
+        this._selectionBoundingBox = BoundingBox.Empty;
+        // digits in cells
         this.cellMap = new BSTMap();
         // the cells which are currently highlighted mapped to their associated SVG Rect
         this.highlightedCells = new BSTMap();
@@ -184,6 +203,7 @@ class PuzzleGrid {
             }
             // join them all together
             const boundingBox = BoundingBox.union(...boundingBoxes);
+            this._selectionBoundingBox = boundingBox;
             const MARGIN = CELL_SIZE / 4;
             let x = boundingBox.j * CELL_SIZE - MARGIN;
             let y = boundingBox.i * CELL_SIZE - MARGIN;
@@ -193,6 +213,7 @@ class PuzzleGrid {
             this.selectionBox.setAttributes(["x", `${x}`], ["y", `${y}`], ["width", `${width}`], ["height", `${height}`], ["visibility", "visible"]);
         }
         else {
+            this._selectionBoundingBox = BoundingBox.Empty;
             this.selectionBox.setAttributes(["visibility", "hidden"]);
         }
     }
@@ -269,6 +290,50 @@ class PuzzleGrid {
         this.selectedConstraints.delete(constraint);
         if (checkViolations) {
             this.checkCellsForConstraintViolations(...constraint.cells);
+        }
+    }
+    translateConstraints(rows, columns, constraints) {
+        if (rows != 0 || columns != 0) {
+            throwIfFalse(Number.isInteger(rows));
+            throwIfFalse(Number.isInteger(columns));
+            // translate all constraints, and note old locations
+            // remove all our violated constraints since we're going to re-check
+            const oldCells = new BSTSet();
+            for (let constraint of constraints) {
+                oldCells.add(...constraint.cells);
+                constraint.translate(rows, columns);
+                this.violatedConstraints.delete(constraint);
+            }
+            // remove constraints from constraint map
+            for (let cell of oldCells) {
+                let constraintsAtCell = this.constraintMap.get(cell);
+                throwIfUndefined(constraintsAtCell);
+                for (let constraint of constraints) {
+                    constraintsAtCell.delete(constraint);
+                }
+            }
+            // add constraints to back to constraint map and note
+            // new locations
+            const newCells = new BSTSet();
+            for (let constraint of constraints) {
+                for (let cell of constraint.cells) {
+                    newCells.add(cell);
+                    let constraintsAtCell = this.constraintMap.get(cell);
+                    if (constraintsAtCell === undefined) {
+                        constraintsAtCell = new Set();
+                        this.constraintMap.set(cell, constraintsAtCell);
+                    }
+                    constraintsAtCell.add(constraint);
+                }
+            }
+            let cells = BSTSet.union(newCells, oldCells);
+            this.checkCellsForConstraintViolations(...cells);
+        }
+    }
+    translateSelectedConstraints(rows, columns) {
+        if (rows != 0 || columns != 0) {
+            this.translateConstraints(rows, columns, [...this.selectedConstraints]);
+            this.updateSelectionBox();
         }
     }
     // Cell Setters/Getters

@@ -1,17 +1,33 @@
 "use strict";
 class BoundingBox {
     constructor(i, j, rows, columns) {
-        this.i = i;
-        this.j = j;
-        this.rows = rows;
-        this.columns = columns;
+        throwIfFalse(Number.isInteger(i));
+        throwIfFalse(Number.isInteger(j));
+        throwIfFalse(Number.isInteger(rows));
+        throwIfFalse(Number.isInteger(columns));
         this.i = i;
         this.j = j;
         this.rows = rows;
         this.columns = columns;
     }
+    get left() {
+        return this.j;
+    }
+    get right() {
+        return this.j + this.columns - 1;
+    }
+    get top() {
+        return this.i;
+    }
+    get bottom() {
+        return this.i + this.rows - 1;
+    }
     toString() {
         return `{ i: ${this.i}, j: ${this.j}, rows: ${this.rows}, columns: ${this.columns} }`;
+    }
+    cellInBox(cell) {
+        return (cell.i >= this.top && cell.i <= this.bottom) &&
+            (cell.j >= this.left && cell.j <= this.right);
     }
     static fromCells(...cells) {
         const first = cells.first();
@@ -44,3 +60,4 @@ class BoundingBox {
         });
     }
 }
+BoundingBox.Empty = new BoundingBox(0, 0, 0, 0);

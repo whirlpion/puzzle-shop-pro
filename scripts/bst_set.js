@@ -66,13 +66,16 @@ class BSTSet {
         this.data = new Array();
         return undefined;
     }
-    delete(value) {
-        let index = this.data.binarySearch(value);
-        if (index >= 0) {
-            this.data.remove(index);
-            return true;
+    delete(...values) {
+        let result = false;
+        for (let value of values) {
+            let index = this.data.binarySearch(value);
+            if (index >= 0) {
+                this.data.remove(index);
+                result = true;
+            }
         }
-        return false;
+        return result;
     }
     entries() {
         return new BSTSetIterator(this.data.entries());
