@@ -8,6 +8,8 @@
     --puzzle-canvas-height: var(--main-bar-height);
     --side-bar-width: 30em;
     --side-bar-height: var(--main-bar-height);
+    --constraint-edit-min-height: 30em;
+    --constraint-list-min-height: 30em;
     --status-bar-height: 3em;
 }
 
@@ -126,6 +128,22 @@ div#side_bar {
     width: var(--side-bar-width);
     height: var(--side-bar-height);
     background: lightgreen;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+}
+
+div#side_bar > div#constraint_edit {
+    flex: none;
+    min-height: var(--constraint-edit-min-height);
+    background-color: skyblue;
+}
+
+div#side_bar > div#constraint_list {
+    flex: 1;
+    overflow: auto;
+    min-height: var(--constraint-edit-min-height);
+    background-color: hotpink;
 }
 
 div#status_bar {
