@@ -124,7 +124,7 @@ svg#canvas_root{
     background: white;
 }
 
-div#side_bar {
+div#panel_bar {
     width: var(--side-bar-width);
     height: var(--side-bar-height);
     background: lightgreen;
@@ -133,17 +133,29 @@ div#side_bar {
     overflow: auto;
 }
 
-div#side_bar > div#constraint_edit {
+div#panel_bar > div#constraint_edit_panel {
     flex: none;
     min-height: var(--constraint-edit-min-height);
     background-color: skyblue;
+    width: 100%;
 }
 
-div#side_bar > div#constraint_list {
+/* constraint selection list */
+
+div#panel_bar > div#constraint_list_panel {
     flex: 1;
     overflow: auto;
-    min-height: var(--constraint-edit-min-height);
+    min-height: var(--constraint-list-min-height);
     background-color: hotpink;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+div#constraint_list_panel > div.list-widget {
+    background-color: lightgreen;
+    width: 100%;
+    flex: 1;
 }
 
 div#status_bar {

@@ -76,6 +76,8 @@ class PuzzleGrid {
     }
 
     private sceneManager: SceneManager;
+    private constraintListPanel: ConstraintListPanel;
+
     // key: cell row and column
     // value: set of constraints affecting the cell
     private constraintMap: BSTMap<Cell, Set<IConstraint>> = new BSTMap();
@@ -117,13 +119,14 @@ class PuzzleGrid {
         return this._focusedCell;
     }
 
-    constructor(sceneManager: SceneManager, rows: number, columns: number) {
+    constructor(sceneManager: SceneManager, constraintListPanel: ConstraintListPanel, rows: number, columns: number) {
         throwIfFalse(Number.isInteger(rows));
         throwIfFalse(Number.isInteger(columns));
 
         this._rows = rows;
         this._columns = columns;
         this.sceneManager = sceneManager;
+        this.constraintListPanel = constraintListPanel;
         this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
         this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
         this.selectionBox = sceneManager.createElement("rect", SVGRectElement, RenderLayer.Foreground);
@@ -345,7 +348,7 @@ class PuzzleGrid {
 
     // adds a constraint and optionally checks to see if its addition affects
     // the set of cells under violated constraints
-    addConstraint(constraint: IConstraint, checkViolations?: boolean, ): void {
+    addConstraint(constraint: IConstraint, checkViolations?: boolean): void {
         for (let cell of constraint.cells) {
             // get set of constraints already on cell, or create new one
             let constraints = this.constraintMap.get(cell);
@@ -357,6 +360,9 @@ class PuzzleGrid {
             // update the set with our constraint
             constraints.add(constraint);
         }
+
+        // update the constraint list panel
+        this.constraintListPanel.addConstraint(constraint);
 
         if (checkViolations) {
             this.checkCellsForConstraintViolations(...constraint.cells);

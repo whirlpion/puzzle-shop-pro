@@ -1,0 +1,16 @@
+/* List Widget */
+
+list-widget {
+    display: flex;
+    flex-direction: column;
+    overflow-x: none;
+    overflow-y: auto;
+}
+
+.list-entry {
+    width: 100%;
+}
+
+.content-edit-element:focus {
+    background-color: magenta;
+}
