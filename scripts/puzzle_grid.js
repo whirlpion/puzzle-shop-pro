@@ -63,7 +63,7 @@ class PuzzleGrid {
     get focusedCell() {
         return this._focusedCell;
     }
-    constructor(sceneManager, rows, columns) {
+    constructor(sceneManager, constraintListPanel, rows, columns) {
         // key: cell row and column
         // value: set of constraints affecting the cell
         this.constraintMap = new BSTMap();
@@ -83,6 +83,7 @@ class PuzzleGrid {
         this._rows = rows;
         this._columns = columns;
         this.sceneManager = sceneManager;
+        this.constraintListPanel = constraintListPanel;
         this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
         this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
         this.selectionBox = sceneManager.createElement("rect", SVGRectElement, RenderLayer.Foreground);
@@ -268,6 +269,8 @@ class PuzzleGrid {
             // update the set with our constraint
             constraints.add(constraint);
         }
+        // update the constraint list panel
+        this.constraintListPanel.addConstraint(constraint);
         if (checkViolations) {
             this.checkCellsForConstraintViolations(...constraint.cells);
         }

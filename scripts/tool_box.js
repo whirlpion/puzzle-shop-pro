@@ -256,7 +256,7 @@ class ToolBox {
                 event.stopPropagation();
                 return;
             }
-        }, { capture: true });
+        });
         document.addEventListener("keyup", (event) => {
             const keyboardEvent = event;
             if (this.sceneManager.handleKeyUp(keyboardEvent)) {
@@ -269,6 +269,6 @@ class ToolBox {
                 event.stopPropagation();
                 return;
             }
-        }, { capture: true });
+        });
     }
 }

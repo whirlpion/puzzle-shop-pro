@@ -5,7 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <title>Puzzle Shop Pro</title>
     <link rel="stylesheet" type="text/css" href="styles.css"/>
+    <link rel="stylesheet" type="text/css" href="widgets.css"/>
     <script src="scripts/constants.js"/>
+    <script src="scripts/widgets.js"/>
     <script src="scripts/error_handling.js"/>
     <script src="scripts/utilities.js"/>
     <script src="scripts/bst_set.js"/>
@@ -22,6 +24,7 @@
     <script src="scripts/tools/cell_tool.js"/>
     <script src="scripts/tools/pan_tool.js"/>
     <script src="scripts/tools/zoom_tool.js"/>
+    <script src="scripts/constraint_list_panel.js"/>
     <script src="scripts/cell.js"/>
     <script src="scripts/puzzle_grid.js"/>
     <script src="scripts/constraints/region.js"/>
@@ -43,6 +46,12 @@
                 <div id="pan_tool" title="Pan Tool"/>
             </div>
             <div id="puzzle_canvas"/>
+            <div id="panel_bar">
+                <div id="constraint_edit_panel">
+                    constraint edit!
+                </div>
+                <div id="constraint_list_panel"/>
+            </div>
         </div>
         <div id="status_bar"/>
     </body>

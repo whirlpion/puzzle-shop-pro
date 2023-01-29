@@ -7,7 +7,11 @@ class PuzzleShopPro {
         throwIfNotType(parent, HTMLElement);
         this.sceneManager = new SceneManager(parent);
         this.actionStack = new UndoRedoStack();
-        this.puzzleGrid = new PuzzleGrid(this.sceneManager, DEFAULT_GRID_SIZE, DEFAULT_GRID_SIZE);
+        let constraintListPanel = document.querySelector("div#constraint_list_panel");
+        throwIfNull(constraintListPanel);
+        throwIfNotType(constraintListPanel, HTMLDivElement);
+        this.constraintListPanel = new ConstraintListPanel(constraintListPanel);
+        this.puzzleGrid = new PuzzleGrid(this.sceneManager, this.constraintListPanel, DEFAULT_GRID_SIZE, DEFAULT_GRID_SIZE);
         this.toolBox = new ToolBox(this.puzzleGrid, this.actionStack, this.sceneManager);
     }
 }
