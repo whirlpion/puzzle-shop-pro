@@ -40,7 +40,9 @@ class ContentEditElement extends HTMLDivElement {
                 const selection = globalThis.getSelection();
                 throwIfNull(selection);
                 selection.removeAllRanges();
+                this.cachedTextContent = null;
                 event.preventDefault();
+                event.stopPropagation();
             }
             else if (keyboardEvent.code === "Escape") {
                 this.setAttribute("contenteditable", "false");
@@ -48,13 +50,17 @@ class ContentEditElement extends HTMLDivElement {
                 throwIfNull(selection);
                 selection.removeAllRanges();
                 this.textContent = this.cachedTextContent;
+                this.cachedTextContent = null;
                 event.preventDefault();
+                event.stopPropagation();
             }
-            // always prevent propagation
-            event.stopPropagation();
+            else if (this.cachedTextContent !== null) {
+                event.stopPropagation();
+            }
         });
         this.addEventListener("blur", (_event) => {
             this.setAttribute("contenteditable", "false");
+            this.cachedTextContent = null;
             const selection = globalThis.getSelection();
             throwIfNull(selection);
             selection.removeAllRanges();
