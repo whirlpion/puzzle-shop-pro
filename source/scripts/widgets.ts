@@ -1,26 +1,20 @@
-class ListElement extends HTMLDivElement {
+class ListElement extends HTMLElement {
     constructor() {
         super();
     }
-
-    // todo: figure out to get TypeScript to play nicely with this
-    addEntry(...entries: HTMLElement[]): void {
-        for (let entry of entries) {
-            entry.classList.add("list-entry");
-            this.appendChild(entry);
-        }
-    }
 }
-globalThis.customElements.define("list-element", ListElement, { extends: "div" });
+globalThis.customElements.define("list-element", ListElement);
+
 
 // todo: need to fix bubbling order >:[
-class ContentEditElement extends HTMLDivElement {
+class ContentEditElement extends HTMLElement {
     private cachedTextContent: string | null = null;
 
     constructor() {
         super();
-        this.classList.add("content-edit-element");
+    }
 
+    connectedCallback(): void {
         // make focusbale
         this.setAttribute("tabindex", "0");
 
@@ -80,4 +74,5 @@ class ContentEditElement extends HTMLDivElement {
         });
     }
 }
-globalThis.customElements.define("content-edit-element", ContentEditElement, { extends: "div" });
+globalThis.customElements.define("content-edit-element", ContentEditElement);
+

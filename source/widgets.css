@@ -1,16 +1,33 @@
 /* List Widget */
 
-list-widget {
+list-element {
     display: flex;
     flex-direction: column;
     overflow-x: none;
     overflow-y: auto;
 }
 
-.list-entry {
+list-element > * {
     width: 100%;
+    box-sizing: border-box;
+    color: fieldtext;
 }
 
-.content-edit-element:focus {
-    background-color: magenta;
+content-edit-element {
+    overflow: none;
+/*    height: 2em;*/
+    vertical-align: middle;
+    border: 2px solid transparent;
+    padding: 0.25em;
+}
+
+content-edit-element:focus {
+    background-color: highlight;
+    color: highlighttext;
+}
+
+content-edit-element[contenteditable=true] {
+    background-color: transparent;
+    border: 2px dotted black;
+    color: fieldtext;
 }

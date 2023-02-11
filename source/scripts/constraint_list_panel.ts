@@ -1,14 +1,15 @@
 class ConstraintListPanel {
-    listWidget: ListElement;
+    listElement: ListElement;
 
     constructor(parent: HTMLDivElement) {
-        this.listWidget = <ListElement>document.createElement("div", {is : "list-element"});
-        parent.appendChild(this.listWidget);
+        this.listElement = <ListElement>document.createElement("list-element");
+        parent.appendChild(this.listElement);
     }
 
     addConstraint(constraint: IConstraint) {
-        let entry = <ContentEditElement>document.createElement("div", {is : "content-edit-element"});
+        console.log(`constraint: ${constraint.name}`);
+        let entry = <ContentEditElement>document.createElement("content-edit-element");
         entry.textContent = constraint.name;
-        this.listWidget.addEntry(entry);
+        this.listElement.appendChild(entry);
     }
 }
