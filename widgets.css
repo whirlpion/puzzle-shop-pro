@@ -10,6 +10,7 @@ list-element {
 list-element > * {
     width: 100%;
     box-sizing: border-box;
+    color: fieldtext;
 }
 
 content-edit-element {
@@ -28,4 +29,5 @@ content-edit-element:focus {
 content-edit-element[contenteditable=true] {
     background-color: transparent;
     border: 2px dotted black;
+    color: fieldtext;
 }
