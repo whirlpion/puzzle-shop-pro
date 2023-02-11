@@ -1,12 +1,13 @@
 "use strict";
 class ConstraintListPanel {
     constructor(parent) {
-        this.listWidget = document.createElement("div", { is: "list-element" });
-        parent.appendChild(this.listWidget);
+        this.listElement = document.createElement("list-element");
+        parent.appendChild(this.listElement);
     }
     addConstraint(constraint) {
-        let entry = document.createElement("div", { is: "content-edit-element" });
+        console.log(`constraint: ${constraint.name}`);
+        let entry = document.createElement("content-edit-element");
         entry.textContent = constraint.name;
-        this.listWidget.addEntry(entry);
+        this.listElement.appendChild(entry);
     }
 }
