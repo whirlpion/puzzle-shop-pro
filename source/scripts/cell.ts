@@ -142,11 +142,11 @@ namespace DigitFlag {
     }
 }
 
-class CellValue {
+class CellValue implements IEquals {
     digit: Digit | null = null;
     centerMark: DigitFlag = DigitFlag.None;
     cornerMark: DigitFlag = DigitFlag.None
-    _locked: boolean = false;
+    private _locked: boolean = false;
     // if a cell is locked, it becomes a constraint
     get locked(): boolean {
         return this._locked;
@@ -169,5 +169,12 @@ class CellValue {
 
     unlock(): void {
         this._locked = false;
+    }
+
+    equals(that: CellValue): boolean {
+        return this.digit == that.digit &&
+               this.centerMark == that.centerMark &&
+               this.cornerMark == that.cornerMark &&
+               this._locked == that._locked;
     }
 };
