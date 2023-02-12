@@ -47,19 +47,19 @@ async function hash_map_test() {
         map.set(person3, "D");
         map.set(person4, "D");
         map.set(person5, "A");
-        const entries = Array.collect(map.entries());
+        const entries = [...map.entries()];
         throwIfNotEqual(entries.length, map.size);
         for (let [key, value] of entries) {
             throwIfFalse(map.has(key) && map.get(key) === value);
         }
         await test.println("should iterate over the keys of the map");
-        const keys = Array.collect(map.keys());
+        const keys = [...map.keys()];
         throwIfNotEqual(keys.length, map.size);
         for (let key of keys) {
             throwIfFalse(map.has(key));
         }
         await test.println("should iterate over the values of the map");
-        const values = Array.collect(map.values());
+        const values = [...map.values()];
         throwIfNotEqual(values.length, map.size);
         for (let k = 0; k < values.length; k++) {
             throwIfNotEqual(entries[k][1], values[k]);

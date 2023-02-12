@@ -47,7 +47,7 @@ async function bst_map_test() {
         map.set(person3, "D");
         map.set(person4, "D");
         map.set(person5, "A");
-        const entries = Array.collect(map.entries());
+        const entries = [...map.entries()];
         throwIfNotEqual(entries.length, map.size);
         for (let k = 0; k < entries.length; k++) {
             throwIfNotEqual(entries[k][0].age, array[k][0].age);
@@ -61,7 +61,7 @@ async function bst_map_test() {
         map.set(person3, "D");
         map.set(person4, "D");
         map.set(person5, "A");
-        const keys = Array.collect(map.keys());
+        const keys = [...map.keys()];
         throwIfNotEqual(keys.length, map.size);
         for (let k = 0; k < keys.length; k++) {
             throwIfNotEqual(keys[k].age, array[k][0].age);
@@ -74,7 +74,7 @@ async function bst_map_test() {
         map.set(person3, "D");
         map.set(person4, "D");
         map.set(person5, "A");
-        const values = Array.collect(map.values());
+        const values = [...map.values()];
         throwIfNotEqual(values.length, map.size);
         for (let k = 0; k < values.length; k++) {
             throwIfNotEqual(values[k], array[k][1]);

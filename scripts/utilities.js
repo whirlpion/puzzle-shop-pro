@@ -89,13 +89,6 @@ Array.prototype.last = function () {
 Array.prototype.remove = function (index) {
     this.splice(index, 1);
 };
-Array.collect = function (it) {
-    let data = new Array();
-    for (let entry = it.next(); !entry.done; entry = it.next()) {
-        data.push(entry.value);
-    }
-    return data;
-};
 Set.union = function (left, right) {
     let result = new Set();
     for (let val of left) {

@@ -151,5 +151,11 @@ class CellValue {
     unlock() {
         this._locked = false;
     }
+    equals(that) {
+        return this.digit == that.digit &&
+            this.centerMark == that.centerMark &&
+            this.cornerMark == that.cornerMark &&
+            this._locked == that._locked;
+    }
 }
 ;

@@ -10,6 +10,9 @@ class BSTSetIterator {
             done: entry.done,
         };
     }
+    [Symbol.iterator]() {
+        return this;
+    }
 }
 class BSTSet {
     get size() {

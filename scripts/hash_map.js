@@ -20,6 +20,9 @@ class HashMapIterator {
         }
         return { value: [entry.value[1].key, entry.value[1].value], done: false };
     }
+    [Symbol.iterator]() {
+        return this;
+    }
 }
 class HashMapKeyIterator {
     constructor(iterator) {
@@ -38,6 +41,9 @@ class HashMapKeyIterator {
             done: false
         };
     }
+    [Symbol.iterator]() {
+        return this;
+    }
 }
 class HashMapValueIterator {
     constructor(iterator) {
@@ -55,6 +61,9 @@ class HashMapValueIterator {
             value: record.value[1],
             done: false
         };
+    }
+    [Symbol.iterator]() {
+        return this;
     }
 }
 class HashMap {

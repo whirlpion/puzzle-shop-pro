@@ -21,6 +21,9 @@ class BSTMapRecordIterator {
             done: entry.done,
         };
     }
+    [Symbol.iterator]() {
+        return this;
+    }
 }
 class BSTMapKeyIterator {
     constructor(iterator) {
@@ -33,6 +36,9 @@ class BSTMapKeyIterator {
             done: entry.done,
         };
     }
+    [Symbol.iterator]() {
+        return this;
+    }
 }
 class BSTMapValueIterator {
     constructor(iterator) {
@@ -44,6 +50,9 @@ class BSTMapValueIterator {
             value: entry.value ? entry.value[1].value : undefined,
             done: entry.done,
         };
+    }
+    [Symbol.iterator]() {
+        return this;
     }
 }
 class BSTMap {

@@ -20,6 +20,9 @@ class HashSetIterator {
         }
         return { value: entry.value[1], done: false };
     }
+    [Symbol.iterator]() {
+        return this;
+    }
 }
 class HashSet {
     get size() {
