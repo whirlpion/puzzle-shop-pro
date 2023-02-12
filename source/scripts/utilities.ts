@@ -120,18 +120,6 @@ Array.prototype.remove = function<T>(this: Array<T>, index: number): void {
     this.splice(index, 1);
 }
 
-interface ArrayConstructor {
-    collect<T>(iterator: Iterator<T>): Array<T>;
-}
-
-Array.collect = function<T>(it: Iterator<T>): Array<T> {
-    let data: Array<T> = new Array();
-    for(let entry = it.next(); !entry.done; entry = it.next()) {
-        data.push(entry.value);
-    }
-    return data;
-}
-
 interface SetConstructor {
     union<T>(left: Set<T>, right: Set<T>): Set<T>;
 }

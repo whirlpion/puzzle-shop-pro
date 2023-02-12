@@ -24,6 +24,10 @@ class HashSetIterator<T extends IEquals & IHash> {
         }
         return { value: entry.value[1], done: false };
     }
+
+    [Symbol.iterator](): HashSetIterator<T> {
+        return this;
+    }
 }
 
 class HashSet<T extends IEquals & IHash> {

@@ -29,6 +29,10 @@ class BSTMapRecordIterator<K extends IOrdered, V> {
             done: entry.done,
         };
     }
+
+    [Symbol.iterator](): BSTMapRecordIterator<K,V> {
+        return this;
+    }
 }
 
 class BSTMapKeyIterator<K extends IOrdered, V> {
@@ -45,6 +49,10 @@ class BSTMapKeyIterator<K extends IOrdered, V> {
             done: entry.done,
         };
     }
+
+    [Symbol.iterator](): BSTMapKeyIterator<K,V> {
+        return this;
+    }
 }
 
 class BSTMapValueIterator<K extends IOrdered, V> {
@@ -60,6 +68,10 @@ class BSTMapValueIterator<K extends IOrdered, V> {
             value: entry.value ? entry.value[1].value : undefined,
             done: entry.done,
         };
+    }
+
+    [Symbol.iterator](): BSTMapValueIterator<K,V> {
+        return this;
     }
 }
 

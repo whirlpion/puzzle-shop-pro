@@ -22,6 +22,10 @@ class HashMapIterator<K extends IEquals & IHash, V> {
         }
         return {value: [entry.value[1].key, entry.value[1].value], done: false};
     }
+
+    [Symbol.iterator](): HashMapIterator<K,V> {
+        return this;
+    }
 }
 
 class HashMapKeyIterator<K extends IEquals & IHash, V> {
@@ -44,6 +48,10 @@ class HashMapKeyIterator<K extends IEquals & IHash, V> {
             done: false
         }
     }
+
+    [Symbol.iterator](): HashMapKeyIterator<K,V> {
+        return this;
+    }
 }
 
 class HashMapValueIterator<K extends IEquals & IHash, V> {
@@ -65,6 +73,10 @@ class HashMapValueIterator<K extends IEquals & IHash, V> {
             value: record.value[1],
             done: false
         }
+    }
+
+    [Symbol.iterator](): HashMapValueIterator<K,V> {
+        return this;
     }
 }
 

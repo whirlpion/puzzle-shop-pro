@@ -12,6 +12,10 @@ class BSTSetIterator<T extends IOrdered> {
             done: entry.done,
         };
     }
+
+    [Symbol.iterator](): BSTSetIterator<T> {
+        return this;
+    }
 }
 
 class BSTSet<T extends IOrdered> {
