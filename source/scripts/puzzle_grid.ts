@@ -1,4 +1,3 @@
-
 // a puzzle object is the 'owner' of the visual and logical aspects of a puzzle piece
 abstract class IConstraint {
     // list of cells [row,column] affected by this constraint
@@ -60,6 +59,41 @@ enum HighlightCellsFlags {
     Focus = 1 << 0,// foucs the last cell in the list
     Clear = 1 << 1, // should all the other cells be removed
 }
+
+enum PuzzleEventType {
+    HighlightedCellsChanged = "highlightedcellschanged",
+    CellValuesChanged = "cellvalueschanged",
+    ViolatedConstraintsChanged = "violatedconstraintschanged",
+    ConstraintsAdded = "constraintsadded",
+    ConstraintsRemoved = "constraintsremoved",
+};
+
+class PuzzleEvent {
+    readonly grid: PuzzleGrid;
+
+    constructor(grid: PuzzleGrid) {
+        this.grid = grid;
+    }
+}
+
+class ConstraintEvent extends PuzzleEvent {
+    readonly constraints: Array<IConstraint>;
+    constructor(grid: PuzzleGrid, constraints: IConstraint[]) {
+        super(grid);
+
+        this.constraints = constraints;
+    }
+}
+
+class CellEvent extends PuzzleEvent {
+    readonly cells: Array<Cell>;
+    constructor(grid: PuzzleGrid, cells: Cell[]) {
+        super(grid);
+
+        this.cells = cells;
+    }
+}
+
 
 // puzzle grid handles digits and resolving constraints
 class PuzzleGrid {
@@ -139,12 +173,45 @@ class PuzzleGrid {
 
     }
 
+    // Event Functions
+
+    private listenerRegistry: Map<string, Set<{(event: PuzzleEvent): void}>> = new Map();
+
+    addEventListener(eventType: string, listener: { (event: PuzzleEvent): void}): void {
+        let listeners = this.listenerRegistry.get(eventType);
+        if (!listeners) {
+            listeners = new Set();
+            this.listenerRegistry.set(eventType, listeners);
+        }
+        listeners.add(listener);
+    }
+
+    removeEventListener(eventType: string, listener: { (event: PuzzleEvent): void}): void {
+        const listeners = this.listenerRegistry.get(eventType);
+        if (listeners) {
+            listeners.delete(listener);
+        }
+    }
+
+    private fireEvent(eventType: string, event: PuzzleEvent) {
+        globalThis.setTimeout(() => {
+            const listeners = this.listenerRegistry.get(eventType);
+            if (listeners) {
+                for (let listener of listeners) {
+                    listener(event);
+                }
+            }
+        });
+    }
+
     // Highlight Functions
 
     clearAllHighlights(): void {
         this.highlightedCells.clear();
         this.highlightSvg.clearChildren();
         this._focusedCell = null;
+
+        this.fireEvent(PuzzleEventType.HighlightedCellsChanged, new CellEvent(this, []));
     }
 
     focusCell(cell: Cell): void {
@@ -186,8 +253,11 @@ class PuzzleGrid {
         if (flags & HighlightCellsFlags.Focus) {
             this._focusedCell = <Cell>cells.last();
         }
+
+        this.fireEvent(PuzzleEventType.HighlightedCellsChanged, new CellEvent(this, [...this.highlightedCells.keys()]));
     }
 
+    // toglges cell highlight state
     toggleCell(cell: Cell): void {
         // cell toggle
         let rect = this.highlightedCells.get(cell);
@@ -199,10 +269,12 @@ class PuzzleGrid {
         } else {
             this.highlightCells(HighlightCellsFlags.Focus, cell);
         }
+
+        this.fireEvent(PuzzleEventType.HighlightedCellsChanged, new CellEvent(this, [...this.highlightedCells.keys()]));
     }
 
     getHighlightedCells(): Array<Cell> {
-        return Array.collect(this.highlightedCells.keys());
+        return [...this.highlightedCells.keys()];
     }
 
     moveFocus(direction: Direction, clearHighlight: boolean): void {
@@ -231,6 +303,7 @@ class PuzzleGrid {
                 this.clearAllHighlights();
             }
             this.highlightCells(HighlightCellsFlags.Focus, newFocus);
+            this.fireEvent(PuzzleEventType.HighlightedCellsChanged, new CellEvent(this, [...this.highlightedCells.keys()]));
         }
     }
 
@@ -239,9 +312,9 @@ class PuzzleGrid {
     getConstraintsAtCell(cell: Cell): Array<IConstraint> {
         let constraints = this.constraintMap.get(cell);
         if (constraints) {
-            return Array.collect(constraints.values());
+            return [...constraints.values()];
         } else {
-            return new Array();
+            return [];
         }
     }
 
@@ -262,7 +335,7 @@ class PuzzleGrid {
     }
 
     getSelectedConstraints(): Array<IConstraint> {
-        return Array.collect(this.selectedConstraints.values());
+        return [...this.selectedConstraints.values()];
     }
 
     updateSelectionBox(): void {
@@ -326,6 +399,9 @@ class PuzzleGrid {
             }
         }
 
+        // todo: avoid false positives
+        this.fireEvent(PuzzleEventType.ViolatedConstraintsChanged, new ConstraintEvent(this, [...this.violatedConstraints]));
+
         // TODO: there's probably a smarter way to batch together cells into larger
         // svg elements rather than painting a rect over each individual cell; keep
         // in mind if we see performance issues here
@@ -364,6 +440,8 @@ class PuzzleGrid {
         // update the constraint list panel
         this.constraintListPanel.addConstraint(constraint);
 
+        this.fireEvent(PuzzleEventType.ConstraintsAdded, new ConstraintEvent(this, [constraint]));
+
         if (checkViolations) {
             this.checkCellsForConstraintViolations(...constraint.cells);
         }
@@ -386,6 +464,8 @@ class PuzzleGrid {
         }
 
         this.selectedConstraints.delete(constraint);
+
+        this.fireEvent(PuzzleEventType.ConstraintsRemoved, new ConstraintEvent(this, [constraint]));
 
         if (checkViolations) {
             this.checkCellsForConstraintViolations(...constraint.cells);
@@ -448,6 +528,11 @@ class PuzzleGrid {
     setCellValue(cell: Cell, value: CellValue, checkViolations?: boolean): void {
         let pair = this.cellMap.get(cell);
         if (pair) {
+            if (pair[0].equals(value)) {
+                // cell value is the same nothing to do
+                return;
+            }
+
             this.cellMap.delete(cell);
             let [_value, svg] = pair;
             this.sceneManager.removeElement(svg);
@@ -577,6 +662,8 @@ class PuzzleGrid {
             this.cellMap.set(cell, [value, pencilMarks]);
         }
 
+        this.fireEvent(PuzzleEventType.CellValuesChanged, new CellEvent(this, [cell]));
+
         if (checkViolations) {
             this.checkCellsForConstraintViolations(cell);
         }
@@ -588,6 +675,8 @@ class PuzzleGrid {
             let [_value, svg] = pair;
             this.sceneManager.removeElement(svg);
             this.cellMap.delete(cell);
+
+            this.fireEvent(PuzzleEventType.CellValuesChanged, new CellEvent(this, [cell]));
         }
 
         if (checkViolations) {
@@ -618,6 +707,4 @@ class PuzzleGrid {
         const value = this.cellMap.get(cell);
         return value ? value[0] : null;
     }
-
 }
-
