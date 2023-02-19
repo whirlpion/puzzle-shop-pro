@@ -66,7 +66,7 @@ class ContentEditElement extends HTMLElement {
 
         this.addEventListener("blur", (_event: Event) => {
             this.setAttribute("contenteditable", "false");
-            if (this.cachedTextContent !== this.textContent) {
+            if (this.cachedTextContent !== null) {
                 const contentChanged = new CustomEvent("textcontentchanged", {
                         detail: { content: this.textContent }
                     });
