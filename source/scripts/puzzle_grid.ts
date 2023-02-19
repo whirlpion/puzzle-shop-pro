@@ -7,7 +7,7 @@ abstract class IConstraint {
     // handle for an svg element from the CanvasView that
     private _svg: SVGElement | null;
     // human readable name for constraint
-    protected readonly _name: string;
+    public name: string;
 
     get cells(): Array<Cell> {
         return this._cells;
@@ -22,16 +22,12 @@ abstract class IConstraint {
         return this._svg;
     }
 
-    get name(): string {
-        return this._name;
-    }
-
     //  takes in a list of cells affected by this constraint and an svg element for display
     constructor(cells: Array<Cell>, boundingBox: BoundingBox, svg: SVGElement | null, name: string) {
         this._cells = cells;
         this._svg = svg;
         this._boundingBox = boundingBox;
-        this._name = name;
+        this.name = name;
     }
 
     // returns a set of cells which violate the constraint
@@ -110,7 +106,6 @@ class PuzzleGrid {
     }
 
     private sceneManager: SceneManager;
-    private constraintListPanel: ConstraintListPanel;
 
     // key: cell row and column
     // value: set of constraints affecting the cell
@@ -153,14 +148,14 @@ class PuzzleGrid {
         return this._focusedCell;
     }
 
-    constructor(sceneManager: SceneManager, constraintListPanel: ConstraintListPanel, rows: number, columns: number) {
+    constructor(sceneManager: SceneManager, rows: number, columns: number) {
         throwIfFalse(Number.isInteger(rows));
         throwIfFalse(Number.isInteger(columns));
 
         this._rows = rows;
         this._columns = columns;
         this.sceneManager = sceneManager;
-        this.constraintListPanel = constraintListPanel;
+        // this.constraintListPanel = constraintListPanel;
         this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
         this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
         this.selectionBox = sceneManager.createElement("rect", SVGRectElement, RenderLayer.Foreground);
@@ -438,7 +433,7 @@ class PuzzleGrid {
         }
 
         // update the constraint list panel
-        this.constraintListPanel.addConstraint(constraint);
+        // this.constraintListPanel.addConstraint(constraint);
 
         this.fireEvent(PuzzleEventType.ConstraintsAdded, new ConstraintEvent(this, [constraint]));
 
