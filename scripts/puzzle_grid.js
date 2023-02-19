@@ -11,15 +11,12 @@ class IConstraint {
         throwIfNull(this._svg);
         return this._svg;
     }
-    get name() {
-        return this._name;
-    }
     //  takes in a list of cells affected by this constraint and an svg element for display
     constructor(cells, boundingBox, svg, name) {
         this._cells = cells;
         this._svg = svg;
         this._boundingBox = boundingBox;
-        this._name = name;
+        this.name = name;
     }
     translate(rows, columns) {
         let cells = new Array();
@@ -69,12 +66,6 @@ class CellEvent extends PuzzleEvent {
 }
 // puzzle grid handles digits and resolving constraints
 class PuzzleGrid {
-    get rows() {
-        return this._rows;
-    }
-    get columns() {
-        return this._columns;
-    }
     // are any constraints selected
     get hasSelectedConstraints() {
         return this.selectedConstraints.size > 0;
@@ -89,7 +80,7 @@ class PuzzleGrid {
     get focusedCell() {
         return this._focusedCell;
     }
-    constructor(sceneManager, constraintListPanel, rows, columns) {
+    constructor(sceneManager) {
         // key: cell row and column
         // value: set of constraints affecting the cell
         this.constraintMap = new BSTMap();
@@ -106,12 +97,8 @@ class PuzzleGrid {
         this._focusedCell = null;
         // Event Functions
         this.listenerRegistry = new Map();
-        throwIfFalse(Number.isInteger(rows));
-        throwIfFalse(Number.isInteger(columns));
-        this._rows = rows;
-        this._columns = columns;
         this.sceneManager = sceneManager;
-        this.constraintListPanel = constraintListPanel;
+        // this.constraintListPanel = constraintListPanel;
         this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
         this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
         this.selectionBox = sceneManager.createElement("rect", SVGRectElement, RenderLayer.Foreground);
@@ -262,7 +249,7 @@ class PuzzleGrid {
             // join them all together
             const boundingBox = BoundingBox.union(...boundingBoxes);
             this._selectionBoundingBox = boundingBox;
-            const MARGIN = CELL_SIZE / 4;
+            const MARGIN = CELL_SIZE / 8;
             let x = boundingBox.j * CELL_SIZE - MARGIN;
             let y = boundingBox.i * CELL_SIZE - MARGIN;
             let width = boundingBox.columns * CELL_SIZE + 2 * MARGIN;
@@ -329,7 +316,7 @@ class PuzzleGrid {
             constraints.add(constraint);
         }
         // update the constraint list panel
-        this.constraintListPanel.addConstraint(constraint);
+        // this.constraintListPanel.addConstraint(constraint);
         this.fireEvent(PuzzleEventType.ConstraintsAdded, new ConstraintEvent(this, [constraint]));
         if (checkViolations) {
             this.checkCellsForConstraintViolations(...constraint.cells);

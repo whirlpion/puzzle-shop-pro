@@ -24,9 +24,6 @@ class ContentEditElement extends HTMLElement {
             selection.removeAllRanges();
             selection.addRange(range);
         });
-        this.addEventListener("focus", (_event) => {
-            console.log("focus");
-        });
         this.addEventListener("keydown", (event) => {
             const keyboardEvent = event;
             if (keyboardEvent.code === "Enter") {
@@ -37,6 +34,10 @@ class ContentEditElement extends HTMLElement {
                 this.cachedTextContent = null;
                 event.preventDefault();
                 event.stopPropagation();
+                const contentChanged = new CustomEvent("textcontentchanged", {
+                    detail: { content: this.textContent }
+                });
+                this.dispatchEvent(contentChanged);
             }
             else if (keyboardEvent.code === "Escape") {
                 this.setAttribute("contenteditable", "false");
@@ -54,6 +55,12 @@ class ContentEditElement extends HTMLElement {
         });
         this.addEventListener("blur", (_event) => {
             this.setAttribute("contenteditable", "false");
+            if (this.cachedTextContent !== null) {
+                const contentChanged = new CustomEvent("textcontentchanged", {
+                    detail: { content: this.textContent }
+                });
+                this.dispatchEvent(contentChanged);
+            }
             this.cachedTextContent = null;
             const selection = globalThis.getSelection();
             throwIfNull(selection);
