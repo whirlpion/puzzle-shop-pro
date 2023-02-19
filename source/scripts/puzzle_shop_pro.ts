@@ -16,10 +16,10 @@ class PuzzleShopPro {
 
         this.puzzleGrid = new PuzzleGrid(this.sceneManager);
 
-        let constraintListPanel = document.querySelector("div#constraint_list_panel");
-        throwIfNull(constraintListPanel);
-        throwIfNotType(constraintListPanel, HTMLDivElement);
-        this.constraintListPanel = new ConstraintListPanel(constraintListPanel, this.puzzleGrid);
+        let constraintListPanelRoot = document.querySelector("div#constraint_list_panel");
+        throwIfNull(constraintListPanelRoot);
+        throwIfNotType(constraintListPanelRoot, HTMLDivElement);
+        this.constraintListPanel = new ConstraintListPanel(constraintListPanelRoot, this.puzzleGrid, this.actionStack);
 
         this.toolBox = new ToolBox(this.puzzleGrid, this.actionStack, this.sceneManager);
     }
