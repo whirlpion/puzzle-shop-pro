@@ -93,18 +93,6 @@ class CellEvent extends PuzzleEvent {
 
 // puzzle grid handles digits and resolving constraints
 class PuzzleGrid {
-    // puzzle grid dimensions
-    private _rows: number;
-    private _columns: number;
-
-    public get rows(): number {
-        return this._rows;
-    }
-
-    public get columns(): number {
-        return this._columns;
-    }
-
     private sceneManager: SceneManager;
 
     // key: cell row and column
@@ -148,12 +136,7 @@ class PuzzleGrid {
         return this._focusedCell;
     }
 
-    constructor(sceneManager: SceneManager, rows: number, columns: number) {
-        throwIfFalse(Number.isInteger(rows));
-        throwIfFalse(Number.isInteger(columns));
-
-        this._rows = rows;
-        this._columns = columns;
+    constructor(sceneManager: SceneManager) {
         this.sceneManager = sceneManager;
         // this.constraintListPanel = constraintListPanel;
         this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);

@@ -14,7 +14,7 @@ class PuzzleShopPro {
         this.sceneManager = new SceneManager(parent);
         this.actionStack = new UndoRedoStack();
 
-        this.puzzleGrid = new PuzzleGrid(this.sceneManager,  DEFAULT_GRID_SIZE, DEFAULT_GRID_SIZE);
+        this.puzzleGrid = new PuzzleGrid(this.sceneManager);
 
         let constraintListPanel = document.querySelector("div#constraint_list_panel");
         throwIfNull(constraintListPanel);
