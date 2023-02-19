@@ -352,7 +352,7 @@ class PuzzleGrid {
 
             this._selectionBoundingBox = boundingBox;
 
-            const MARGIN = CELL_SIZE / 4;
+            const MARGIN = CELL_SIZE / 8;
             let x = boundingBox.j * CELL_SIZE - MARGIN;
             let y = boundingBox.i * CELL_SIZE - MARGIN;
             let width = boundingBox.columns * CELL_SIZE + 2 * MARGIN;
