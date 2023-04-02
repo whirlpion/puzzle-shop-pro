@@ -30,12 +30,16 @@ class ConstraintRenameAction extends IAction {
 class ConstraintListPanel {
     listElement: ListElement;
     constraintToEntry: Map<IConstraint, ContentEditElement> = new Map();
+    puzzleGrid: PuzzleGrid;
     actionStack: UndoRedoStack;
+    toolBox: ToolBox;
 
-    constructor(parent: HTMLDivElement, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack) {
+    constructor(parent: HTMLDivElement, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, toolBox: ToolBox) {
         this.listElement = <ListElement>document.createElement("list-element");
         parent.appendChild(this.listElement);
+        this.puzzleGrid = puzzleGrid;
         this.actionStack = actionStack;
+        this.toolBox = toolBox;
 
         puzzleGrid.addEventListener(
             PuzzleEventType.ConstraintsAdded,
@@ -52,6 +56,30 @@ class ConstraintListPanel {
                 let constraintEvent = <ConstraintEvent>(event);
                 for (let constraint of constraintEvent.constraints) {
                     this.removeConstraint(constraint);
+                }
+        });
+
+        puzzleGrid.addEventListener(
+            PuzzleEventType.ConstraintsSelected,
+            (event: PuzzleEvent) => {
+                let constraintEvent = <ConstraintEvent>(event);
+                for (let constraint of constraintEvent.constraints) {
+                    let entry = this.constraintToEntry.get(constraint);
+                    if (entry) {
+                        this.listElement.selectChild(entry);
+                    }
+                }
+        });
+
+        puzzleGrid.addEventListener(
+            PuzzleEventType.ConstraintsDeselected,
+            (event: PuzzleEvent) => {
+                let constraintEvent = <ConstraintEvent>(event);
+                for (let constraint of constraintEvent.constraints) {
+                    let entry = this.constraintToEntry.get(constraint);
+                    if (entry) {
+                        this.listElement.deselectChild(entry);
+                    }
                 }
         });
     }
@@ -71,6 +99,18 @@ class ConstraintListPanel {
                     constraint,
                     constraint.name,
                     oldName));
+        });
+        entry.addEventListener("elementselected", (_event: Event) => {
+            console.log(`selected ${entry.textContent}`);
+            this.puzzleGrid.selectConstraint(constraint);
+            this.puzzleGrid.updateSelectionBox();
+            this.toolBox.switchToTool(ToolID.ObjectSelection);
+        });
+        entry.addEventListener("elementdeselected", (_event: Event) => {
+            console.log(`selected ${entry.textContent}`);
+            this.puzzleGrid.unselectConstraint(constraint);
+            this.puzzleGrid.updateSelectionBox();
+            this.toolBox.switchToTool(ToolID.ObjectSelection);
         });
         this.listElement.appendChild(entry);
         this.constraintToEntry.set(constraint, entry);

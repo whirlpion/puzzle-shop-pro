@@ -13,17 +13,16 @@ list-element > * {
     color: fieldtext;
 }
 
+list-element > .selected {
+    background-color: highlight;
+    color: highlighttext;
+}
+
 content-edit-element {
     overflow: none;
-/*    height: 2em;*/
     vertical-align: middle;
     border: 2px solid transparent;
     padding: 0.25em;
-}
-
-content-edit-element:focus {
-    background-color: highlight;
-    color: highlighttext;
 }
 
 content-edit-element[contenteditable=true] {
