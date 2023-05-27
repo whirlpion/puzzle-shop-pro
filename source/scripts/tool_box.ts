@@ -39,7 +39,9 @@ abstract class ITool {
 
     abstract get mode(): ToolMode;
 
-    abstract get toolSettings(): Array<Setting>;
+    get toolSettings(): Map<string,Setting> {
+        return new Map();
+    }
 
     // when user switches to this tool
     handlePickUp(_prevTool: ITool) {}
@@ -68,10 +70,6 @@ class NoOpTool extends ITool {
 
     get mode(): ToolMode {
         return ToolMode.NoOp;
-    }
-
-    get toolSettings(): Array<Setting> {
-        return new Array();
     }
 }
 

@@ -41,18 +41,22 @@ class GridTool extends ITool {
         return ToolMode.ConstraintInsert;
     }
 
-    get toolSettings(): Array<Setting> {
-        return [
-            new SettingOption("Grid Size", [
+    override get toolSettings(): Map<string, Setting> {
+        return new Map([
+            ["Grid Size", new SettingOption([
                     ["9x9", "9x9"],
                     ["4x4", "4x4"],
                     ["6x6-horizontal", "6x6 (horizontal)"],
                     ["6x6-vertical", "6x6 (vertical)"],
                     ["8x8-horizontal", "8x8 (horizontal)"],
                     ["8x8-vertical", "8x8 (vertical)"],
-                ]),
-            new SettingOption("Fake Option", []),
-        ];
+                ], (value: string): void => {
+                    console.log(`grid size: {}`, value);
+                })],
+            ["Fake Option", new SettingOption([], (_value: string): void => {
+
+            })],
+        ]);
     }
 
     //

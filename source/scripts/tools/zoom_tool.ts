@@ -10,10 +10,6 @@ class ZoomTool extends ITool {
         return ToolMode.NoOp;
     }
 
-    get toolSettings(): Array<Setting> {
-        return new Array();
-    }
-
     override handleMouseClick(event: MouseEvent): boolean {
         const zoom = this.sceneManager.zoom;
         if (event.shortcutKey) {

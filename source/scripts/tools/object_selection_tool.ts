@@ -44,10 +44,6 @@ class ObjectSelectionTool extends ITool {
         return ToolMode.ConstraintEdit;
     }
 
-    get toolSettings(): Array<Setting> {
-        return new Array();
-    }
-
     override handleMouseClick(event: MouseEvent): boolean {
         let cell = this.sceneManager.cellAtMouseEvent(event);
 

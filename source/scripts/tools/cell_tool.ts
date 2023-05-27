@@ -8,10 +8,6 @@ abstract class CellTool extends ITool {
         return ToolMode.CellEdit;
     }
 
-    get toolSettings(): Array<Setting> {
-        return new Array();
-    }
-
     protected abstract writeDigit(digit: Digit): void;
 
     deleteDigit(): void {

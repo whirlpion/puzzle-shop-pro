@@ -1,22 +1,23 @@
 abstract class Setting {
-    public readonly name: string;
 
-    constructor(name: string) {
-        this.name = name;
+    constructor() {
     }
 
-    abstract getHTML(): HTMLElement;
+    abstract getHTMLElement(): HTMLElement;
 }
 
 class SettingOption extends Setting {
     // array of option values, human readable names tuples
     values: Array<[value: string, name: string]>
-    constructor(name: string, values: Array<[value: string, name: string]>) {
-        super(name);
+    changeCallback: {(value: string): void};
+
+    constructor(values: Array<[value: string, name: string]>, changeCallback: {(value: string): void}) {
+        super();
         this.values = values;
+        this.changeCallback = changeCallback;
     }
 
-    getHTML(): HTMLElement {
+    getHTMLElement(): HTMLElement {
         let selectElement = <HTMLSelectElement>document.createElement("select");
         for (let [value, name] of this.values) {
             let optionElement = <HTMLOptionElement>document.createElement("option");
@@ -24,8 +25,16 @@ class SettingOption extends Setting {
             optionElement.textContent = name;
             selectElement.appendChild(optionElement);
         }
+        selectElement.addEventListener("change", (event: Event) => {
+                if (event.target) {
+                const target = <HTMLSelectElement>event.target;
+                this.changeCallback(target.value);
+            }
+        });
         return <HTMLElement>selectElement;
     }
+
+
 }
 
 // class SettingBooleanData extends Setting {
@@ -37,11 +46,11 @@ class SettingOption extends Setting {
 // }
 
 class SettingElement extends HTMLElement {
-    set setting(setting: Setting) {
-        let nameElement = <HTMLDivElement>document.createElement("div");
-        nameElement.textContent = setting.name;
+    setSetting(name: string, setting: Setting) {
+        const nameElement = <HTMLDivElement>document.createElement("div");
+        nameElement.textContent = name;
         this.appendChild(nameElement);
-        this.appendChild(setting.getHTML());
+        this.appendChild(setting.getHTMLElement());
     }
 
     constructor() {
@@ -62,10 +71,10 @@ class ToolOptionsPanel {
         this.rootElement.clearChildren();
     }
 
-    initSettings(settings: Array<Setting>): void {
-        for (let setting of settings) {
-            let settingElement = <SettingElement>document.createElement("setting-element");
-            settingElement.setting = setting;
+    initSettings(settings: Map<string, Setting>): void {
+        for (const [name, setting] of settings.entries()) {
+            const settingElement = <SettingElement>document.createElement("setting-element");
+            settingElement.setSetting(name,setting);
             this.rootElement.appendChild(settingElement);
         }
     }

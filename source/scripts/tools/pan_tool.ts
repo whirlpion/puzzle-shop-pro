@@ -8,10 +8,6 @@ class PanTool extends ITool {
         return ToolMode.ConstraintEdit;
     }
 
-    get toolSettings(): Array<Setting> {
-        return new Array();
-    }
-
     override handlePickUp(_prevTool: ITool): void {
         this.sceneManager.setMouseCursor(Cursor.Grab);
     }
