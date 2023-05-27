@@ -39,6 +39,10 @@ class MoveTool extends ITool {
         return ToolMode.ConstraintEdit;
     }
 
+    get toolSettings(): Array<Setting> {
+        return new Array();
+    }
+
     override handlePutDown(): void {
         this.sceneManager.setMouseCursor(Cursor.Default);
     }

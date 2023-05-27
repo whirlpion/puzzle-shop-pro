@@ -8,7 +8,7 @@
     --puzzle-canvas-height: var(--main-bar-height);
     --side-bar-width: 30em;
     --side-bar-height: var(--main-bar-height);
-    --constraint-edit-min-height: 30em;
+    --tool-options-list-min-height: 30em;
     --constraint-list-min-height: 30em;
     --status-bar-height: 3em;
 }
@@ -133,11 +133,13 @@ div#panel_bar {
     overflow: auto;
 }
 
-div#panel_bar > div#constraint_edit_panel {
-    flex: none;
-    min-height: var(--constraint-edit-min-height);
-    background-color: skyblue;
-    width: 100%;
+/* tool options list */
+
+div#panel_bar > div#tool_options_panel {
+    flex: 1;
+    overflow: auto;
+    min-height: var(--tool-options-list-min-height);
+    background-color: teal;
 }
 
 /* constraint selection list */

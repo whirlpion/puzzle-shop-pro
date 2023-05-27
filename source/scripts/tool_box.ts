@@ -39,6 +39,8 @@ abstract class ITool {
 
     abstract get mode(): ToolMode;
 
+    abstract get toolSettings(): Array<Setting>;
+
     // when user switches to this tool
     handlePickUp(_prevTool: ITool) {}
     // when user switches to another tool
@@ -67,12 +69,17 @@ class NoOpTool extends ITool {
     get mode(): ToolMode {
         return ToolMode.NoOp;
     }
+
+    get toolSettings(): Array<Setting> {
+        return new Array();
+    }
 }
 
 class ToolBox {
     puzzleGrid: PuzzleGrid;
     actionStack: UndoRedoStack;
     sceneManager: SceneManager;
+    toolOptionsPanel: ToolOptionsPanel;
     tools: Array<ITool> = new Array();
     get currentTool(): ITool {
         let tool = this.tools[this.currentToolId];
@@ -124,6 +131,9 @@ class ToolBox {
 
         this.currentToolId = toolId;
 
+        this.toolOptionsPanel.clearChildren();
+        const toolSettings = this.currentTool.toolSettings
+        this.toolOptionsPanel.initSettings(toolSettings);
 
         console.debug(`Switching to ${nextTool.constructor.name}`);
     }
@@ -132,6 +142,12 @@ class ToolBox {
         this.puzzleGrid = puzzleGrid;
         this.actionStack = actionStack;
         this.sceneManager = sceneManager;
+
+        let toolOptionsPanelRoot = document.querySelector("div#tool_options_panel");
+        throwIfNull(toolOptionsPanelRoot);
+        throwIfNotType(toolOptionsPanelRoot, HTMLDivElement);
+        this.toolOptionsPanel = new ToolOptionsPanel(toolOptionsPanelRoot);
+
         // always start with the object selection tool
         this.currentToolId = ToolID.ObjectSelection;
 

@@ -18,6 +18,8 @@ list-element > .selected {
     color: highlighttext;
 }
 
+/* Content Edit Widget */
+
 content-edit-element {
     overflow: none;
     vertical-align: middle;
@@ -29,4 +31,18 @@ content-edit-element[contenteditable=true] {
     background-color: transparent;
     border: 2px dotted black;
     color: fieldtext;
+}
+
+/* Setting Widget */
+
+setting-element {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+setting-element > * {
+    width: 50%;
+    flex-grow: 1;
 }
