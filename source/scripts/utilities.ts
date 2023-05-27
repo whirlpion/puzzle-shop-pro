@@ -209,8 +209,8 @@ interface Node {
 }
 
 Node.prototype.clearChildren = function(): void {
-    while(this.lastChild) {
-        this.removeChild(this.lastChild);
+    while(this.firstChild) {
+        this.removeChild(<Node>this.lastChild);
     }
 }
 
