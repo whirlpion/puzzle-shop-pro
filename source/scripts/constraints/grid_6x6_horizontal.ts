@@ -1,4 +1,4 @@
-class Grid9x9Constraint extends IConstraint {
+class Grid6x6HorizontalConstraint extends IConstraint {
     private static counter: number = 0;
     regionConstraints: Array<RegionConstraint> = new Array();
 
@@ -10,17 +10,17 @@ class Grid9x9Constraint extends IConstraint {
                 let column = cell.j;
 
                 // create list of cells that fall in the grid
-                let cells: Array<Cell> = new Array(81);
+                let cells: Array<Cell> = new Array(36);
                 // create cell list
-                for (let i = 0; i < 9; i++) {
-                    for (let j = 0; j < 9; j++) {
-                        cells[i*9 + j] = new Cell(row + i, column + j);
+                for (let i = 0; i < 6; i++) {
+                    for (let j = 0; j < 6; j++) {
+                        cells[i*6 + j] = new Cell(row + i, column + j);
                     }
                 }
                 return cells;
             })(),
             // boundingBox
-            new BoundingBox(cell.i, cell.j, 9, 9),
+            new BoundingBox(cell.i, cell.j, 6, 6),
             // svg
             (() => {
                 // generate the svg for this constraint
@@ -33,8 +33,8 @@ class Grid9x9Constraint extends IConstraint {
                 {
                     let rect = sceneManager.createElement("rect", SVGRectElement);
                     rect.setAttributes(
-                        ["width", `${9 * CELL_SIZE}`],
-                        ["height", `${9 * CELL_SIZE}`],
+                        ["width", `${6 * CELL_SIZE}`],
+                        ["height", `${6 * CELL_SIZE}`],
                         ["stroke", Colour.Black.toString()],
                         ["stroke-width", `${GRID_BORDER_SIZE}`],
                         ["fill", "none"]);
@@ -44,72 +44,96 @@ class Grid9x9Constraint extends IConstraint {
                 {
                     let rect = sceneManager.createElement("rect", SVGRectElement);
                     rect.setAttributes(
-                        ["width", `${3 * CELL_SIZE}`],
-                        ["height", `${9 * CELL_SIZE}`],
-                        ["stroke", Colour.Black.toString()],
-                        ["stroke-width", `${REGION_BORDER_SIZE}`],
-                        ["fill", "none"],
-                        ["x", `${3 * CELL_SIZE}`],
-                        ["y", "0"]);
-                    group.appendChild(rect);
-                }
-                for (let k = 0; k < 3; k++) {
-                    let rect = sceneManager.createElement("rect", SVGRectElement);
-                    rect.setAttributes(
                         ["width", `${1 * CELL_SIZE}`],
-                        ["height", `${9 * CELL_SIZE}`],
+                        ["height", `${6 * CELL_SIZE}`],
                         ["stroke", Colour.Black.toString()],
                         ["stroke-width", `${CELL_BORDER_SIZE}`],
                         ["fill", "none"],
-                        ["x", `${(1 + k * 3) * CELL_SIZE}`],
+                        ["x", `${1 * CELL_SIZE}`],
                         ["y", "0"]);
                     group.appendChild(rect);
                 }
-                // horizontal rect
                 {
                     let rect = sceneManager.createElement("rect", SVGRectElement);
                     rect.setAttributes(
-                        ["width", `${9 * CELL_SIZE}`],
-                        ["height", `${3 * CELL_SIZE}`],
+                        ["width", `${1 * CELL_SIZE}`],
+                        ["height", `${6 * CELL_SIZE}`],
+                        ["stroke", Colour.Black.toString()],
+                        ["stroke-width", `${CELL_BORDER_SIZE}`],
+                        ["fill", "none"],
+                        ["x", `${4 * CELL_SIZE}`],
+                        ["y", "0"]);
+                    group.appendChild(rect);
+                }
+                // horizontal rects
+                {
+                    let rect = sceneManager.createElement("rect", SVGRectElement);
+                    rect.setAttributes(
+                        ["width", `${6 * CELL_SIZE}`],
+                        ["height", `${2 * CELL_SIZE}`],
                         ["stroke", Colour.Black.toString()],
                         ["stroke-width", `${REGION_BORDER_SIZE}`],
                         ["fill", "none"],
                         ["x", "0"],
-                        ["y", `${3 * CELL_SIZE}`]);
+                        ["y", `${2 * CELL_SIZE}`]);
                     group.appendChild(rect);
                 }
-                for (let k = 0; k < 3; k++) {
+                {
                     let rect = sceneManager.createElement("rect", SVGRectElement);
                     rect.setAttributes(
-                        ["width", `${9 * CELL_SIZE}`],
-                        ["height", `${1 * CELL_SIZE}`],
+                        ["width", `${6 * CELL_SIZE}`],
+                        ["height", `${4 * CELL_SIZE}`],
                         ["stroke", Colour.Black.toString()],
                         ["stroke-width", `${CELL_BORDER_SIZE}`],
                         ["fill", "none"],
                         ["x", "0"],
-                        ["y", `${(1 + k * 3) * CELL_SIZE}`]);
+                        ["y", `${1 * CELL_SIZE}`]);
                     group.appendChild(rect);
+                }
+                // cross
+                {
+                    let horizontal = sceneManager.createElement("line", SVGLineElement);
+                    horizontal.setAttributes(
+                        ["x1", "0"],
+                        ["x2", `${6 * CELL_SIZE}`],
+                        ["y1", `${3 * CELL_SIZE}`],
+                        ["y2", `${3 * CELL_SIZE}`],
+                        ["stroke", Colour.Black.toString()],
+                        ["stroke-width", `${CELL_BORDER_SIZE}`],
+                        ["fill", "none"]);
+                    group.appendChild(horizontal);
+
+                    let vertical = sceneManager.createElement("line", SVGLineElement);
+                    vertical.setAttributes(
+                        ["x1", `${3 * CELL_SIZE}`],
+                        ["x2", `${3 * CELL_SIZE}`],
+                        ["y1", "0"],
+                        ["y2", `${6 * CELL_SIZE}`],
+                        ["stroke", Colour.Black.toString()],
+                        ["stroke-width", `${REGION_BORDER_SIZE}`],
+                        ["fill", "none"]);
+                    group.appendChild(vertical);
                 }
                 return group;
             })(),
-            `grid-9x9-${Grid9x9Constraint.counter++}`);
+            `grid-6x6-horizontal-${Grid6x6HorizontalConstraint.counter++}`);
 
         const row = cell.i;
         const column = cell.j;
 
         // generate our list of constraints
         // rows
-        for (let i = 0; i < 9; i++) {
-            this.regionConstraints.push(RegionConstraint.RowRegion(new Cell(row + i, column), 9));
+        for (let i = 0; i < 6; i++) {
+            this.regionConstraints.push(RegionConstraint.RowRegion(new Cell(row + i, column), 6));
         }
         // columns
-        for (let j = 0; j < 9; j++) {
-            this.regionConstraints.push(RegionConstraint.ColumnRegion(new Cell(row, column + j), 9));
+        for (let j = 0; j < 6; j++) {
+            this.regionConstraints.push(RegionConstraint.ColumnRegion(new Cell(row, column + j), 6));
         }
-        // squares
+        // regions
         for (let i = 0; i < 3; i++) {
-            for (let j = 0; j < 3; j++) {
-                this.regionConstraints.push(RegionConstraint.SquareRegion(new Cell(row + 3*i, column + 3*j), 3));
+            for (let j = 0; j < 2; j++) {
+                this.regionConstraints.push(RegionConstraint.RectangleRegion(new Cell(row + 2*i, column + 3*j), 3, 2));
             }
         }
     }

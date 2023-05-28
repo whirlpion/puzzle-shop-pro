@@ -1,3 +1,11 @@
+type GridType = "9x9" | "8x8-horizontal" | "8x8-vertical" | "6x6-horizontal" | "6x6-vertical" | "4x4";
+const GRID_9X9: GridType = "9x9";
+const GRID_8X8_H: GridType = "8x8-horizontal";
+const GRID_8X8_V: GridType = "8x8-vertical";
+const GRID_6X6_H: GridType = "6x6-horizontal";
+const GRID_6X6_V: GridType = "6x6-vertical";
+const GRID_4X4: GridType = "4x4";
+
 class InsertGridAction extends IAction {
     override apply(): void {
         // register the constrained cells
@@ -22,17 +30,28 @@ class InsertGridAction extends IAction {
 
     puzzleGrid: PuzzleGrid;
     sceneManager: SceneManager;
-    gridConstraint: Grid9x9Constraint;
+    gridConstraint: IConstraint;
 
-    constructor(puzzleGrid: PuzzleGrid, sceneManager: SceneManager, cell: Cell) {
-        super(`insert 9x9 grid at ${cell}`);
+    constructor(puzzleGrid: PuzzleGrid, sceneManager: SceneManager, cell: Cell, gridType: GridType) {
+        super(`insert ${gridType} grid at ${cell}`);
         this.puzzleGrid = puzzleGrid;
         this.sceneManager = sceneManager;
-        this.gridConstraint = new Grid9x9Constraint(sceneManager, cell);
+
+        switch(gridType) {
+        case GRID_9X9: this.gridConstraint = new Grid9x9Constraint(sceneManager, cell); break;
+        case GRID_8X8_H: this.gridConstraint = new Grid8x8HorizontalConstraint(sceneManager, cell); break;
+        case GRID_8X8_V: this.gridConstraint = new Grid8x8VerticalConstraint(sceneManager, cell); break;
+        case GRID_6X6_H: this.gridConstraint = new Grid6x6HorizontalConstraint(sceneManager, cell); break;
+        case GRID_6X6_V: this.gridConstraint = new Grid6x6VerticalConstraint(sceneManager, cell); break;
+        case GRID_4X4: this.gridConstraint = new Grid4x4Constraint(sceneManager, cell); break;
+        default: throwMessage(`grid type '${gridType}' not implemented`);
+        }
     }
 }
 
 class GridTool extends ITool {
+    gridType: GridType = GRID_9X9;
+
     constructor(toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
         super(toolBox, puzzleGrid, actionStack, sceneManager);
     }
@@ -44,18 +63,16 @@ class GridTool extends ITool {
     override get toolSettings(): Map<string, Setting> {
         return new Map([
             ["Grid Size", new SettingOption([
-                    ["9x9", "9x9"],
-                    ["4x4", "4x4"],
-                    ["6x6-horizontal", "6x6 (horizontal)"],
-                    ["6x6-vertical", "6x6 (vertical)"],
-                    ["8x8-horizontal", "8x8 (horizontal)"],
-                    ["8x8-vertical", "8x8 (vertical)"],
+                    [GRID_9X9, "9x9"],
+                    [GRID_8X8_H, "8x8 (horizontal)"],
+                    [GRID_8X8_V, "8x8 (vertical)"],
+                    [GRID_6X6_H, "6x6 (horizontal)"],
+                    [GRID_6X6_V, "6x6 (vertical)"],
+                    [GRID_4X4, "4x4"],
                 ], (value: string): void => {
-                    console.log(`grid size: {}`, value);
+                    this.gridType = <GridType>value;
+                    console.log(`grid type: ${this.gridType}`);
                 })],
-            ["Fake Option", new SettingOption([], (_value: string): void => {
-
-            })],
         ]);
     }
 
@@ -75,7 +92,7 @@ class GridTool extends ITool {
     //
 
     private insertGrid(cell: Cell) {
-        let action = new InsertGridAction(this.puzzleGrid, this.sceneManager, cell);
+        let action = new InsertGridAction(this.puzzleGrid, this.sceneManager, cell, this.gridType);
         this.actionStack.doAction(action);
     }
 }

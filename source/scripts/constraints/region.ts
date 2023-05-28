@@ -57,6 +57,19 @@ class RegionConstraint extends IConstraint {
         return new RegionConstraint(cells, new BoundingBox(cell.i, cell.j, width, width));
     }
 
+    static RectangleRegion(cell: Cell, width: number, height: number): RegionConstraint {
+        throwIfFalse(width >= 1 && height >= 1 && width*height <= 9);
+
+        let cells: Array<Cell> = new Array(width*height);
+        for (let i = 0; i < height; i++) {
+            for (let j = 0; j < width; j++) {
+                cells[i*width + j] = new Cell(cell.i + i, cell.j + j);
+            }
+        }
+
+        return new RegionConstraint(cells, new BoundingBox(cell.i, cell.j, width, width));
+    }
+
     static IrregularRegion(cells: Array<Cell>): RegionConstraint {
         // ensure no repeats in provided cell list
         let cellSet: BSTSet<Cell> = new BSTSet();
