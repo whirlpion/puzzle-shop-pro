@@ -187,7 +187,7 @@ class DigitTool extends CellTool {
         for (let cell of this.puzzleGrid.getHighlightedCells()) {
             let value = this.puzzleGrid.getCellValue(cell);
             // update existing cell
-            if ((value === null || value === void 0 ? void 0 : value.digit) === digit) {
+            if (value?.digit === digit) {
                 continue;
             }
             cells.push(cell);

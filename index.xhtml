@@ -24,10 +24,16 @@
     <script src="scripts/tools/cell_tool.js"/>
     <script src="scripts/tools/pan_tool.js"/>
     <script src="scripts/tools/zoom_tool.js"/>
+    <script src="scripts/tool_options_panel.js"/>
     <script src="scripts/constraint_list_panel.js"/>
     <script src="scripts/cell.js"/>
     <script src="scripts/puzzle_grid.js"/>
     <script src="scripts/constraints/region.js"/>
+    <script src="scripts/constraints/grid_4x4.js"/>
+    <script src="scripts/constraints/grid_6x6_horizontal.js"/>
+    <script src="scripts/constraints/grid_6x6_vertical.js"/>
+    <script src="scripts/constraints/grid_8x8_horizontal.js"/>
+    <script src="scripts/constraints/grid_8x8_vertical.js"/>
     <script src="scripts/constraints/grid_9x9.js"/>
 
     <body onload="start_puzzle_shop_pro()">
@@ -47,9 +53,7 @@
             </div>
             <div id="puzzle_canvas"/>
             <div id="panel_bar">
-                <div id="constraint_edit_panel">
-                    constraint edit!
-                </div>
+                <div id="tool_options_panel"/>
                 <div id="constraint_list_panel"/>
             </div>
         </div>

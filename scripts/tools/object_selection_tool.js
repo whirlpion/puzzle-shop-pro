@@ -1,10 +1,9 @@
 "use strict";
 class DeleteConstraintsAction extends IAction {
     apply() {
-        var _a;
         for (let constraint of this.constraints) {
             this.puzzleGrid.removeConstraint(constraint);
-            (_a = constraint.svg.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(constraint.svg);
+            constraint.svg.parentElement?.removeChild(constraint.svg);
         }
         this.puzzleGrid.updateSelectionBox();
         this.puzzleGrid.checkCellsForConstraintViolations(...this.affectedCells);

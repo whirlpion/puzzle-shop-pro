@@ -135,7 +135,7 @@ Math.sign = (val) => {
     return 0;
 };
 Node.prototype.clearChildren = function () {
-    while (this.lastChild) {
+    while (this.firstChild) {
         this.removeChild(this.lastChild);
     }
 };

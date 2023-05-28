@@ -21,11 +21,13 @@ class ConstraintRenameAction extends IAction {
     }
 }
 class ConstraintListPanel {
-    constructor(parent, puzzleGrid, actionStack) {
+    constructor(parent, puzzleGrid, actionStack, toolBox) {
         this.constraintToEntry = new Map();
         this.listElement = document.createElement("list-element");
         parent.appendChild(this.listElement);
+        this.puzzleGrid = puzzleGrid;
         this.actionStack = actionStack;
+        this.toolBox = toolBox;
         puzzleGrid.addEventListener(PuzzleEventType.ConstraintsAdded, (event) => {
             let constraintEvent = (event);
             for (let constraint of constraintEvent.constraints) {
@@ -38,6 +40,24 @@ class ConstraintListPanel {
                 this.removeConstraint(constraint);
             }
         });
+        puzzleGrid.addEventListener(PuzzleEventType.ConstraintsSelected, (event) => {
+            let constraintEvent = (event);
+            for (let constraint of constraintEvent.constraints) {
+                let entry = this.constraintToEntry.get(constraint);
+                if (entry) {
+                    this.listElement.selectChild(entry);
+                }
+            }
+        });
+        puzzleGrid.addEventListener(PuzzleEventType.ConstraintsDeselected, (event) => {
+            let constraintEvent = (event);
+            for (let constraint of constraintEvent.constraints) {
+                let entry = this.constraintToEntry.get(constraint);
+                if (entry) {
+                    this.listElement.deselectChild(entry);
+                }
+            }
+        });
     }
     addConstraint(constraint) {
         let entry = document.createElement("content-edit-element");
@@ -47,6 +67,18 @@ class ConstraintListPanel {
             let oldName = constraint.name;
             constraint.name = customEvent.detail.content;
             this.actionStack.pushAction(new ConstraintRenameAction(this.constraintToEntry, constraint, constraint.name, oldName));
+        });
+        entry.addEventListener("elementselected", (_event) => {
+            console.log(`selected ${entry.textContent}`);
+            this.puzzleGrid.selectConstraint(constraint);
+            this.puzzleGrid.updateSelectionBox();
+            this.toolBox.switchToTool(ToolID.ObjectSelection);
+        });
+        entry.addEventListener("elementdeselected", (_event) => {
+            console.log(`selected ${entry.textContent}`);
+            this.puzzleGrid.unselectConstraint(constraint);
+            this.puzzleGrid.updateSelectionBox();
+            this.toolBox.switchToTool(ToolID.ObjectSelection);
         });
         this.listElement.appendChild(entry);
         this.constraintToEntry.set(constraint, entry);

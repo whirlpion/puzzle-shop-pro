@@ -3,6 +3,63 @@ class ListElement extends HTMLElement {
     constructor() {
         super();
     }
+    appendChild(element) {
+        throwIfNotType(element, Element);
+        element.addEventListener("click", (event) => {
+            let mouseEvent = event;
+            if (mouseEvent.shortcutKey) {
+                if (element.classList.contains("selected")) {
+                    this.deselectChildImpl(element, true);
+                }
+                else {
+                    this.selectChildImpl(element, true);
+                }
+            }
+            else if (mouseEvent.shiftKey) {
+                if (!element.classList.contains("selected")) {
+                    this.selectChildImpl(element, true);
+                }
+            }
+            else {
+                this.deselectAllChildren();
+                this.selectChildImpl(element, true);
+            }
+        });
+        return super.appendChild(element);
+    }
+    deselectAllChildren() {
+        for (let child of this.children) {
+            if (child.classList.contains("selected")) {
+                this.deselectChildImpl(child, true);
+            }
+        }
+    }
+    selectChild(element) {
+        throwIfFalse(element.parentElement === this);
+        this.selectChildImpl(element, false);
+    }
+    selectChildImpl(element, dispatchEvent) {
+        element.classList.add("selected");
+        if (dispatchEvent) {
+            const elementSelected = new CustomEvent("elementselected", {
+                detail: { target: element }
+            });
+            element.dispatchEvent(elementSelected);
+        }
+    }
+    deselectChild(element) {
+        throwIfFalse(element.parentElement === this);
+        this.deselectChildImpl(element, false);
+    }
+    deselectChildImpl(element, dispatchEvent) {
+        element.classList.remove("selected");
+        if (dispatchEvent) {
+            const elementdeselected = new CustomEvent("elementdeselected", {
+                detail: { target: element }
+            });
+            element.dispatchEvent(elementdeselected);
+        }
+    }
 }
 globalThis.customElements.define("list-element", ListElement);
 // todo: need to fix bubbling order >:[
@@ -13,7 +70,6 @@ class ContentEditElement extends HTMLElement {
     }
     connectedCallback() {
         // make focusbale
-        this.setAttribute("tabindex", "0");
         this.addEventListener("dblclick", (_event) => {
             this.setAttribute("contenteditable", "true");
             this.cachedTextContent = this.textContent;

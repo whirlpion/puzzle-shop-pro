@@ -45,6 +45,8 @@ var PuzzleEventType;
     PuzzleEventType["ViolatedConstraintsChanged"] = "violatedconstraintschanged";
     PuzzleEventType["ConstraintsAdded"] = "constraintsadded";
     PuzzleEventType["ConstraintsRemoved"] = "constraintsremoved";
+    PuzzleEventType["ConstraintsSelected"] = "constraintsselected";
+    PuzzleEventType["ConstraintsDeselected"] = "constraintsdeselected";
 })(PuzzleEventType || (PuzzleEventType = {}));
 ;
 class PuzzleEvent {
@@ -228,12 +230,18 @@ class PuzzleGrid {
     }
     selectConstraint(constraint) {
         this.selectedConstraints.add(constraint);
+        this.fireEvent(PuzzleEventType.ConstraintsSelected, new ConstraintEvent(this, [constraint]));
     }
     unselectConstraint(constraint) {
         this.selectedConstraints.delete(constraint);
+        this.fireEvent(PuzzleEventType.ConstraintsDeselected, new ConstraintEvent(this, [constraint]));
     }
     clearSelectedConstraints() {
+        let selectedConstraints = [...this.selectedConstraints];
         this.selectedConstraints.clear();
+        for (let constraint of selectedConstraints) {
+            this.unselectConstraint(constraint);
+        }
     }
     getSelectedConstraints() {
         return [...this.selectedConstraints.values()];

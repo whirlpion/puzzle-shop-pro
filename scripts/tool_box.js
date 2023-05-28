@@ -32,6 +32,9 @@ class ITool {
         this.actionStack = actionStack;
         this.sceneManager = sceneManager;
     }
+    get toolSettings() {
+        return new Map();
+    }
     // when user switches to this tool
     handlePickUp(_prevTool) { }
     // when user switches to another tool
@@ -66,7 +69,6 @@ class ToolBox {
         return tool;
     }
     switchToTool(toolId) {
-        var _a, _b;
         if (toolId === this.currentToolId) {
             return;
         }
@@ -88,9 +90,12 @@ class ToolBox {
         prevTool.handlePutDown(nextTool);
         nextTool.handlePickUp(prevTool);
         // set selected state
-        (_a = document.querySelector(`div#${this.blueprints[this.currentToolId].id}`)) === null || _a === void 0 ? void 0 : _a.classList.remove("selected");
-        (_b = document.querySelector(`div#${this.blueprints[toolId].id}`)) === null || _b === void 0 ? void 0 : _b.classList.add("selected");
+        document.querySelector(`div#${this.blueprints[this.currentToolId].id}`)?.classList.remove("selected");
+        document.querySelector(`div#${this.blueprints[toolId].id}`)?.classList.add("selected");
         this.currentToolId = toolId;
+        this.toolOptionsPanel.clearChildren();
+        const toolSettings = this.currentTool.toolSettings;
+        this.toolOptionsPanel.initSettings(toolSettings);
         console.debug(`Switching to ${nextTool.constructor.name}`);
     }
     constructor(puzzleGrid, actionStack, sceneManager) {
@@ -110,6 +115,10 @@ class ToolBox {
         this.puzzleGrid = puzzleGrid;
         this.actionStack = actionStack;
         this.sceneManager = sceneManager;
+        let toolOptionsPanelRoot = document.querySelector("div#tool_options_panel");
+        throwIfNull(toolOptionsPanelRoot);
+        throwIfNotType(toolOptionsPanelRoot, HTMLDivElement);
+        this.toolOptionsPanel = new ToolOptionsPanel(toolOptionsPanelRoot);
         // always start with the object selection tool
         this.currentToolId = ToolID.ObjectSelection;
         // construct our toolbox
