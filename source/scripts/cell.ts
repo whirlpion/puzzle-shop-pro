@@ -12,6 +12,26 @@ class Cell implements IOrdered, IEquals {
         return this._j;
     }
 
+    get top(): number {
+        return this.i * CELL_SIZE;
+    }
+
+    get bottom(): number {
+        return (this.i + 1) * CELL_SIZE;
+    }
+
+    get left(): number {
+        return this.j * CELL_SIZE;
+    }
+
+    get right(): number {
+        return (this.j + 1) * CELL_SIZE;
+    }
+
+    get center(): {x: number, y: number} {
+        return {x: (this.j + 0.5) * CELL_SIZE, y: (this.i + 0.5) * CELL_SIZE};
+    }
+
     constructor(i: number, j: number) {
         throwIfFalse(Number.isInteger(i));
         throwIfFalse(Number.isInteger(j));
