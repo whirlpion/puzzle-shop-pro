@@ -61,19 +61,20 @@ class GridTool extends ITool {
     }
 
     override get toolSettings(): Map<string, Setting> {
-        return new Map([
-            ["Grid Size", new SettingOption([
+        const retval: Map<string, Setting> = new Map();
+        retval.set("Grid Size", new SettingOption([
                     [GRID_9X9, "9x9"],
                     [GRID_8X8_H, "8x8 (horizontal)"],
                     [GRID_8X8_V, "8x8 (vertical)"],
                     [GRID_6X6_H, "6x6 (horizontal)"],
                     [GRID_6X6_V, "6x6 (vertical)"],
                     [GRID_4X4, "4x4"],
-                ], (value: string): void => {
+                ], this.gridType, (value: string): void => {
                     this.gridType = <GridType>value;
                     console.log(`grid type: ${this.gridType}`);
-                })],
-        ]);
+                }));
+
+        return retval;
     }
 
     //

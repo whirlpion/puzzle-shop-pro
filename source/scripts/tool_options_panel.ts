@@ -8,20 +8,25 @@ abstract class Setting {
 
 class SettingOption extends Setting {
     // array of option values, human readable names tuples
-    values: Array<[value: string, name: string]>
+    options: Array<[value: string, name: string]>;
+    value: string;
     changeCallback: {(value: string): void};
 
-    constructor(values: Array<[value: string, name: string]>, changeCallback: {(value: string): void}) {
+    constructor(options: Array<[value: string, name: string]>, value: string, changeCallback: {(value: string): void}) {
         super();
-        this.values = values;
+        this.options = options;
+        this.value = value;
         this.changeCallback = changeCallback;
     }
 
     getHTMLElement(): HTMLElement {
         let selectElement = <HTMLSelectElement>document.createElement("select");
-        for (let [value, name] of this.values) {
+        for (let [option, name] of this.options) {
             let optionElement = <HTMLOptionElement>document.createElement("option");
-            optionElement.setAttribute("value", value);
+            optionElement.setAttribute("value", option);
+            if (option == this.value) {
+                optionElement.setAttribute("selected", "true");
+            }
             optionElement.textContent = name;
             selectElement.appendChild(optionElement);
         }
@@ -33,8 +38,6 @@ class SettingOption extends Setting {
         });
         return <HTMLElement>selectElement;
     }
-
-
 }
 
 // class SettingBooleanData extends Setting {
