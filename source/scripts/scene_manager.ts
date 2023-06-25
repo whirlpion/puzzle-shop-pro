@@ -5,6 +5,8 @@
     Fill,
     // puzzle grids
     Grid,
+    // outline arouond constraint graphics
+    ConstraintOutlines,
     // constraints to go on top of the grid
     Constraints,
     // user entered digits, pencil marks, etc

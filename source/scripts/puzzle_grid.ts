@@ -5,7 +5,7 @@ abstract class IConstraint {
     // bounding box of cells in this constraint
     private _boundingBox: BoundingBox;
     // handle for an svg element from the CanvasView that
-    private _svg: SVGElement | null;
+    private _svgs: Map<RenderLayer, SVGElement>;
     // human readable name for constraint
     public name: string;
 
@@ -21,15 +21,14 @@ abstract class IConstraint {
         return this._boundingBox;
     }
 
-    get svg(): SVGElement {
-        throwIfNull(this._svg);
-        return this._svg;
+    get svgs(): Map<RenderLayer, SVGElement> {
+        return this._svgs;
     }
 
     //  takes in a list of cells affected by this constraint and an svg element for display
-    constructor(cells: Array<Cell>, boundingBox: BoundingBox, svg: SVGElement | null, name: string) {
+    constructor(cells: Array<Cell>, boundingBox: BoundingBox, svgs: Map<RenderLayer, SVGGElement>, name: string) {
         this._cells = cells;
-        this._svg = svg;
+        this._svgs = svgs;
         this._boundingBox = boundingBox;
         this.name = name;
     }
@@ -46,10 +45,10 @@ abstract class IConstraint {
 
         this._boundingBox = BoundingBox.fromCells(...this._cells);
 
-        if (this._svg) {
+        for (let svg of this.svgs.values()) {
             const x = this._boundingBox.left * CELL_SIZE;
             const y = this._boundingBox.top * CELL_SIZE;
-            this._svg.setAttribute("transform", `translate(${x},${y})`);
+            svg.setAttribute("transform", `translate(${x},${y})`);
         }
     }
 }
@@ -60,10 +59,12 @@ class InsertConstraintAction extends IAction {
         this.puzzleGrid.addConstraint(this.constraint);
         // check for constraint violations
         this.puzzleGrid.checkCellsForConstraintViolations(...this.constraint.cells);
-        // add the svg
-        if (this.constraint.svg) {
-            this.sceneManager.addElement(this.constraint.svg, this.renderLayer);
+        // add the svgs
+
+        for (let [layer, svg] of this.constraint.svgs) {
+            this.sceneManager.addElement(svg, layer);
         }
+
         // update the selection box
         this.puzzleGrid.updateSelectionBox();
     }
@@ -74,9 +75,10 @@ class InsertConstraintAction extends IAction {
         // check for constraint violations
         this.puzzleGrid.checkCellsForConstraintViolations(...this.constraint.cells);
         // remove the svg
-        if (this.constraint.svg) {
-            this.sceneManager.removeElement(this.constraint.svg);
+        for (let svg of this.constraint.svgs.values()) {
+            this.sceneManager.removeElement(svg);
         }
+
         // update the selection box
         this.puzzleGrid.updateSelectionBox();
     }
@@ -190,10 +192,19 @@ class PuzzleGrid {
         this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
         this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
         this.selectionBox = sceneManager.createElement("rect", SVGRectElement, RenderLayer.Foreground);
+        // number of dashes pe rcell
+        const DASHES_PER_CELL = 4;
+        // size of dash relative to blank
+        const DASH_RATIO: number = 1.5;
+        // CELL_SIZE = DASHES_PER_CELL * (DASH_SIZE + DASH_SIZE / DASH_RATIO);
+        // CELL_SIZE = DASHES_PER_CELL * DASH_SIZE * (1 + 1 / DASH_RATIO);
+        const DASH_SIZE = CELL_SIZE / DASHES_PER_CELL / (1 + 1 / DASH_RATIO);
+        const BLANK_SIZE = DASH_SIZE / DASH_RATIO;
+
         this.selectionBox.setAttributes(
             ["fill", "none"],
             ["stroke", "black"],
-            ["stroke-dasharray", "5,6,10,6,5,0"],
+            ["stroke-dasharray", `${DASH_SIZE / 2},${BLANK_SIZE},${DASH_SIZE},${BLANK_SIZE},${DASH_SIZE / 2},0`],
             ["stroke-width", "2"],
             ["visibility", "hidden"]);
 

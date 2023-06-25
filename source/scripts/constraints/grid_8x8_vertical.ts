@@ -138,7 +138,9 @@ class Grid8x8VerticalConstraint extends IConstraint {
                         ["fill", "none"]);
                     group.appendChild(vertical);
                 }
-                return group;
+                let retval: Map<RenderLayer, SVGGElement> = new Map();
+                retval.set(RenderLayer.Grid, group);
+                return retval;
             })(),
             `grid-8x8-vertical-${Grid8x8VerticalConstraint.counter++}`);
 

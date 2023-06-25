@@ -7,7 +7,7 @@ class LineTool extends ITool {
 
     drawingLine: boolean = false;
     cellsInLine: Array<Cell> = new Array();
-    graphic: SVGGElement | null = null;
+    graphic: Map<RenderLayer, SVGGElement> = new Map();
 
 
     constructor(toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
@@ -40,11 +40,13 @@ class LineTool extends ITool {
             this.cellsInLine.push(cell);
             this.drawingLine = true;
 
-            if (this.graphic) {
-                this.sceneManager.removeElement(this.graphic);
+            for (let svg of this.graphic.values()) {
+                this.sceneManager.removeElement(svg);
             }
             this.graphic = this.drawLine(this.cellsInLine);
-            this.sceneManager.addElement(this.graphic, RenderLayer.Constraints);
+            for (let [layer, svg] of this.graphic) {
+                this.sceneManager.addElement(svg, layer);
+            }
 
             return true;
         }
@@ -56,8 +58,9 @@ class LineTool extends ITool {
             console.log("cells: ", this.cellsInLine);
             this.drawingLine = false;
 
-            throwIfNotType<SVGGElement>(this.graphic, SVGGElement);
-            this.sceneManager.removeElement(this.graphic);
+            for (let svg of this.graphic.values()) {
+                this.sceneManager.removeElement(svg);
+            }
 
             if (this.cellsInLine.length > 1) {
                 let lineConstraint = new ThermoConstraint(this.cellsInLine, this.graphic);
@@ -65,7 +68,7 @@ class LineTool extends ITool {
                 this.actionStack.doAction(action);
             }
 
-            this.graphic = null;
+            this.graphic = new Map();
 
             return true;
         }
@@ -133,18 +136,20 @@ class LineTool extends ITool {
                 }
             }
 
-            if (this.graphic) {
-                this.sceneManager.removeElement(this.graphic);
+            for (let svg of this.graphic.values()) {
+                this.sceneManager.removeElement(svg);
             }
             this.graphic = this.drawLine(this.cellsInLine);
-            this.sceneManager.addElement(this.graphic, RenderLayer.Constraints);
+            for (let [layer, svg] of this.graphic) {
+                this.sceneManager.addElement(svg, layer);
+            }
 
             return true;
         }
         return false;
     }
 
-    private drawLine(cells: Array<Cell>): SVGGElement {
+    private drawLine(cells: Array<Cell>): Map<RenderLayer, SVGGElement> {
         let boundingBox = BoundingBox.fromCells(...cells);
         const origin = new Cell(boundingBox.top, boundingBox.left);
 
@@ -161,10 +166,12 @@ class LineTool extends ITool {
             points.push(`${point.x},${point.y}`);
         }
 
-        const group = this.sceneManager.createElement("g", SVGGElement);
-        group.setAttribute("transform", `translate(${origin.left},${origin.top})`);
-        // border
+        let retval: Map<RenderLayer, SVGGElement> = new Map();
+
+        // outline
         {
+            const group = this.sceneManager.createElement("g", SVGGElement);
+            group.setAttribute("transform", `translate(${origin.left},${origin.top})`);
             const polyline = this.sceneManager.createElement("polyline", SVGPolylineElement);
             polyline.setAttributes(
                 ["points", points.join(" " )],
@@ -183,9 +190,12 @@ class LineTool extends ITool {
                 ["fill", Colour.White.toString()],
                 );
             group.appendChild(circle);
+            retval.set(RenderLayer.ConstraintOutlines, group);
         }
         // foreground
         {
+            const group = this.sceneManager.createElement("g", SVGGElement);
+            group.setAttribute("transform", `translate(${origin.left},${origin.top})`);
             const polyline = this.sceneManager.createElement("polyline", SVGPolylineElement);
             polyline.setAttributes(
                 ["points", points.join(" " )],
@@ -204,8 +214,9 @@ class LineTool extends ITool {
                 ["fill", Colour.LightGrey.toString()],
                 );
             group.appendChild(circle);
+            retval.set(RenderLayer.Constraints, group);
         }
 
-        return group;
+        return retval;
     }
 }

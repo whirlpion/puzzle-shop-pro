@@ -90,7 +90,9 @@ class Grid4x4Constraint extends IConstraint {
                         ["fill", "none"]);
                     group.appendChild(vertical);
                 }
-                return group;
+                let retval: Map<RenderLayer, SVGGElement> = new Map();
+                retval.set(RenderLayer.Grid, group);
+                return retval;
             })(),
             `grid-4x4-${Grid4x4Constraint.counter++}`);
 

@@ -2,35 +2,38 @@ class DeleteConstraintsAction extends IAction {
     override apply(): void {
         for (let constraint of this.constraints) {
             this.puzzleGrid.removeConstraint(constraint);
-            constraint.svg.parentElement?.removeChild(constraint.svg);
+            for (let svg of constraint.svgs.values()) {
+                this.sceneManager.removeElement(svg);
+            }
         }
         this.puzzleGrid.updateSelectionBox();
         this.puzzleGrid.checkCellsForConstraintViolations(...this.affectedCells);
     }
 
     override revert(): void {
-        throwIfNotEqual(this.constraints.length, this.svgParents.length);
         const length = this.constraints.length;
         for (let k = 0; k < length; k++) {
             const constraint = this.constraints[k];
             this.puzzleGrid.addConstraint(constraint);
-            this.svgParents[k].appendChild(constraint.svg);
+            for (let [layer, svg] of constraint.svgs) {
+                this.sceneManager.addElement(svg, layer)
+            }
         }
         this.puzzleGrid.updateSelectionBox();
         this.puzzleGrid.checkCellsForConstraintViolations(...this.affectedCells);
     }
 
     puzzleGrid: PuzzleGrid;
+    sceneManager: SceneManager;
     affectedCells: Array<Cell>;
     constraints: Array<IConstraint>;
-    svgParents: Array<SVGElement>;
 
-    constructor(puzzleGrid: PuzzleGrid, affectedCells: Array<Cell>, constraints: Array<IConstraint>) {
+    constructor(puzzleGrid: PuzzleGrid, sceneManager: SceneManager, affectedCells: Array<Cell>, constraints: Array<IConstraint>) {
         super(`deleting constraints: ${constraints.map(c => c.name).join(", ")}`);
         this.puzzleGrid = puzzleGrid;
+        this.sceneManager = sceneManager;
         this.affectedCells = affectedCells;
         this.constraints = constraints;
-        this.svgParents = constraints.map((constraint: IConstraint) => <SVGElement><unknown>constraint.svg.parentElement);
     }
 }
 
@@ -98,7 +101,7 @@ class ObjectSelectionTool extends ITool {
                         affectedCells.add(...constraint.cells);
                     }
 
-                    const action = new DeleteConstraintsAction(this.puzzleGrid, [...affectedCells], constraints);
+                    const action = new DeleteConstraintsAction(this.puzzleGrid, this.sceneManager, [...affectedCells], constraints);
                     this.actionStack.doAction(action);
                 }
                 return true;

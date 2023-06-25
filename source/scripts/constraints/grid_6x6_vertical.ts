@@ -114,7 +114,9 @@ class Grid6x6VerticalConstraint extends IConstraint {
                         ["fill", "none"]);
                     group.appendChild(vertical);
                 }
-                return group;
+                let retval: Map<RenderLayer, SVGGElement> = new Map();
+                retval.set(RenderLayer.Grid, group);
+                return retval;
             })(),
             `grid-6x6-vertical-${Grid6x6VerticalConstraint.counter++}`);
 

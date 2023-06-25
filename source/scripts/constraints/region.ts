@@ -2,7 +2,7 @@
 class RegionConstraint extends IConstraint {
     private static counter: number = 0;
     private constructor(cells: Array<Cell>, boundingBox: BoundingBox) {
-        super(cells, boundingBox, null, `region_${RegionConstraint.counter++}`);
+        super(cells, boundingBox, new Map(), `region_${RegionConstraint.counter++}`);
     }
 
     override getViolatedCells(puzzleGrid: PuzzleGrid): BSTSet<Cell> {
