@@ -50,6 +50,46 @@ abstract class IConstraint {
     }
 }
 
+class InsertConstraintAction extends IAction {
+    override apply(): void {
+        // register the constrained cells
+        this.puzzleGrid.addConstraint(this.constraint);
+        // check for constraint violations
+        this.puzzleGrid.checkCellsForConstraintViolations(...this.constraint.cells);
+        // add the svg
+        if (this.constraint.svg) {
+            this.sceneManager.addElement(this.constraint.svg, RenderLayer.Grid);
+        }
+        // update the selection box
+        this.puzzleGrid.updateSelectionBox();
+    }
+
+    override revert(): void {
+        // remove the constrained cells
+        this.puzzleGrid.removeConstraint(this.constraint);
+        // check for constraint violations
+        this.puzzleGrid.checkCellsForConstraintViolations(...this.constraint.cells);
+        // remove the svg
+        if (this.constraint.svg) {
+            this.sceneManager.removeElement(this.constraint.svg);
+        }
+        // update the selection box
+        this.puzzleGrid.updateSelectionBox();
+    }
+
+    puzzleGrid: PuzzleGrid;
+    sceneManager: SceneManager;
+    constraint: IConstraint;
+
+    constructor(puzzleGrid: PuzzleGrid, sceneManager: SceneManager, constraint: IConstraint) {
+        super(`insert ${constraint.name} at r${constraint.boundingBox.top}c${constraint.boundingBox.right}`);
+
+        this.puzzleGrid = puzzleGrid;
+        this.sceneManager = sceneManager;
+        this.constraint = constraint;
+    }
+}
+
 enum HighlightCellsFlags {
     None = 0,
     Focus = 1 << 0,// foucs the last cell in the list
