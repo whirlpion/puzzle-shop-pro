@@ -13,6 +13,10 @@ abstract class IConstraint {
         return this._cells;
     }
 
+    get uniqueCells(): BSTSet<Cell> {
+        return new BSTSet(this._cells);
+    }
+
     get boundingBox(): BoundingBox {
         return this._boundingBox;
     }
@@ -58,7 +62,7 @@ class InsertConstraintAction extends IAction {
         this.puzzleGrid.checkCellsForConstraintViolations(...this.constraint.cells);
         // add the svg
         if (this.constraint.svg) {
-            this.sceneManager.addElement(this.constraint.svg, RenderLayer.Grid);
+            this.sceneManager.addElement(this.constraint.svg, this.renderLayer);
         }
         // update the selection box
         this.puzzleGrid.updateSelectionBox();
@@ -80,13 +84,16 @@ class InsertConstraintAction extends IAction {
     puzzleGrid: PuzzleGrid;
     sceneManager: SceneManager;
     constraint: IConstraint;
+    renderLayer: RenderLayer;
 
-    constructor(puzzleGrid: PuzzleGrid, sceneManager: SceneManager, constraint: IConstraint) {
+
+    constructor(puzzleGrid: PuzzleGrid, sceneManager: SceneManager, constraint: IConstraint, renderLayer: RenderLayer=RenderLayer.Constraints) {
         super(`insert ${constraint.name} at r${constraint.boundingBox.top}c${constraint.boundingBox.right}`);
 
         this.puzzleGrid = puzzleGrid;
         this.sceneManager = sceneManager;
         this.constraint = constraint;
+        this.renderLayer = renderLayer;
     }
 }
 
@@ -180,7 +187,6 @@ class PuzzleGrid {
 
     constructor(sceneManager: SceneManager) {
         this.sceneManager = sceneManager;
-        // this.constraintListPanel = constraintListPanel;
         this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
         this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
         this.selectionBox = sceneManager.createElement("rect", SVGRectElement, RenderLayer.Foreground);
@@ -476,7 +482,7 @@ class PuzzleGrid {
     // removes a constraint and optionally checks to see if its removal affects
     // the set of cells under violated constraints
     removeConstraint(constraint: IConstraint, checkViolations?: boolean): void {
-        for (let cell of constraint.cells) {
+        for (let cell of constraint.uniqueCells) {
             // get the set of contraints already on cell
             let constraints = this.constraintMap.get(cell);
             throwIfUndefined(constraints);

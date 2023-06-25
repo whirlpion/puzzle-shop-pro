@@ -62,7 +62,7 @@ class GridTool extends ITool {
         default: throwMessage(`grid type '${this.gridType}' not implemented`);
         }
 
-        let action = new InsertConstraintAction(this.puzzleGrid, this.sceneManager, constraint);
+        let action = new InsertConstraintAction(this.puzzleGrid, this.sceneManager, constraint, RenderLayer.Grid);
         this.actionStack.doAction(action);
     }
 }
