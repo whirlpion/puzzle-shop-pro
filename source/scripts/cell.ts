@@ -12,22 +12,27 @@ class Cell implements IOrdered, IEquals {
         return this._j;
     }
 
+    // top of the cell region in world coordinates
     get top(): number {
         return this.i * CELL_SIZE;
     }
 
+    // bottom of the cell region in world coordinates
     get bottom(): number {
         return (this.i + 1) * CELL_SIZE;
     }
 
+    // left side of the cell region in world coordinates
     get left(): number {
         return this.j * CELL_SIZE;
     }
 
+    // right side of the cell region in world coordinates
     get right(): number {
         return (this.j + 1) * CELL_SIZE;
     }
 
+    // the horizontal,vertical center of the cell region in world coordinates
     get center(): {x: number, y: number} {
         return {x: (this.j + 0.5) * CELL_SIZE, y: (this.i + 0.5) * CELL_SIZE};
     }
@@ -92,6 +97,23 @@ class Cell implements IOrdered, IEquals {
         let j = Math.floor(x / CELL_SIZE);
 
         return new Cell(i, j);
+    }
+
+    static manhattanDistance(left: Cell, right: Cell): number {
+        return Math.abs(left.i - right.i) + Math.abs(left.j - right.j);
+    }
+
+    adjacentOrthogonal(that: Cell): boolean {
+        return Cell.manhattanDistance(this, that) == 1;
+    }
+
+    adjacentDiagonal(that: Cell): boolean {
+        return (this.i != that.i && this.j != that.j) &&
+               Cell.manhattanDistance(this, that) == 2;
+    }
+
+    adjacentKingsMove(that: Cell): boolean {
+        return this.adjacentOrthogonal(that) || this.adjacentDiagonal(that);
     }
 
     toString(): string {
