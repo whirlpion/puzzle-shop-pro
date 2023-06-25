@@ -291,6 +291,22 @@ class SceneManager {
         return this.cellAtXY(event.offsetX, event.offsetY);
     }
 
+    // is an xy coordinate near the center of a cell (drag operations)
+    coordinateNearCellCenter(x: number, y: number): boolean {
+        const center = this.cellAtXY(x, y).center;
+        const coord = this.screenSpaceToWorldSpace(x, y);
+        const dx = center.x - coord.x;
+        const dy = center.y - coord.y;
+
+        const radius = HALF_CELL_SIZE * 3/4;
+
+        return dx*dx + dy*dy < radius * radius;
+    }
+
+    mouseEventNearCellCenter(event: MouseEvent): boolean {
+        return this.coordinateNearCellCenter(event.offsetX, event.offsetY);
+    }
+
     // creates the requested element type and optionally adds it to the requested layer
     createElement<T>(tag: string, type: { new(...args: any[]): T }, layer?: RenderLayer): T {
         let element = document.createElementNS(SVG_NAMESPACE, tag);
