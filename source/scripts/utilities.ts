@@ -26,6 +26,7 @@ interface Array<T> {
     equals<T extends IEquals>(that: Array<T>): boolean;
     first(): T | undefined;
     insert(index: number, ...values: T[]): void;
+    isPalindrome(offset: number | undefined, length: number | undefined): boolean;
     last(): T | undefined;
     remove(index: number): void;
 }
@@ -107,6 +108,27 @@ Array.prototype.first = function<T>(this: Array<T>): T | undefined {
 
 Array.prototype.insert = function<T>(this: Array<T>, index: number, ...values: T[]): void {
     this.splice(index, 0, ...values);
+}
+
+Array.prototype.isPalindrome = function<T extends IEquals>(this: Array<T>, offset: number | undefined, length: number | undefined): boolean {
+    if (offset === undefined) {
+        offset = 0;
+        length = this.length;
+    }
+    if (length === undefined) {
+        length = this.length - offset;
+    }
+
+    let begin = offset;
+    let end = begin + length - 1;
+    while (begin < end) {
+        if (!this[begin].equals(this[end])) {
+            return false;
+        }
+        begin++;
+        end--;
+    }
+    return true;
 }
 
 Array.prototype.last = function<T>(this: Array<T>): T | undefined {
