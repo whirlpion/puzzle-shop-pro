@@ -448,7 +448,7 @@ class PuzzleGrid {
                     ["y", `${cell.i * CELL_SIZE}`],
                     ["width", `${CELL_SIZE}`],
                     ["height", `${CELL_SIZE}`],
-                    ["fill", Colour.Pink.toString()]);
+                    ["fill", Colour.LightRed.toString()]);
                 this.errorHighlight.appendChild(rect);
             }
         }
