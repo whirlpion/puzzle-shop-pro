@@ -11,13 +11,18 @@ enum ToolMode {
 
 enum ToolID {
     First = 0,
+    // constraint interaction
     ObjectSelection = First,
     RectangleSelection,
     Move,
+    // constraint tools
     Grid,
+    Line,
+    // digit tools
     Digit,
     Center,
     Corner,
+    // navigation
     Zoom,
     Pan,
     // the number of tools
@@ -91,6 +96,7 @@ class ToolBox {
       {id: "rectangle_selection_tool", toolConstructor: NoOpTool, shortcut: undefined},
       {id: "move_tool", toolConstructor: MoveTool, shortcut: "KeyM"},
       {id: "grid_tool", toolConstructor: GridTool, shortcut: "KeyG"},
+      {id: "line_tool", toolConstructor: LineTool, shortcut: "KeyL"},
       {id: "digit_tool", toolConstructor: DigitTool, shortcut: "KeyZ"},
       {id: "center_tool", toolConstructor: CenterTool, shortcut: "KeyC"},
       {id: "corner_tool", toolConstructor: CornerTool, shortcut: "KeyX"},
