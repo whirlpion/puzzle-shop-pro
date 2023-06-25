@@ -65,10 +65,13 @@ abstract class CellTool extends ITool {
             return false;
         }
 
-        const cell = this.sceneManager.cellAtMouseEvent(event);
-        const line = Cell.bresenhamLine(this.puzzleGrid.focusedCell, cell);
-        this.puzzleGrid.highlightCells(HighlightCellsFlags.Focus, ...line);
-        return true;
+        if (this.sceneManager.mouseEventNearCellCenter(event)) {
+            const cell = this.sceneManager.cellAtMouseEvent(event);
+            const line = Cell.bresenhamLine(this.puzzleGrid.focusedCell, cell);
+            this.puzzleGrid.highlightCells(HighlightCellsFlags.Focus, ...line);
+            return true;
+        }
+        return false;
     }
 
     override handleKeyDown(event: KeyboardEvent) {
