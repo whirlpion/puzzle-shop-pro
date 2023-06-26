@@ -26,6 +26,31 @@ enum Cursor {
     Move = "move",
 }
 
+// a wrapper around a Map<RenderLayer, SVGGElement>
+
+class Graphic {
+    private elements: Map<RenderLayer, SVGGElement> = new Map();
+
+    set(layer: RenderLayer, svg: SVGGElement): void {
+        throwIfEqual(layer, RenderLayer.Count);
+        this.elements.set(layer, svg);
+    }
+
+    get(layer: RenderLayer): SVGGElement {
+        let result = this.elements.get(layer);
+        throwIfUndefined(result);
+        return result;
+    }
+
+    [Symbol.iterator](): IterableIterator<[RenderLayer,SVGGElement]> {
+        return this.elements[Symbol.iterator]();
+    }
+
+    get svgs(): IterableIterator<SVGGElement> {
+        return this.elements.values();
+    }
+}
+
 // the canvas view keeps track of the parent svg element of each renderable 'thing' on the canvas
 class SceneManager {
     svg: SVGSVGElement;
@@ -315,21 +340,21 @@ class SceneManager {
         throwIfNotType<SVGElement>(element, SVGElement);
         throwIfNotType<T>(element, type);
         if (layer !== undefined) {
-            this.addElement(element, layer);
+            this.layers[layer].appendChild(element);
         }
         return element;
     }
 
-    // add the element to the specified layer of the SVG document
-    addElement(element: SVGElement, layer: RenderLayer): void {
-        throwIfEqual(layer, RenderLayer.Count);
-        this.layers[layer].appendChild(element);
+    addGraphic(graphic: Graphic): void {
+        for (let [layer, svg] of graphic) {
+            this.layers[layer].appendChild(svg);
+        }
     }
 
-    // remove the element from its parent
-    removeElement(element: SVGElement): void {
-        throwIfNull(element.parentNode);
-        element.parentNode.removeChild(element);
+    removeGraphic(graphic: Graphic): void {
+        for (let svg of graphic.svgs) {
+            svg.parentNode?.removeChild(svg);
+        }
     }
 
     // set the mouse cursor over the puzzle canvas

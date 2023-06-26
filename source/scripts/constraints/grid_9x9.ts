@@ -90,9 +90,9 @@ class Grid9x9Constraint extends IConstraint {
                         ["y", `${(1 + k * 3) * CELL_SIZE}`]);
                     group.appendChild(rect);
                 }
-                let retval: Map<RenderLayer, SVGGElement> = new Map();
-                retval.set(RenderLayer.Grid, group);
-                return retval;
+                let graphic = new Graphic();
+                graphic.set(RenderLayer.Grid, group);
+                return graphic;
             })(),
             `grid-9x9-${Grid9x9Constraint.counter++}`);
 

@@ -2,9 +2,7 @@ class DeleteConstraintsAction extends IAction {
     override apply(): void {
         for (let constraint of this.constraints) {
             this.puzzleGrid.removeConstraint(constraint);
-            for (let svg of constraint.svgs.values()) {
-                this.sceneManager.removeElement(svg);
-            }
+            this.sceneManager.removeGraphic(constraint.graphic);
         }
         this.puzzleGrid.updateSelectionBox();
         this.puzzleGrid.checkCellsForConstraintViolations(...this.affectedCells);
@@ -15,9 +13,7 @@ class DeleteConstraintsAction extends IAction {
         for (let k = 0; k < length; k++) {
             const constraint = this.constraints[k];
             this.puzzleGrid.addConstraint(constraint);
-            for (let [layer, svg] of constraint.svgs) {
-                this.sceneManager.addElement(svg, layer)
-            }
+            this.sceneManager.addGraphic(constraint.graphic);
         }
         this.puzzleGrid.updateSelectionBox();
         this.puzzleGrid.checkCellsForConstraintViolations(...this.affectedCells);

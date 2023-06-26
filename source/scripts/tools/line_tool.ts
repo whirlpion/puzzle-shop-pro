@@ -7,7 +7,7 @@ class LineTool extends ITool {
 
     drawingLine: boolean = false;
     cellsInLine: Array<Cell> = new Array();
-    graphic: Map<RenderLayer, SVGGElement> = new Map();
+    graphic: Graphic = new Graphic();
 
 
     constructor(toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
@@ -40,13 +40,9 @@ class LineTool extends ITool {
             this.cellsInLine.push(cell);
             this.drawingLine = true;
 
-            for (let svg of this.graphic.values()) {
-                this.sceneManager.removeElement(svg);
-            }
+            this.sceneManager.removeGraphic(this.graphic);
             this.graphic = this.drawLine(this.cellsInLine);
-            for (let [layer, svg] of this.graphic) {
-                this.sceneManager.addElement(svg, layer);
-            }
+            this.sceneManager.addGraphic(this.graphic);
 
             return true;
         }
@@ -58,9 +54,7 @@ class LineTool extends ITool {
             console.log("cells: ", this.cellsInLine);
             this.drawingLine = false;
 
-            for (let svg of this.graphic.values()) {
-                this.sceneManager.removeElement(svg);
-            }
+            this.sceneManager.removeGraphic(this.graphic);
 
             if (this.cellsInLine.length > 1) {
                 let lineConstraint = new ThermoConstraint(this.cellsInLine, this.graphic);
@@ -68,7 +62,7 @@ class LineTool extends ITool {
                 this.actionStack.doAction(action);
             }
 
-            this.graphic = new Map();
+            this.graphic = new Graphic();
 
             return true;
         }
@@ -136,20 +130,16 @@ class LineTool extends ITool {
                 }
             }
 
-            for (let svg of this.graphic.values()) {
-                this.sceneManager.removeElement(svg);
-            }
+            this.sceneManager.removeGraphic(this.graphic);
             this.graphic = this.drawLine(this.cellsInLine);
-            for (let [layer, svg] of this.graphic) {
-                this.sceneManager.addElement(svg, layer);
-            }
+            this.sceneManager.addGraphic(this.graphic);
 
             return true;
         }
         return false;
     }
 
-    private drawLine(cells: Array<Cell>): Map<RenderLayer, SVGGElement> {
+    private drawLine(cells: Array<Cell>): Graphic {
         let boundingBox = BoundingBox.fromCells(...cells);
         const origin = new Cell(boundingBox.top, boundingBox.left);
 
@@ -166,7 +156,7 @@ class LineTool extends ITool {
             points.push(`${point.x},${point.y}`);
         }
 
-        let retval: Map<RenderLayer, SVGGElement> = new Map();
+        let graphic = new Graphic();
 
         // outline
         {
@@ -190,7 +180,7 @@ class LineTool extends ITool {
                 ["fill", Colour.White.toString()],
                 );
             group.appendChild(circle);
-            retval.set(RenderLayer.ConstraintOutlines, group);
+            graphic.set(RenderLayer.ConstraintOutlines, group);
         }
         // foreground
         {
@@ -214,9 +204,9 @@ class LineTool extends ITool {
                 ["fill", Colour.LightGrey.toString()],
                 );
             group.appendChild(circle);
-            retval.set(RenderLayer.Constraints, group);
+            graphic.set(RenderLayer.Constraints, group);
         }
 
-        return retval;
+        return graphic;
     }
 }

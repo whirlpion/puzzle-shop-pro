@@ -1,7 +1,7 @@
 class ThermoConstraint extends IConstraint {
     private static counter: number = 0;
-    constructor(cells: Array<Cell>, svgs: Map<RenderLayer,SVGGElement>) {
-        super(cells, BoundingBox.fromCells(...cells), svgs, `thermo_${ThermoConstraint.counter++}`);
+    constructor(cells: Array<Cell>, graphic: Graphic) {
+        super(cells, BoundingBox.fromCells(...cells), graphic, `thermo_${ThermoConstraint.counter++}`);
     }
 
     override getViolatedCells(puzzleGrid: PuzzleGrid): BSTSet<Cell> {

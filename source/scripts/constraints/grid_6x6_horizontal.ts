@@ -114,9 +114,9 @@ class Grid6x6HorizontalConstraint extends IConstraint {
                         ["fill", "none"]);
                     group.appendChild(vertical);
                 }
-                let retval: Map<RenderLayer, SVGGElement> = new Map();
-                retval.set(RenderLayer.Grid, group);
-                return retval;
+                let graphic = new Graphic();
+                graphic.set(RenderLayer.Grid, group);
+                return graphic
             })(),
             `grid-6x6-horizontal-${Grid6x6HorizontalConstraint.counter++}`);
 
