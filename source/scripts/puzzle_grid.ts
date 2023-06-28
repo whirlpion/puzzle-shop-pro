@@ -703,8 +703,40 @@ class PuzzleGrid {
             }
             graphic.set(RenderLayer.PencilMark, group);
         }
+
+        if (value.colourMark) {
+            const colourTable: Array<Colour> = [
+                Colour.Invisible,   // dummy colour to make table 1-indexed
+                Colour.HotPink,
+                Colour.Red,
+                Colour.Orange,
+                Colour.Yellow,
+                Colour.Green,
+                Colour.Turquoise,
+                Colour.Indigo,
+                Colour.Purple,
+                Colour.White,
+            ];
+            const group = this.sceneManager.createElement("g", SVGGElement);
+            group.setAttribute("transform", `translate(${cell.left}, ${cell.top})`);
+            const digits = DigitFlag.toDigits(value.colourMark);
+            const digitCount = digits.length;
+            for (let i = 0; i < digitCount; i++) {
+                const digit = digits[i];
+                const points = CELL_HIGHLIGHT_POINTS_STRINGS[digitCount][i];
+                let polygon = this.sceneManager.createElement("polyline", SVGPolylineElement);
+                polygon.setAttributes(
+                    ["points", points],
+                    ["stroke", "none"],
+                    ["fill", colourTable[digit].toString()]);
+                group.appendChild(polygon);
+            }
+            graphic.set(RenderLayer.Fill, group);
+        }
+
         this.cellMap.set(cell, [value, graphic]);
         this.sceneManager.addGraphic(graphic);
+
 
         this.fireEvent(PuzzleEventType.CellValuesChanged, new CellEvent(this, [cell]));
 

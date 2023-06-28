@@ -98,8 +98,9 @@ class ToolBox {
       {id: "grid_tool", toolConstructor: GridTool, shortcut: "KeyG"},
       {id: "line_tool", toolConstructor: LineTool, shortcut: "KeyL"},
       {id: "digit_tool", toolConstructor: DigitTool, shortcut: "KeyZ"},
-      {id: "center_tool", toolConstructor: CenterTool, shortcut: "KeyC"},
       {id: "corner_tool", toolConstructor: CornerTool, shortcut: "KeyX"},
+      {id: "center_tool", toolConstructor: CenterTool, shortcut: "KeyC"},
+      {id: "colour_tool", toolConstructor: ColourTool, shortcut: "KeyV"},
       {id: "zoom_tool", toolConstructor: ZoomTool, shortcut: undefined},
       {id: "pan_tool", toolConstructor: PanTool, shortcut: undefined},
     ];

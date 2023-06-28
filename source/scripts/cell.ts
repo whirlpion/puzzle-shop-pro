@@ -187,7 +187,8 @@ namespace DigitFlag {
 class CellValue implements IEquals {
     digit: Digit | null = null;
     centerMark: DigitFlag = DigitFlag.None;
-    cornerMark: DigitFlag = DigitFlag.None
+    cornerMark: DigitFlag = DigitFlag.None;
+    colourMark: DigitFlag = DigitFlag.None;
     private _locked: boolean = false;
     // if a cell is locked, it becomes a constraint
     get locked(): boolean {
@@ -201,6 +202,7 @@ class CellValue implements IEquals {
         retval.digit = this.digit;
         retval.centerMark = this.centerMark;
         retval.cornerMark = this.cornerMark;
+        retval.colourMark = this.colourMark;
         retval._locked = this._locked;
         return retval;
      }
@@ -217,6 +219,7 @@ class CellValue implements IEquals {
         return this.digit == that.digit &&
                this.centerMark == that.centerMark &&
                this.cornerMark == that.cornerMark &&
+               this.colourMark == that.colourMark &&
                this._locked == that._locked;
     }
 };
