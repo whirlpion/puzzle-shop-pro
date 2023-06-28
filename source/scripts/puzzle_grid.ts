@@ -185,7 +185,8 @@ class PuzzleGrid {
     constructor(sceneManager: SceneManager) {
         this.sceneManager = sceneManager;
         this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
-        this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
+        this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.Foreground);
+        this.highlightSvg.setAttribute("opacity", "0.5");
         this.selectionBox = sceneManager.createElement("rect", SVGRectElement, RenderLayer.Foreground);
         // number of dashes pe rcell
         const DASHES_PER_CELL = 4;
@@ -590,7 +591,11 @@ class PuzzleGrid {
                 ["x", `${CELL_SIZE/2}`],
                 ["y", `${CELL_SIZE/2}`],
                 ["font-size", `${baseFontSize}`],
-                ["font-family", "sans-serif"]);
+                ["font-family", "sans-serif"],
+                ["paint-order", "stroke fill"],
+                ["fill", Colour.Black.toString()],
+                ["stroke", Colour.White.toString()],
+                ["stroke-width", "4"]);
             text.innerHTML = `${value.digit}`;
             group.appendChild(text);
             graphic.set(RenderLayer.PencilMark, group);
@@ -610,7 +615,11 @@ class PuzzleGrid {
                     ["x", `${CELL_SIZE/2}`],
                     ["y", `${CELL_SIZE/2}`],
                     ["font-size", `${fontSize}`],
-                    ["font-family", "sans-serif"]);
+                    ["font-family", "sans-serif"],
+                    ["paint-order", "stroke fill"],
+                    ["fill", Colour.Black.toString()],
+                    ["stroke", Colour.White.toString()],
+                    ["stroke-width", "4"]);
                 text.textContent = digitFlagStr;
                 group.appendChild(text);
             }
@@ -696,7 +705,11 @@ class PuzzleGrid {
                         ["x", `${CELL_SIZE * x}`],
                         ["y", `${CELL_SIZE * y}`],
                         ["font-size", `${fontSize}`],
-                        ["font-family", "sans-serif"]);
+                        ["font-family", "sans-serif"],
+                        ["paint-order", "stroke fill"],
+                        ["fill", Colour.Black.toString()],
+                        ["stroke", Colour.White.toString()],
+                        ["stroke-width", "4"]);
                     text.textContent = `${digit}`;
                     group.appendChild(text);
                 }
