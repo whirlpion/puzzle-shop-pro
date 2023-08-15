@@ -4,16 +4,20 @@ class Setting {
     }
 }
 class SettingOption extends Setting {
-    constructor(values, changeCallback) {
+    constructor(options, value, changeCallback) {
         super();
-        this.values = values;
+        this.options = options;
+        this.value = value;
         this.changeCallback = changeCallback;
     }
     getHTMLElement() {
         let selectElement = document.createElement("select");
-        for (let [value, name] of this.values) {
+        for (let [option, name] of this.options) {
             let optionElement = document.createElement("option");
-            optionElement.setAttribute("value", value);
+            optionElement.setAttribute("value", option);
+            if (option == this.value) {
+                optionElement.setAttribute("selected", "true");
+            }
             optionElement.textContent = name;
             selectElement.appendChild(optionElement);
         }

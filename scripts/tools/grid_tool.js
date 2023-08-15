@@ -5,54 +5,6 @@ const GRID_8X8_V = "8x8-vertical";
 const GRID_6X6_H = "6x6-horizontal";
 const GRID_6X6_V = "6x6-vertical";
 const GRID_4X4 = "4x4";
-class InsertGridAction extends IAction {
-    apply() {
-        // register the constrained cells
-        this.puzzleGrid.addConstraint(this.gridConstraint);
-        // check for constraint violations
-        this.puzzleGrid.checkCellsForConstraintViolations(...this.gridConstraint.cells);
-        // add the svg
-        this.sceneManager.addElement(this.gridConstraint.svg, RenderLayer.Grid);
-        // update the selection box
-        this.puzzleGrid.updateSelectionBox();
-    }
-    revert() {
-        // remove the constrained cells
-        this.puzzleGrid.removeConstraint(this.gridConstraint);
-        // check for constraint violations
-        this.puzzleGrid.checkCellsForConstraintViolations(...this.gridConstraint.cells);
-        // remove the svg
-        this.sceneManager.removeElement(this.gridConstraint.svg);
-        // update the selection box
-        this.puzzleGrid.updateSelectionBox();
-    }
-    constructor(puzzleGrid, sceneManager, cell, gridType) {
-        super(`insert ${gridType} grid at ${cell}`);
-        this.puzzleGrid = puzzleGrid;
-        this.sceneManager = sceneManager;
-        switch (gridType) {
-            case GRID_9X9:
-                this.gridConstraint = new Grid9x9Constraint(sceneManager, cell);
-                break;
-            case GRID_8X8_H:
-                this.gridConstraint = new Grid8x8HorizontalConstraint(sceneManager, cell);
-                break;
-            case GRID_8X8_V:
-                this.gridConstraint = new Grid8x8VerticalConstraint(sceneManager, cell);
-                break;
-            case GRID_6X6_H:
-                this.gridConstraint = new Grid6x6HorizontalConstraint(sceneManager, cell);
-                break;
-            case GRID_6X6_V:
-                this.gridConstraint = new Grid6x6VerticalConstraint(sceneManager, cell);
-                break;
-            case GRID_4X4:
-                this.gridConstraint = new Grid4x4Constraint(sceneManager, cell);
-                break;
-            default: throwMessage(`grid type '${gridType}' not implemented`);
-        }
-    }
-}
 class GridTool extends ITool {
     constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
         super(toolBox, puzzleGrid, actionStack, sceneManager);
@@ -62,19 +14,19 @@ class GridTool extends ITool {
         return ToolMode.ConstraintInsert;
     }
     get toolSettings() {
-        return new Map([
-            ["Grid Size", new SettingOption([
-                    [GRID_9X9, "9x9"],
-                    [GRID_8X8_H, "8x8 (horizontal)"],
-                    [GRID_8X8_V, "8x8 (vertical)"],
-                    [GRID_6X6_H, "6x6 (horizontal)"],
-                    [GRID_6X6_V, "6x6 (vertical)"],
-                    [GRID_4X4, "4x4"],
-                ], (value) => {
-                    this.gridType = value;
-                    console.log(`grid type: ${this.gridType}`);
-                })],
-        ]);
+        const retval = new Map();
+        retval.set("Grid Size", new SettingOption([
+            [GRID_9X9, "9x9"],
+            [GRID_8X8_H, "8x8 (horizontal)"],
+            [GRID_8X8_V, "8x8 (vertical)"],
+            [GRID_6X6_H, "6x6 (horizontal)"],
+            [GRID_6X6_V, "6x6 (vertical)"],
+            [GRID_4X4, "4x4"],
+        ], this.gridType, (value) => {
+            this.gridType = value;
+            console.log(`grid type: ${this.gridType}`);
+        }));
+        return retval;
     }
     //
     // ITool interface
@@ -89,7 +41,29 @@ class GridTool extends ITool {
     // Private methods
     //
     insertGrid(cell) {
-        let action = new InsertGridAction(this.puzzleGrid, this.sceneManager, cell, this.gridType);
+        let constraint = null;
+        switch (this.gridType) {
+            case GRID_9X9:
+                constraint = new Grid9x9Constraint(this.sceneManager, cell);
+                break;
+            case GRID_8X8_H:
+                constraint = new Grid8x8HorizontalConstraint(this.sceneManager, cell);
+                break;
+            case GRID_8X8_V:
+                constraint = new Grid8x8VerticalConstraint(this.sceneManager, cell);
+                break;
+            case GRID_6X6_H:
+                constraint = new Grid6x6HorizontalConstraint(this.sceneManager, cell);
+                break;
+            case GRID_6X6_V:
+                constraint = new Grid6x6VerticalConstraint(this.sceneManager, cell);
+                break;
+            case GRID_4X4:
+                constraint = new Grid4x4Constraint(this.sceneManager, cell);
+                break;
+            default: throwMessage(`grid type '${this.gridType}' not implemented`);
+        }
+        let action = new InsertConstraintAction(this.puzzleGrid, this.sceneManager, constraint);
         this.actionStack.doAction(action);
     }
 }

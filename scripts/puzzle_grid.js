@@ -32,6 +32,38 @@ class IConstraint {
         }
     }
 }
+class InsertConstraintAction extends IAction {
+    apply() {
+        // register the constrained cells
+        this.puzzleGrid.addConstraint(this.constraint);
+        // check for constraint violations
+        this.puzzleGrid.checkCellsForConstraintViolations(...this.constraint.cells);
+        // add the svg
+        if (this.constraint.svg) {
+            this.sceneManager.addElement(this.constraint.svg, RenderLayer.Grid);
+        }
+        // update the selection box
+        this.puzzleGrid.updateSelectionBox();
+    }
+    revert() {
+        // remove the constrained cells
+        this.puzzleGrid.removeConstraint(this.constraint);
+        // check for constraint violations
+        this.puzzleGrid.checkCellsForConstraintViolations(...this.constraint.cells);
+        // remove the svg
+        if (this.constraint.svg) {
+            this.sceneManager.removeElement(this.constraint.svg);
+        }
+        // update the selection box
+        this.puzzleGrid.updateSelectionBox();
+    }
+    constructor(puzzleGrid, sceneManager, constraint) {
+        super(`insert ${constraint.name} at r${constraint.boundingBox.top}c${constraint.boundingBox.right}`);
+        this.puzzleGrid = puzzleGrid;
+        this.sceneManager = sceneManager;
+        this.constraint = constraint;
+    }
+}
 var HighlightCellsFlags;
 (function (HighlightCellsFlags) {
     HighlightCellsFlags[HighlightCellsFlags["None"] = 0] = "None";

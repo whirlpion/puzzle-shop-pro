@@ -6,6 +6,21 @@ class Cell {
     get j() {
         return this._j;
     }
+    get top() {
+        return this.i * CELL_SIZE;
+    }
+    get bottom() {
+        return (this.i + 1) * CELL_SIZE;
+    }
+    get left() {
+        return this.j * CELL_SIZE;
+    }
+    get right() {
+        return (this.j + 1) * CELL_SIZE;
+    }
+    get center() {
+        return { x: (this.j + 0.5) * CELL_SIZE, y: (this.i + 0.5) * CELL_SIZE };
+    }
     constructor(i, j) {
         throwIfFalse(Number.isInteger(i));
         throwIfFalse(Number.isInteger(j));
