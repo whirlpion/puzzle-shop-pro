@@ -62,7 +62,9 @@ class Grid6x6HorizontalConstraint extends IConstraint {
                 vertical.setAttributes(["x1", `${3 * CELL_SIZE}`], ["x2", `${3 * CELL_SIZE}`], ["y1", "0"], ["y2", `${6 * CELL_SIZE}`], ["stroke", Colour.Black.toString()], ["stroke-width", `${REGION_BORDER_SIZE}`], ["fill", "none"]);
                 group.appendChild(vertical);
             }
-            return group;
+            let graphic = new Graphic();
+            graphic.set(RenderLayer.Grid, group);
+            return graphic;
         })(), `grid-6x6-horizontal-${Grid6x6HorizontalConstraint.counter++}`);
         this.regionConstraints = new Array();
         const row = cell.i;

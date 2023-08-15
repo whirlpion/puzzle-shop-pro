@@ -4,17 +4,19 @@ class IConstraint {
     get cells() {
         return this._cells;
     }
+    get uniqueCells() {
+        return new BSTSet(this._cells);
+    }
     get boundingBox() {
         return this._boundingBox;
     }
-    get svg() {
-        throwIfNull(this._svg);
-        return this._svg;
+    get graphic() {
+        return this._graphic;
     }
     //  takes in a list of cells affected by this constraint and an svg element for display
-    constructor(cells, boundingBox, svg, name) {
+    constructor(cells, boundingBox, graphic, name) {
         this._cells = cells;
-        this._svg = svg;
+        this._graphic = graphic;
         this._boundingBox = boundingBox;
         this.name = name;
     }
@@ -25,10 +27,10 @@ class IConstraint {
         }
         this._cells = cells;
         this._boundingBox = BoundingBox.fromCells(...this._cells);
-        if (this._svg) {
+        for (let svg of this.graphic.svgs) {
             const x = this._boundingBox.left * CELL_SIZE;
             const y = this._boundingBox.top * CELL_SIZE;
-            this._svg.setAttribute("transform", `translate(${x},${y})`);
+            svg.setAttribute("transform", `translate(${x},${y})`);
         }
     }
 }
@@ -38,10 +40,8 @@ class InsertConstraintAction extends IAction {
         this.puzzleGrid.addConstraint(this.constraint);
         // check for constraint violations
         this.puzzleGrid.checkCellsForConstraintViolations(...this.constraint.cells);
-        // add the svg
-        if (this.constraint.svg) {
-            this.sceneManager.addElement(this.constraint.svg, RenderLayer.Grid);
-        }
+        // add the svgs
+        this.sceneManager.addGraphic(this.constraint.graphic);
         // update the selection box
         this.puzzleGrid.updateSelectionBox();
     }
@@ -51,17 +51,16 @@ class InsertConstraintAction extends IAction {
         // check for constraint violations
         this.puzzleGrid.checkCellsForConstraintViolations(...this.constraint.cells);
         // remove the svg
-        if (this.constraint.svg) {
-            this.sceneManager.removeElement(this.constraint.svg);
-        }
+        this.sceneManager.removeGraphic(this.constraint.graphic);
         // update the selection box
         this.puzzleGrid.updateSelectionBox();
     }
-    constructor(puzzleGrid, sceneManager, constraint) {
+    constructor(puzzleGrid, sceneManager, constraint, renderLayer = RenderLayer.Constraints) {
         super(`insert ${constraint.name} at r${constraint.boundingBox.top}c${constraint.boundingBox.right}`);
         this.puzzleGrid = puzzleGrid;
         this.sceneManager = sceneManager;
         this.constraint = constraint;
+        this.renderLayer = renderLayer;
     }
 }
 var HighlightCellsFlags;
@@ -132,11 +131,19 @@ class PuzzleGrid {
         // Event Functions
         this.listenerRegistry = new Map();
         this.sceneManager = sceneManager;
-        // this.constraintListPanel = constraintListPanel;
         this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
-        this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
+        this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.Foreground);
+        this.highlightSvg.setAttribute("opacity", "0.5");
         this.selectionBox = sceneManager.createElement("rect", SVGRectElement, RenderLayer.Foreground);
-        this.selectionBox.setAttributes(["fill", "none"], ["stroke", "black"], ["stroke-dasharray", "5,6,10,6,5,0"], ["stroke-width", "2"], ["visibility", "hidden"]);
+        // number of dashes pe rcell
+        const DASHES_PER_CELL = 4;
+        // size of dash relative to blank
+        const DASH_RATIO = 1.5;
+        // CELL_SIZE = DASHES_PER_CELL * (DASH_SIZE + DASH_SIZE / DASH_RATIO);
+        // CELL_SIZE = DASHES_PER_CELL * DASH_SIZE * (1 + 1 / DASH_RATIO);
+        const DASH_SIZE = CELL_SIZE / DASHES_PER_CELL / (1 + 1 / DASH_RATIO);
+        const BLANK_SIZE = DASH_SIZE / DASH_RATIO;
+        this.selectionBox.setAttributes(["fill", "none"], ["stroke", "black"], ["stroke-dasharray", `${DASH_SIZE / 2},${BLANK_SIZE},${DASH_SIZE},${BLANK_SIZE},${DASH_SIZE / 2},0`], ["stroke-width", "2"], ["visibility", "hidden"]);
     }
     addEventListener(eventType, listener) {
         let listeners = this.listenerRegistry.get(eventType);
@@ -337,7 +344,7 @@ class PuzzleGrid {
             console.debug(`Constraint violation! ${affectedCells.size} cells affected`);
             for (let cell of affectedCells) {
                 let rect = this.sceneManager.createElement("rect", SVGRectElement);
-                rect.setAttributes(["x", `${cell.j * CELL_SIZE}`], ["y", `${cell.i * CELL_SIZE}`], ["width", `${CELL_SIZE}`], ["height", `${CELL_SIZE}`], ["fill", Colour.Pink.toString()]);
+                rect.setAttributes(["x", `${cell.j * CELL_SIZE}`], ["y", `${cell.i * CELL_SIZE}`], ["width", `${CELL_SIZE}`], ["height", `${CELL_SIZE}`], ["fill", Colour.LightRed.toString()]);
                 this.errorHighlight.appendChild(rect);
             }
         }
@@ -365,7 +372,7 @@ class PuzzleGrid {
     // removes a constraint and optionally checks to see if its removal affects
     // the set of cells under violated constraints
     removeConstraint(constraint, checkViolations) {
-        for (let cell of constraint.cells) {
+        for (let cell of constraint.uniqueCells) {
             // get the set of contraints already on cell
             let constraints = this.constraintMap.get(cell);
             throwIfUndefined(constraints);
@@ -436,27 +443,32 @@ class PuzzleGrid {
                 return;
             }
             this.cellMap.delete(cell);
-            let [_value, svg] = pair;
-            this.sceneManager.removeElement(svg);
+            let [_value, graphic] = pair;
+            this.sceneManager.removeGraphic(graphic);
         }
         const baseFontSize = CELL_SIZE * 4 / 5;
+        let graphic = new Graphic();
         if (value.digit) {
             // digit
-            let text = this.sceneManager.createElement("text", SVGTextElement, RenderLayer.PencilMark);
-            text.setAttributes(["text-anchor", "middle"], ["dominant-baseline", "central"], ["x", `${cell.j * CELL_SIZE + CELL_SIZE / 2}`], ["y", `${cell.i * CELL_SIZE + CELL_SIZE / 2}`], ["font-size", `${baseFontSize}`], ["font-family", "sans-serif"]);
+            let group = this.sceneManager.createElement("g", SVGGElement);
+            group.setAttribute("transform", `translate(${cell.left}, ${cell.top})`);
+            let text = this.sceneManager.createElement("text", SVGTextElement);
+            text.setAttributes(["text-anchor", "middle"], ["dominant-baseline", "central"], ["x", `${CELL_SIZE / 2}`], ["y", `${CELL_SIZE / 2}`], ["font-size", `${baseFontSize}`], ["font-family", "sans-serif"], ["paint-order", "stroke fill"], ["fill", Colour.Black.toString()], ["stroke", Colour.White.toString()], ["stroke-width", "4"]);
             text.innerHTML = `${value.digit}`;
-            this.cellMap.set(cell, [value, text]);
+            group.appendChild(text);
+            graphic.set(RenderLayer.PencilMark, group);
         }
         else if (value.centerMark || value.cornerMark) {
             // pencil marks
-            let pencilMarks = this.sceneManager.createElement("g", SVGGElement, RenderLayer.PencilMark);
+            let group = this.sceneManager.createElement("g", SVGGElement);
+            group.setAttribute("transform", `translate(${cell.left}, ${cell.top})`);
             if (value.centerMark) {
                 let digitFlagStr = DigitFlag.toString(value.centerMark);
                 let text = this.sceneManager.createElement("text", SVGTextElement);
                 const fontSize = baseFontSize * 1.5 / Math.max(4, digitFlagStr.length);
-                text.setAttributes(["text-anchor", "middle"], ["dominant-baseline", "central"], ["x", `${cell.j * CELL_SIZE + CELL_SIZE / 2}`], ["y", `${cell.i * CELL_SIZE + CELL_SIZE / 2}`], ["font-size", `${fontSize}`], ["font-family", "sans-serif"]);
+                text.setAttributes(["text-anchor", "middle"], ["dominant-baseline", "central"], ["x", `${CELL_SIZE / 2}`], ["y", `${CELL_SIZE / 2}`], ["font-size", `${fontSize}`], ["font-family", "sans-serif"], ["paint-order", "stroke fill"], ["fill", Colour.Black.toString()], ["stroke", Colour.White.toString()], ["stroke-width", "4"]);
                 text.textContent = digitFlagStr;
-                pencilMarks.appendChild(text);
+                group.appendChild(text);
             }
             if (value.cornerMark) {
                 let digits = DigitFlag.toDigits(value.cornerMark);
@@ -533,13 +545,41 @@ class PuzzleGrid {
                     const [x, y] = coords[k];
                     const digit = digits[k];
                     let text = this.sceneManager.createElement("text", SVGTextElement);
-                    text.setAttributes(["text-anchor", "middle"], ["dominant-baseline", "central"], ["x", `${cell.j * CELL_SIZE + CELL_SIZE * x}`], ["y", `${cell.i * CELL_SIZE + CELL_SIZE * y}`], ["font-size", `${fontSize}`], ["font-family", "sans-serif"]);
+                    text.setAttributes(["text-anchor", "middle"], ["dominant-baseline", "central"], ["x", `${CELL_SIZE * x}`], ["y", `${CELL_SIZE * y}`], ["font-size", `${fontSize}`], ["font-family", "sans-serif"], ["paint-order", "stroke fill"], ["fill", Colour.Black.toString()], ["stroke", Colour.White.toString()], ["stroke-width", "4"]);
                     text.textContent = `${digit}`;
-                    pencilMarks.appendChild(text);
+                    group.appendChild(text);
                 }
             }
-            this.cellMap.set(cell, [value, pencilMarks]);
+            graphic.set(RenderLayer.PencilMark, group);
         }
+        if (value.colourMark) {
+            const colourTable = [
+                Colour.Invisible,
+                Colour.HotPink,
+                Colour.Red,
+                Colour.Orange,
+                Colour.Yellow,
+                Colour.Green,
+                Colour.Turquoise,
+                Colour.Indigo,
+                Colour.Purple,
+                Colour.White,
+            ];
+            const group = this.sceneManager.createElement("g", SVGGElement);
+            group.setAttribute("transform", `translate(${cell.left}, ${cell.top})`);
+            const digits = DigitFlag.toDigits(value.colourMark);
+            const digitCount = digits.length;
+            for (let i = 0; i < digitCount; i++) {
+                const digit = digits[i];
+                const points = CELL_HIGHLIGHT_POINTS_STRINGS[digitCount][i];
+                let polygon = this.sceneManager.createElement("polyline", SVGPolylineElement);
+                polygon.setAttributes(["points", points], ["stroke", "none"], ["fill", colourTable[digit].toString()]);
+                group.appendChild(polygon);
+            }
+            graphic.set(RenderLayer.Fill, group);
+        }
+        this.cellMap.set(cell, [value, graphic]);
+        this.sceneManager.addGraphic(graphic);
         this.fireEvent(PuzzleEventType.CellValuesChanged, new CellEvent(this, [cell]));
         if (checkViolations) {
             this.checkCellsForConstraintViolations(cell);
@@ -548,8 +588,8 @@ class PuzzleGrid {
     deleteCellValue(cell, checkViolations) {
         let pair = this.cellMap.get(cell);
         if (pair) {
-            let [_value, svg] = pair;
-            this.sceneManager.removeElement(svg);
+            let [_value, graphic] = pair;
+            this.sceneManager.removeGraphic(graphic);
             this.cellMap.delete(cell);
             this.fireEvent(PuzzleEventType.CellValuesChanged, new CellEvent(this, [cell]));
         }

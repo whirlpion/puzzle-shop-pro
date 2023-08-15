@@ -1,7 +1,7 @@
 "use strict";
 class ThermoConstraint extends IConstraint {
-    constructor(cells, svg) {
-        super(cells, BoundingBox.fromCells(...cells), svg, `thermo_${ThermoConstraint.counter++}`);
+    constructor(cells, graphic) {
+        super(cells, BoundingBox.fromCells(...cells), graphic, `thermo_${ThermoConstraint.counter++}`);
     }
     getViolatedCells(puzzleGrid) {
         if (this.cells.length > 9) {

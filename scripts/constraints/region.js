@@ -2,7 +2,7 @@
 // a puzzle object is the 'owner' of the visual and logical aspects of a puzzle piece
 class RegionConstraint extends IConstraint {
     constructor(cells, boundingBox) {
-        super(cells, boundingBox, null, `region_${RegionConstraint.counter++}`);
+        super(cells, boundingBox, new Graphic(), `region_${RegionConstraint.counter++}`);
     }
     getViolatedCells(puzzleGrid) {
         let digitsInRegion = new Set();

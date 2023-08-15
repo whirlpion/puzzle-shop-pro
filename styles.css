@@ -86,6 +86,10 @@ div#grid_tool {
     background-image: url("icons/2x2-cell.svg")
 }
 
+div#line_tool {
+    background-image: url("icons/line-tool.svg")
+}
+
 div#digit_tool {
     background-image: url("icons/123.svg")
 }

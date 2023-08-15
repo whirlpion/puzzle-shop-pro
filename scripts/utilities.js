@@ -80,6 +80,25 @@ Array.prototype.first = function () {
 Array.prototype.insert = function (index, ...values) {
     this.splice(index, 0, ...values);
 };
+Array.prototype.isPalindrome = function (offset, length) {
+    if (offset === undefined) {
+        offset = 0;
+        length = this.length;
+    }
+    if (length === undefined) {
+        length = this.length - offset;
+    }
+    let begin = offset;
+    let end = begin + length - 1;
+    while (begin < end) {
+        if (!this[begin].equals(this[end])) {
+            return false;
+        }
+        begin++;
+        end--;
+    }
+    return true;
+};
 Array.prototype.last = function () {
     if (this.length > 0) {
         return this[this.length - 1];

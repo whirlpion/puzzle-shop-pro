@@ -56,10 +56,13 @@ class CellTool extends ITool {
         if (!event.primaryButton || !this.puzzleGrid.focusedCell) {
             return false;
         }
-        const cell = this.sceneManager.cellAtMouseEvent(event);
-        const line = Cell.bresenhamLine(this.puzzleGrid.focusedCell, cell);
-        this.puzzleGrid.highlightCells(HighlightCellsFlags.Focus, ...line);
-        return true;
+        if (this.sceneManager.mouseEventNearCellCenter(event)) {
+            const cell = this.sceneManager.cellAtMouseEvent(event);
+            const line = Cell.bresenhamLine(this.puzzleGrid.focusedCell, cell);
+            this.puzzleGrid.highlightCells(HighlightCellsFlags.Focus, ...line);
+            return true;
+        }
+        return false;
     }
     handleKeyDown(event) {
         if (this.puzzleGrid.hasHighlightedCells) {
@@ -187,13 +190,31 @@ class DigitTool extends CellTool {
         for (let cell of this.puzzleGrid.getHighlightedCells()) {
             let value = this.puzzleGrid.getCellValue(cell);
             // update existing cell
-            if (value?.digit === digit) {
-                continue;
+            // if (value?.digit === digit) {
+            //     continue;
+            // }
+            // cells.push(cell);
+            // value = new CellValue();
+            // value.digit = digit;
+            // values.push(value);
+            if (value) {
+                if (value.digit === digit) {
+                    continue;
+                }
+                cells.push(cell);
+                value = value.clone();
+                value.digit = digit;
+                value.centerMark = DigitFlag.None;
+                value.cornerMark = DigitFlag.None;
+                values.push(value);
+                // new cell
             }
-            cells.push(cell);
-            value = new CellValue();
-            value.digit = digit;
-            values.push(value);
+            else {
+                cells.push(cell);
+                value = new CellValue();
+                value.digit = digit;
+                values.push(value);
+            }
         }
         throwIfNotEqual(cells.length, values.length);
         if (cells.length > 0) {
@@ -308,6 +329,61 @@ class CornerTool extends CellTool {
                 cells.push(cell);
                 value = new CellValue();
                 value.cornerMark |= digitFlag;
+                values.push(value);
+            }
+        }
+        throwIfNotEqual(cells.length, values.length);
+        if (cells.length > 0) {
+            let action = new WriteCellValueAction(this.puzzleGrid, cells, values);
+            this.actionStack.doAction(action);
+        }
+    }
+}
+class ColourTool extends CellTool {
+    constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
+        super(toolBox, puzzleGrid, actionStack, sceneManager);
+    }
+    // toggle a colour at the highlighted cells
+    writeDigit(digit) {
+        const digitFlag = DigitFlag.fromDigit(digit);
+        // first determine if we are adding or removing
+        const highlightedCells = this.puzzleGrid.getHighlightedCells();
+        let addingDigit = false;
+        for (let cell of highlightedCells) {
+            let value = this.puzzleGrid.getCellValue(cell);
+            if ((value === null) || !(value.colourMark & digitFlag)) {
+                addingDigit = true;
+                break;
+            }
+        }
+        // next create our new cell/cell value pairs
+        let cells = new Array();
+        let values = new Array();
+        for (let cell of highlightedCells) {
+            let value = this.puzzleGrid.getCellValue(cell);
+            // update existing cell
+            if (value) {
+                if (addingDigit && (value.colourMark & digitFlag)) {
+                    continue;
+                }
+                if (!addingDigit && !(value.colourMark & digitFlag)) {
+                    continue;
+                }
+                cells.push(cell);
+                value = value.clone();
+                if (addingDigit) {
+                    value.colourMark |= digitFlag;
+                }
+                else {
+                    value.colourMark ^= digitFlag;
+                }
+                values.push(value);
+                // new cell
+            }
+            else {
+                cells.push(cell);
+                value = new CellValue();
+                value.colourMark |= digitFlag;
                 values.push(value);
             }
         }

@@ -72,7 +72,9 @@ class Grid8x8VerticalConstraint extends IConstraint {
                 vertical.setAttributes(["x1", `${4 * CELL_SIZE}`], ["x2", `${4 * CELL_SIZE}`], ["y1", "0"], ["y2", `${8 * CELL_SIZE}`], ["stroke", Colour.Black.toString()], ["stroke-width", `${REGION_BORDER_SIZE}`], ["fill", "none"]);
                 group.appendChild(vertical);
             }
-            return group;
+            let graphic = new Graphic();
+            graphic.set(RenderLayer.Grid, group);
+            return graphic;
         })(), `grid-8x8-vertical-${Grid8x8VerticalConstraint.counter++}`);
         this.regionConstraints = new Array();
         const row = cell.i;

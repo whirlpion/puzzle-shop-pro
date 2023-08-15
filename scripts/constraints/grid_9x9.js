@@ -53,7 +53,9 @@ class Grid9x9Constraint extends IConstraint {
                 rect.setAttributes(["width", `${9 * CELL_SIZE}`], ["height", `${1 * CELL_SIZE}`], ["stroke", Colour.Black.toString()], ["stroke-width", `${CELL_BORDER_SIZE}`], ["fill", "none"], ["x", "0"], ["y", `${(1 + k * 3) * CELL_SIZE}`]);
                 group.appendChild(rect);
             }
-            return group;
+            let graphic = new Graphic();
+            graphic.set(RenderLayer.Grid, group);
+            return graphic;
         })(), `grid-9x9-${Grid9x9Constraint.counter++}`);
         this.regionConstraints = new Array();
         const row = cell.i;

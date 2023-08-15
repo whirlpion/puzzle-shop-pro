@@ -3,28 +3,27 @@ class DeleteConstraintsAction extends IAction {
     apply() {
         for (let constraint of this.constraints) {
             this.puzzleGrid.removeConstraint(constraint);
-            constraint.svg.parentElement?.removeChild(constraint.svg);
+            this.sceneManager.removeGraphic(constraint.graphic);
         }
         this.puzzleGrid.updateSelectionBox();
         this.puzzleGrid.checkCellsForConstraintViolations(...this.affectedCells);
     }
     revert() {
-        throwIfNotEqual(this.constraints.length, this.svgParents.length);
         const length = this.constraints.length;
         for (let k = 0; k < length; k++) {
             const constraint = this.constraints[k];
             this.puzzleGrid.addConstraint(constraint);
-            this.svgParents[k].appendChild(constraint.svg);
+            this.sceneManager.addGraphic(constraint.graphic);
         }
         this.puzzleGrid.updateSelectionBox();
         this.puzzleGrid.checkCellsForConstraintViolations(...this.affectedCells);
     }
-    constructor(puzzleGrid, affectedCells, constraints) {
+    constructor(puzzleGrid, sceneManager, affectedCells, constraints) {
         super(`deleting constraints: ${constraints.map(c => c.name).join(", ")}`);
         this.puzzleGrid = puzzleGrid;
+        this.sceneManager = sceneManager;
         this.affectedCells = affectedCells;
         this.constraints = constraints;
-        this.svgParents = constraints.map((constraint) => constraint.svg.parentElement);
     }
 }
 class ObjectSelectionTool extends ITool {
@@ -83,7 +82,7 @@ class ObjectSelectionTool extends ITool {
                         for (let constraint of constraints) {
                             affectedCells.add(...constraint.cells);
                         }
-                        const action = new DeleteConstraintsAction(this.puzzleGrid, [...affectedCells], constraints);
+                        const action = new DeleteConstraintsAction(this.puzzleGrid, this.sceneManager, [...affectedCells], constraints);
                         this.actionStack.doAction(action);
                     }
                     return true;

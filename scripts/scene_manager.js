@@ -7,16 +7,18 @@ var RenderLayer;
     RenderLayer[RenderLayer["Fill"] = 1] = "Fill";
     // puzzle grids
     RenderLayer[RenderLayer["Grid"] = 2] = "Grid";
+    // outline arouond constraint graphics
+    RenderLayer[RenderLayer["ConstraintOutlines"] = 3] = "ConstraintOutlines";
     // constraints to go on top of the grid
-    RenderLayer[RenderLayer["Constraints"] = 3] = "Constraints";
+    RenderLayer[RenderLayer["Constraints"] = 4] = "Constraints";
     // user entered digits, pencil marks, etc
-    RenderLayer[RenderLayer["PencilMark"] = 4] = "PencilMark";
+    RenderLayer[RenderLayer["PencilMark"] = 5] = "PencilMark";
     // render on top
-    RenderLayer[RenderLayer["Overlay"] = 5] = "Overlay";
+    RenderLayer[RenderLayer["Overlay"] = 6] = "Overlay";
     // the very top layer
-    RenderLayer[RenderLayer["Foreground"] = 6] = "Foreground";
+    RenderLayer[RenderLayer["Foreground"] = 7] = "Foreground";
     // the number of layers
-    RenderLayer[RenderLayer["Count"] = 7] = "Count";
+    RenderLayer[RenderLayer["Count"] = 8] = "Count";
 })(RenderLayer || (RenderLayer = {}));
 var Cursor;
 (function (Cursor) {
@@ -25,6 +27,27 @@ var Cursor;
     Cursor["Grabbing"] = "grabbing";
     Cursor["Move"] = "move";
 })(Cursor || (Cursor = {}));
+// a wrapper around a Map<RenderLayer, SVGGElement>
+class Graphic {
+    constructor() {
+        this.elements = new Map();
+    }
+    set(layer, svg) {
+        throwIfEqual(layer, RenderLayer.Count);
+        this.elements.set(layer, svg);
+    }
+    get(layer) {
+        let result = this.elements.get(layer);
+        throwIfUndefined(result);
+        return result;
+    }
+    [Symbol.iterator]() {
+        return this.elements[Symbol.iterator]();
+    }
+    get svgs() {
+        return this.elements.values();
+    }
+}
 // the canvas view keeps track of the parent svg element of each renderable 'thing' on the canvas
 class SceneManager {
     get zoom() {
@@ -237,25 +260,37 @@ class SceneManager {
     cellAtMouseEvent(event) {
         return this.cellAtXY(event.offsetX, event.offsetY);
     }
+    // is an xy coordinate near the center of a cell (drag operations)
+    coordinateNearCellCenter(x, y) {
+        const center = this.cellAtXY(x, y).center;
+        const coord = this.screenSpaceToWorldSpace(x, y);
+        const dx = center.x - coord.x;
+        const dy = center.y - coord.y;
+        const radius = HALF_CELL_SIZE * 3 / 4;
+        return dx * dx + dy * dy < radius * radius;
+    }
+    mouseEventNearCellCenter(event) {
+        return this.coordinateNearCellCenter(event.offsetX, event.offsetY);
+    }
     // creates the requested element type and optionally adds it to the requested layer
     createElement(tag, type, layer) {
         let element = document.createElementNS(SVG_NAMESPACE, tag);
         throwIfNotType(element, SVGElement);
         throwIfNotType(element, type);
         if (layer !== undefined) {
-            this.addElement(element, layer);
+            this.layers[layer].appendChild(element);
         }
         return element;
     }
-    // add the element to the specified layer of the SVG document
-    addElement(element, layer) {
-        throwIfEqual(layer, RenderLayer.Count);
-        this.layers[layer].appendChild(element);
+    addGraphic(graphic) {
+        for (let [layer, svg] of graphic) {
+            this.layers[layer].appendChild(svg);
+        }
     }
-    // remove the element from its parent
-    removeElement(element) {
-        throwIfNull(element.parentNode);
-        element.parentNode.removeChild(element);
+    removeGraphic(graphic) {
+        for (let svg of graphic.svgs) {
+            svg.parentNode?.removeChild(svg);
+        }
     }
     // set the mouse cursor over the puzzle canvas
     setMouseCursor(cursor) {

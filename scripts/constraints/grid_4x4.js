@@ -52,7 +52,9 @@ class Grid4x4Constraint extends IConstraint {
                 vertical.setAttributes(["x1", `${2 * CELL_SIZE}`], ["x2", `${2 * CELL_SIZE}`], ["y1", "0"], ["y2", `${4 * CELL_SIZE}`], ["stroke", Colour.Black.toString()], ["stroke-width", `${REGION_BORDER_SIZE}`], ["fill", "none"]);
                 group.appendChild(vertical);
             }
-            return group;
+            let graphic = new Graphic();
+            graphic.set(RenderLayer.Grid, group);
+            return graphic;
         })(), `grid-4x4-${Grid4x4Constraint.counter++}`);
         this.regionConstraints = new Array();
         const row = cell.i;

@@ -6,18 +6,23 @@ class Cell {
     get j() {
         return this._j;
     }
+    // top of the cell region in world coordinates
     get top() {
         return this.i * CELL_SIZE;
     }
+    // bottom of the cell region in world coordinates
     get bottom() {
         return (this.i + 1) * CELL_SIZE;
     }
+    // left side of the cell region in world coordinates
     get left() {
         return this.j * CELL_SIZE;
     }
+    // right side of the cell region in world coordinates
     get right() {
         return (this.j + 1) * CELL_SIZE;
     }
+    // the horizontal,vertical center of the cell region in world coordinates
     get center() {
         return { x: (this.j + 0.5) * CELL_SIZE, y: (this.i + 0.5) * CELL_SIZE };
     }
@@ -74,6 +79,19 @@ class Cell {
         let i = Math.floor(y / CELL_SIZE);
         let j = Math.floor(x / CELL_SIZE);
         return new Cell(i, j);
+    }
+    static manhattanDistance(left, right) {
+        return Math.abs(left.i - right.i) + Math.abs(left.j - right.j);
+    }
+    adjacentOrthogonal(that) {
+        return Cell.manhattanDistance(this, that) == 1;
+    }
+    adjacentDiagonal(that) {
+        return (this.i != that.i && this.j != that.j) &&
+            Cell.manhattanDistance(this, that) == 2;
+    }
+    adjacentKingsMove(that) {
+        return this.adjacentOrthogonal(that) || this.adjacentDiagonal(that);
     }
     toString() {
         return `r${this.i}c${this.j}`;
@@ -150,6 +168,7 @@ class CellValue {
         this.digit = null;
         this.centerMark = DigitFlag.None;
         this.cornerMark = DigitFlag.None;
+        this.colourMark = DigitFlag.None;
         this._locked = false;
     }
     clone() {
@@ -157,6 +176,7 @@ class CellValue {
         retval.digit = this.digit;
         retval.centerMark = this.centerMark;
         retval.cornerMark = this.cornerMark;
+        retval.colourMark = this.colourMark;
         retval._locked = this._locked;
         return retval;
     }
@@ -170,6 +190,7 @@ class CellValue {
         return this.digit == that.digit &&
             this.centerMark == that.centerMark &&
             this.cornerMark == that.cornerMark &&
+            this.colourMark == that.colourMark &&
             this._locked == that._locked;
     }
 }

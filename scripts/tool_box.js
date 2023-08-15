@@ -13,17 +13,22 @@ var ToolMode;
 var ToolID;
 (function (ToolID) {
     ToolID[ToolID["First"] = 0] = "First";
+    // constraint interaction
     ToolID[ToolID["ObjectSelection"] = 0] = "ObjectSelection";
     ToolID[ToolID["RectangleSelection"] = 1] = "RectangleSelection";
     ToolID[ToolID["Move"] = 2] = "Move";
+    // constraint tools
     ToolID[ToolID["Grid"] = 3] = "Grid";
-    ToolID[ToolID["Digit"] = 4] = "Digit";
-    ToolID[ToolID["Center"] = 5] = "Center";
-    ToolID[ToolID["Corner"] = 6] = "Corner";
-    ToolID[ToolID["Zoom"] = 7] = "Zoom";
-    ToolID[ToolID["Pan"] = 8] = "Pan";
+    ToolID[ToolID["Line"] = 4] = "Line";
+    // digit tools
+    ToolID[ToolID["Digit"] = 5] = "Digit";
+    ToolID[ToolID["Center"] = 6] = "Center";
+    ToolID[ToolID["Corner"] = 7] = "Corner";
+    // navigation
+    ToolID[ToolID["Zoom"] = 8] = "Zoom";
+    ToolID[ToolID["Pan"] = 9] = "Pan";
     // the number of tools
-    ToolID[ToolID["Count"] = 9] = "Count";
+    ToolID[ToolID["Count"] = 10] = "Count";
 })(ToolID || (ToolID = {}));
 class ITool {
     constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
@@ -106,9 +111,11 @@ class ToolBox {
             { id: "rectangle_selection_tool", toolConstructor: NoOpTool, shortcut: undefined },
             { id: "move_tool", toolConstructor: MoveTool, shortcut: "KeyM" },
             { id: "grid_tool", toolConstructor: GridTool, shortcut: "KeyG" },
+            { id: "line_tool", toolConstructor: LineTool, shortcut: "KeyL" },
             { id: "digit_tool", toolConstructor: DigitTool, shortcut: "KeyZ" },
-            { id: "center_tool", toolConstructor: CenterTool, shortcut: "KeyC" },
             { id: "corner_tool", toolConstructor: CornerTool, shortcut: "KeyX" },
+            { id: "center_tool", toolConstructor: CenterTool, shortcut: "KeyC" },
+            { id: "colour_tool", toolConstructor: ColourTool, shortcut: "KeyV" },
             { id: "zoom_tool", toolConstructor: ZoomTool, shortcut: undefined },
             { id: "pan_tool", toolConstructor: PanTool, shortcut: undefined },
         ];
