@@ -37,6 +37,69 @@ class Cell implements IOrdered, IEquals {
         return {x: (this.j + 0.5) * CELL_SIZE, y: (this.i + 0.5) * CELL_SIZE};
     }
 
+    get northNeighbor(): Cell {
+        return new Cell(this.i - 1, this.j);
+    }
+
+    get northEastNeighbor(): Cell {
+        return new Cell(this.i - 1, this.j + 1);
+    }
+
+    get eastNeighbor(): Cell {
+        return new Cell(this.i, this.j + 1);
+    }
+
+    get southEastNeighbor(): Cell {
+        return new Cell(this.i + 1, this.j + 1);
+    }
+
+    get southNeighbor(): Cell {
+        return new Cell(this.i + 1, this.j);
+    }
+
+    get southWestNeighbor(): Cell {
+        return new Cell(this.i + 1, this.j - 1);
+    }
+
+    get westNeighbor(): Cell {
+        return new Cell(this.i, this.j - 1);
+    }
+
+    get northWestNeighbor(): Cell {
+        return new Cell(this.i - 1, this.j - 1);
+    }
+
+    get orthogonalNeighbors(): Array<Cell> {
+        return [
+            this.northNeighbor,
+            this.eastNeighbor,
+            this.southNeighbor,
+            this.westNeighbor,
+        ];
+    }
+
+    get diagonalNeighbors(): Array<Cell> {
+        return [
+            this.northEastNeighbor,
+            this.southEastNeighbor,
+            this.southWestNeighbor,
+            this.northWestNeighbor,
+        ];
+    }
+
+    get neighbors(): Array<Cell> {
+        return [
+            this.northNeighbor,
+            this.northEastNeighbor,
+            this.eastNeighbor,
+            this.southEastNeighbor,
+            this.southNeighbor,
+            this.southWestNeighbor,
+            this.westNeighbor,
+            this.northWestNeighbor,
+        ];
+    }
+
     constructor(i: number, j: number) {
         throwIfFalse(Number.isInteger(i));
         throwIfFalse(Number.isInteger(j));
