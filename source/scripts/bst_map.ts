@@ -7,7 +7,7 @@ class BSTMapRecord<K extends IOrdered, V> {
 
     constructor(key: K, value?: V) {
         this.key = key;
-        this.value = value ? value : undefined;
+        this.value = value;
     }
 
     compare(that: BSTMapRecord<K, V>): Ordering {
