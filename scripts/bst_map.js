@@ -4,7 +4,7 @@
 class BSTMapRecord {
     constructor(key, value) {
         this.key = key;
-        this.value = value ? value : undefined;
+        this.value = value;
     }
     compare(that) {
         return this.key.compare(that.key);

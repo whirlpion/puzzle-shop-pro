@@ -26,6 +26,58 @@ class Cell {
     get center() {
         return { x: (this.j + 0.5) * CELL_SIZE, y: (this.i + 0.5) * CELL_SIZE };
     }
+    get northNeighbor() {
+        return new Cell(this.i - 1, this.j);
+    }
+    get northEastNeighbor() {
+        return new Cell(this.i - 1, this.j + 1);
+    }
+    get eastNeighbor() {
+        return new Cell(this.i, this.j + 1);
+    }
+    get southEastNeighbor() {
+        return new Cell(this.i + 1, this.j + 1);
+    }
+    get southNeighbor() {
+        return new Cell(this.i + 1, this.j);
+    }
+    get southWestNeighbor() {
+        return new Cell(this.i + 1, this.j - 1);
+    }
+    get westNeighbor() {
+        return new Cell(this.i, this.j - 1);
+    }
+    get northWestNeighbor() {
+        return new Cell(this.i - 1, this.j - 1);
+    }
+    get orthogonalNeighbors() {
+        return [
+            this.northNeighbor,
+            this.eastNeighbor,
+            this.southNeighbor,
+            this.westNeighbor,
+        ];
+    }
+    get diagonalNeighbors() {
+        return [
+            this.northEastNeighbor,
+            this.southEastNeighbor,
+            this.southWestNeighbor,
+            this.northWestNeighbor,
+        ];
+    }
+    get neighbors() {
+        return [
+            this.northNeighbor,
+            this.northEastNeighbor,
+            this.eastNeighbor,
+            this.southEastNeighbor,
+            this.southNeighbor,
+            this.southWestNeighbor,
+            this.westNeighbor,
+            this.northWestNeighbor,
+        ];
+    }
     constructor(i, j) {
         throwIfFalse(Number.isInteger(i));
         throwIfFalse(Number.isInteger(j));

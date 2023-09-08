@@ -11,6 +11,9 @@ class Colour {
             this.alpha = 1.0;
         }
     }
+    adjustAlpha(alpha) {
+        return new Colour(this.red, this.green, this.blue, Math.clamp(0.0, alpha, 1.0));
+    }
     toString() {
         return `rgba(${this.red},${this.green},${this.blue},${this.alpha})`;
     }

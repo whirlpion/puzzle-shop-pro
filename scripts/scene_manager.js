@@ -5,20 +5,22 @@ var RenderLayer;
     RenderLayer[RenderLayer["Background"] = 0] = "Background";
     // background colour
     RenderLayer[RenderLayer["Fill"] = 1] = "Fill";
+    // cell selection
+    RenderLayer[RenderLayer["CellHighlight"] = 2] = "CellHighlight";
     // puzzle grids
-    RenderLayer[RenderLayer["Grid"] = 2] = "Grid";
+    RenderLayer[RenderLayer["Grid"] = 3] = "Grid";
     // outline arouond constraint graphics
-    RenderLayer[RenderLayer["ConstraintOutlines"] = 3] = "ConstraintOutlines";
+    RenderLayer[RenderLayer["ConstraintOutlines"] = 4] = "ConstraintOutlines";
     // constraints to go on top of the grid
-    RenderLayer[RenderLayer["Constraints"] = 4] = "Constraints";
+    RenderLayer[RenderLayer["Constraints"] = 5] = "Constraints";
     // user entered digits, pencil marks, etc
-    RenderLayer[RenderLayer["PencilMark"] = 5] = "PencilMark";
+    RenderLayer[RenderLayer["PencilMark"] = 6] = "PencilMark";
     // render on top
-    RenderLayer[RenderLayer["Overlay"] = 6] = "Overlay";
+    RenderLayer[RenderLayer["Overlay"] = 7] = "Overlay";
     // the very top layer
-    RenderLayer[RenderLayer["Foreground"] = 7] = "Foreground";
+    RenderLayer[RenderLayer["Foreground"] = 8] = "Foreground";
     // the number of layers
-    RenderLayer[RenderLayer["Count"] = 8] = "Count";
+    RenderLayer[RenderLayer["Count"] = 9] = "Count";
 })(RenderLayer || (RenderLayer = {}));
 var Cursor;
 (function (Cursor) {
