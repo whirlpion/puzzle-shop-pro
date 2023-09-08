@@ -3,6 +3,8 @@
     Background,
     // background colour
     Fill,
+    // cell selection
+    CellHighlight,
     // puzzle grids
     Grid,
     // outline arouond constraint graphics

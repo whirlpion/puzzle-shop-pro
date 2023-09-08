@@ -167,10 +167,12 @@ class PuzzleGrid {
     // root element for error highlights
     private errorHighlight: SVGGElement;
 
+    private highlightTileset: SVGTileSet;
+
     // root element for cell selection highlights
     private highlightSvg: SVGGElement;
-    // the cells which are currently highlighted mapped to their associated SVG Rect
-    private highlightedCells: BSTMap<Cell, SVGRectElement> = new BSTMap();
+    // the cells which are currently highlighted mapped to their associated SVG Path
+    private highlightedCells: BSTMap<Cell, SVGPathElement | null> = new BSTMap();
     // are any cells highlighted
     get hasHighlightedCells(): boolean {
         return this.highlightedCells.size > 0;
@@ -184,9 +186,16 @@ class PuzzleGrid {
 
     constructor(sceneManager: SceneManager) {
         this.sceneManager = sceneManager;
-        this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.Fill);
-        this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.Foreground);
-        this.highlightSvg.setAttribute("opacity", "0.5");
+        this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.CellHighlight);
+        this.errorHighlight.setAttributes(
+            ["fill", Colour.LightRed.adjustAlpha(0.5).toString()]);
+        this.highlightTileset = new SVGTileSet(this.sceneManager, 6);
+        this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.CellHighlight);
+        this.highlightSvg.setAttributes(
+            ["fill", "none"],
+            ["stroke", Colour.LightBlue.toString()],
+            ["stroke-width", "12px"],
+            ["stroke-linejoin", "round"]);
         this.selectionBox = sceneManager.createElement("rect", SVGRectElement, RenderLayer.Foreground);
         // number of dashes pe rcell
         const DASHES_PER_CELL = 4;
@@ -253,34 +262,60 @@ class PuzzleGrid {
 
     highlightCells(flags: HighlightCellsFlags, ...cells: Cell[]): void {
 
-        // only keep cells in the provided cells array
-        // we keep any existing svgs rather then deleting/remaking
+        // the set of already highlightd cells that would be affected by these new cells
+        let dirtyCells: BSTSet<Cell> = new BSTSet();
+
         if (flags & HighlightCellsFlags.Clear) {
+            // clear out existing paths and highlighted cells
             this.highlightSvg.clearChildren();
-            let highlightedCells: BSTMap<Cell, SVGRectElement> = new BSTMap();
+            this.highlightedCells.clear();
+            // set new cells as highlightd
             for (let cell of cells) {
-                let rect = this.highlightedCells.get(cell);
-                if (rect) {
-                    highlightedCells.set(cell, rect);
-                    this.highlightSvg.appendChild(rect);
-                }
+                this.highlightedCells.set(cell, null);
+                dirtyCells.add(cell);
             }
-            this.highlightedCells = highlightedCells;
+        } else {
+            // add any existing cells touched by new to dirt set
+            for (let cell of cells) {
+                if (this.highlightedCells.has(cell.northNeighbor)) dirtyCells.add(cell.northNeighbor);
+                if (this.highlightedCells.has(cell.northEastNeighbor)) dirtyCells.add(cell.northEastNeighbor);
+                if (this.highlightedCells.has(cell.eastNeighbor)) dirtyCells.add(cell.eastNeighbor);
+                if (this.highlightedCells.has(cell.southEastNeighbor)) dirtyCells.add(cell.southEastNeighbor);
+                if (this.highlightedCells.has(cell.southNeighbor)) dirtyCells.add(cell.southNeighbor);
+                if (this.highlightedCells.has(cell.southWestNeighbor)) dirtyCells.add(cell.southWestNeighbor);
+                if (this.highlightedCells.has(cell.westNeighbor)) dirtyCells.add(cell.westNeighbor);
+                if (this.highlightedCells.has(cell.northWestNeighbor)) dirtyCells.add(cell.northWestNeighbor);
+            }
+
+            // append new cells to highlighted
+            for (let cell of cells) {
+                if (!this.highlightedCells.has(cell)) {
+                    this.highlightedCells.set(cell, null);
+                }
+                dirtyCells.add(cell);
+            }
         }
 
-        for (let cell of cells) {
-            if (this.highlightedCells.has(cell)) {
-                continue;
+        // for each cell generate path svg to render
+        for (let cell of dirtyCells) {
+            let oldPath = this.highlightedCells.get(cell);
+            if (oldPath) {
+                this.highlightSvg.removeChild(oldPath);
             }
-            const rect = this.sceneManager.createElement("rect", SVGRectElement);
-            rect.setAttributes(
-                ["width", `${CELL_SIZE}`],
-                ["height", `${CELL_SIZE}`],
-                ["fill", Colour.LightBlue.toString()],
-                ["x", `${cell.j * CELL_SIZE}`],
-                ["y", `${cell.i * CELL_SIZE}`]);
-            this.highlightedCells.set(cell, rect);
-            this.highlightSvg.appendChild(rect);
+
+            let neighbors = DirectionFlag.None;
+            if (this.highlightedCells.has(cell.northNeighbor)) neighbors |= DirectionFlag.North;
+            if (this.highlightedCells.has(cell.northEastNeighbor)) neighbors |= DirectionFlag.NorthEast;
+            if (this.highlightedCells.has(cell.eastNeighbor)) neighbors |= DirectionFlag.East;
+            if (this.highlightedCells.has(cell.southEastNeighbor)) neighbors |= DirectionFlag.SouthEast;
+            if (this.highlightedCells.has(cell.southNeighbor)) neighbors |= DirectionFlag.South;
+            if (this.highlightedCells.has(cell.southWestNeighbor)) neighbors |= DirectionFlag.SouthWest;
+            if (this.highlightedCells.has(cell.westNeighbor)) neighbors |= DirectionFlag.West;
+            if (this.highlightedCells.has(cell.northWestNeighbor)) neighbors |= DirectionFlag.NorthWest;
+
+            const path = this.highlightTileset.getTile(cell, neighbors);
+            this.highlightedCells.set(cell, path);
+            this.highlightSvg.appendChild(path);
         }
 
         if (flags & HighlightCellsFlags.Focus) {
@@ -293,12 +328,38 @@ class PuzzleGrid {
     // toglges cell highlight state
     toggleCell(cell: Cell): void {
         // cell toggle
-        let rect = this.highlightedCells.get(cell);
-        if (rect) {
+        let path = this.highlightedCells.get(cell);
+        if (path) {
             this.highlightedCells.delete(cell);
-            this.highlightSvg.removeChild(rect);
+            this.highlightSvg.removeChild(path);
             // no focused cell after this point
             this._focusedCell = null;
+
+            // update the paths of neighbors
+            for (let dirtyCell of cell.neighbors) {
+                if (this.highlightedCells.has(dirtyCell)) {
+                    let neighbors = DirectionFlag.None;
+                    if (this.highlightedCells.has(dirtyCell.northNeighbor)) neighbors |= DirectionFlag.North;
+                    if (this.highlightedCells.has(dirtyCell.northEastNeighbor)) neighbors |= DirectionFlag.NorthEast;
+                    if (this.highlightedCells.has(dirtyCell.eastNeighbor)) neighbors |= DirectionFlag.East;
+                    if (this.highlightedCells.has(dirtyCell.southEastNeighbor)) neighbors |= DirectionFlag.SouthEast;
+                    if (this.highlightedCells.has(dirtyCell.southNeighbor)) neighbors |= DirectionFlag.South;
+                    if (this.highlightedCells.has(dirtyCell.southWestNeighbor)) neighbors |= DirectionFlag.SouthWest;
+                    if (this.highlightedCells.has(dirtyCell.westNeighbor)) neighbors |= DirectionFlag.West;
+                    if (this.highlightedCells.has(dirtyCell.northWestNeighbor)) neighbors |= DirectionFlag.NorthWest;
+
+                    // get the old path svg nd remove
+                    path = this.highlightedCells.get(dirtyCell);
+                    if (path) {
+                        this.highlightSvg.removeChild(path);
+                    }
+
+                    // create new and upate
+                    path = this.highlightTileset.getTile(dirtyCell, neighbors);
+                    this.highlightedCells.set(dirtyCell, path);
+                    this.highlightSvg.appendChild(path);
+                }
+            }
         } else {
             this.highlightCells(HighlightCellsFlags.Focus, cell);
         }
@@ -454,8 +515,7 @@ class PuzzleGrid {
                     ["x", `${cell.j * CELL_SIZE}`],
                     ["y", `${cell.i * CELL_SIZE}`],
                     ["width", `${CELL_SIZE}`],
-                    ["height", `${CELL_SIZE}`],
-                    ["fill", Colour.LightRed.toString()]);
+                    ["height", `${CELL_SIZE}`]);
                 this.errorHighlight.appendChild(rect);
             }
         }
