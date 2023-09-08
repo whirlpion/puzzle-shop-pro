@@ -637,7 +637,7 @@ class PuzzleGrid {
             this.sceneManager.removeGraphic(graphic);
         }
 
-        const baseFontSize = CELL_SIZE * 4 / 5;
+        const baseFontSize = CELL_SIZE * 2 / 3;
 
         let graphic = new Graphic();
         if (value.digit) {
@@ -655,7 +655,8 @@ class PuzzleGrid {
                 ["paint-order", "stroke fill"],
                 ["fill", Colour.Black.toString()],
                 ["stroke", Colour.White.toString()],
-                ["stroke-width", "4"]);
+                ["stroke-width", "4"],
+                ["stroke-linejoin", "round"]);
             text.innerHTML = `${value.digit}`;
             group.appendChild(text);
             graphic.set(RenderLayer.PencilMark, group);
