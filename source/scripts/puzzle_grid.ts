@@ -192,7 +192,6 @@ class PuzzleGrid {
         this.highlightTileset = new SVGTileSet(this.sceneManager, 6);
         this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.CellHighlight);
         this.highlightSvg.setAttributes(
-            ["fill", "none"],
             ["stroke", Colour.LightBlue.toString()],
             ["stroke-width", "12px"],
             ["stroke-linejoin", "round"]);
@@ -313,9 +312,9 @@ class PuzzleGrid {
             if (this.highlightedCells.has(cell.westNeighbor)) neighbors |= DirectionFlag.West;
             if (this.highlightedCells.has(cell.northWestNeighbor)) neighbors |= DirectionFlag.NorthWest;
 
-            const path = this.highlightTileset.getTile(cell, neighbors);
-            this.highlightedCells.set(cell, path);
-            this.highlightSvg.appendChild(path);
+            const edge = this.highlightTileset.getEdge(cell, neighbors);
+            this.highlightedCells.set(cell, edge);
+            this.highlightSvg.appendChild(edge);
         }
 
         if (flags & HighlightCellsFlags.Focus) {
@@ -355,7 +354,7 @@ class PuzzleGrid {
                     }
 
                     // create new and upate
-                    path = this.highlightTileset.getTile(dirtyCell, neighbors);
+                    path = this.highlightTileset.getEdge(dirtyCell, neighbors);
                     this.highlightedCells.set(dirtyCell, path);
                     this.highlightSvg.appendChild(path);
                 }
