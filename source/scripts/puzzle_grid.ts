@@ -673,67 +673,67 @@ class PuzzleGrid {
 
                 switch(count) {
                 case 1:
-                    coords.push([0.15,0.2]);
+                    coords.push([0.15,0.3]);
                     break;
                 case 2:
-                    coords.push([0.15,0.2]);
-                    coords.push([0.85,0.2]);
+                    coords.push([0.15,0.3]);
+                    coords.push([0.85,0.3]);
                     break;
                 case 3:
-                    coords.push([0.15,0.2]);
-                    coords.push([0.85,0.2]);
-                    coords.push([0.15,0.8]);
+                    coords.push([0.15,0.3]);
+                    coords.push([0.85,0.3]);
+                    coords.push([0.15,0.7]);
                     break;
                 case 4:
-                    coords.push([0.15,0.2]);
-                    coords.push([0.85,0.2]);
-                    coords.push([0.15,0.8]);
-                    coords.push([0.85,0.8]);
+                    coords.push([0.15,0.3]);
+                    coords.push([0.85,0.3]);
+                    coords.push([0.15,0.7]);
+                    coords.push([0.85,0.7]);
                     break;
                 case 5:
-                    coords.push([0.15,0.2]);
-                    coords.push([0.5,0.2]);
-                    coords.push([0.85,0.2]);
-                    coords.push([0.15,0.8]);
-                    coords.push([0.85,0.8]);
+                    coords.push([0.15,0.3]);
+                    coords.push([0.5,0.3]);
+                    coords.push([0.85,0.3]);
+                    coords.push([0.15,0.7]);
+                    coords.push([0.85,0.7]);
                     break;
                 case 6:
-                    coords.push([0.15,0.2]);
-                    coords.push([0.5,0.2]);
-                    coords.push([0.85,0.2]);
-                    coords.push([0.15,0.8]);
-                    coords.push([0.5,0.8]);
-                    coords.push([0.85,0.8]);
+                    coords.push([0.15,0.3]);
+                    coords.push([0.5,0.3]);
+                    coords.push([0.85,0.3]);
+                    coords.push([0.15,0.7]);
+                    coords.push([0.5,0.7]);
+                    coords.push([0.85,0.7]);
                     break;
                 case 7:
-                    coords.push([0.15,0.2]);
-                    coords.push([0.3833,0.2]);
-                    coords.push([0.6167,0.2]);
-                    coords.push([0.85,0.2]);
-                    coords.push([0.15,0.8]);
-                    coords.push([0.5,0.8]);
-                    coords.push([0.85,0.8]);
+                    coords.push([0.15,0.3]);
+                    coords.push([0.3833,0.3]);
+                    coords.push([0.6167,0.3]);
+                    coords.push([0.85,0.3]);
+                    coords.push([0.15,0.7]);
+                    coords.push([0.5,0.7]);
+                    coords.push([0.85,0.7]);
                     break;
                 case 8:
-                    coords.push([0.15,0.2]);
-                    coords.push([0.3833,0.2]);
-                    coords.push([0.6167,0.2]);
-                    coords.push([0.85,0.2]);
-                    coords.push([0.15,0.8]);
-                    coords.push([0.3833,0.8]);
-                    coords.push([0.6167,0.8]);
-                    coords.push([0.85,0.8]);
+                    coords.push([0.15,0.3]);
+                    coords.push([0.3833,0.3]);
+                    coords.push([0.6167,0.3]);
+                    coords.push([0.85,0.3]);
+                    coords.push([0.15,0.7]);
+                    coords.push([0.3833,0.7]);
+                    coords.push([0.6167,0.7]);
+                    coords.push([0.85,0.7]);
                     break;
                 case 9:
-                    coords.push([0.15,0.2]);
-                    coords.push([0.325,0.2]);
-                    coords.push([0.5,0.2]);
-                    coords.push([0.675,0.2]);
-                    coords.push([0.85,0.2]);
-                    coords.push([0.15,0.8]);
-                    coords.push([0.3833,0.8]);
-                    coords.push([0.6167,0.8]);
-                    coords.push([0.85,0.8]);
+                    coords.push([0.15,0.3]);
+                    coords.push([0.325,0.3]);
+                    coords.push([0.5,0.3]);
+                    coords.push([0.675,0.3]);
+                    coords.push([0.85,0.3]);
+                    coords.push([0.15,0.7]);
+                    coords.push([0.3833,0.7]);
+                    coords.push([0.6167,0.7]);
+                    coords.push([0.85,0.7]);
                     break;
                 }
                 for (let k = 0; k < count; k++) {
