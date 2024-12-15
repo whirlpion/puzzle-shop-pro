@@ -18,6 +18,7 @@ enum ToolID {
     // constraint tools
     Grid,
     Line,
+    Area,
     // digit tools
     Digit,
     Center,
@@ -97,6 +98,7 @@ class ToolBox {
       {id: "move_tool", toolConstructor: MoveTool, shortcut: "KeyM"},
       {id: "grid_tool", toolConstructor: GridTool, shortcut: "KeyG"},
       {id: "line_tool", toolConstructor: LineTool, shortcut: "KeyL"},
+      {id: "area_tool", toolConstructor: AreaTool, shortcut: "KeyA"},
       {id: "digit_tool", toolConstructor: DigitTool, shortcut: "KeyZ"},
       {id: "corner_tool", toolConstructor: CornerTool, shortcut: "KeyX"},
       {id: "center_tool", toolConstructor: CenterTool, shortcut: "KeyC"},
