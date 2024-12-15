@@ -106,20 +106,32 @@ class AreaTool extends ITool {
     private drawArea(cells: BSTSet<Cell>): Graphic {
 
         const boundingBox = BoundingBox.fromCells(...cells);
+        // find left-most cell in top row
         const origin = new Cell(boundingBox.top, boundingBox.left);
+        let labelCellOffset: number | null = null;
+        for (let j = boundingBox.left; j <= boundingBox.right; j++) {
+            let cell = new Cell(origin.i, j);
+            if (cells.has(cell)) {
+                labelCellOffset = j - boundingBox.left;
+                break;
+            }
+        }
+        throwIfNull(labelCellOffset);
 
         const graphic = new Graphic();
 
         const edgeGroup = this.sceneManager.createElement("g", SVGGElement);
         edgeGroup.setAttribute("transform", `translate(${origin.left},${origin.top})`);
 
-        const DASH_SIZE = CELL_SIZE / 8;
+        const DASH_SIZE = CELL_SIZE / 16;
+        const INSET = CELL_SIZE / 16;
         switch (this.areaType) {
         case AREA_KILLER:
             edgeGroup.setAttributes(
                 ["stroke", "black"],
-                ["stroke-dasharray", `0 ${DASH_SIZE/2} ${DASH_SIZE} ${DASH_SIZE/2}`],
-                ["stroke-width", "1"]
+                ["stroke-dasharray", `${DASH_SIZE}`],
+                ["stroke-dashoffset", `${-DASH_SIZE/2}`],
+                ["stroke-width", "1.5"]
             );
             break;
         }
@@ -127,9 +139,26 @@ class AreaTool extends ITool {
         for (let cell of cells) {
             const normCell = new Cell(cell.i - origin.i, cell.j - origin.j);
             let neighbors = DirectionFlag.neighborDirections(cell, cells);
-            let edge = SVGTileSet.getEdge(normCell, neighbors, DASH_SIZE, this.sceneManager);
+            let edge = SVGTileSet.getEdge(normCell, neighbors, INSET, this.sceneManager);
             edgeGroup.appendChild(edge);
         }
+
+        let text = this.sceneManager.createElement("text", SVGTextElement);
+        text.setAttributes(
+            ["text-anchor", "start"],
+            ["dominant-baseline", "hanging"],
+            ["x", `${labelCellOffset * CELL_SIZE + INSET*1.5}`],
+            ["y", `${INSET}`],
+            ["font-size", `${CELL_SIZE/6}`],
+            ["font-family", "sans-serif"],
+            ["paint-order", "stroke fill"],
+            ["fill", Colour.Black.toString()],
+            ["stroke", Colour.White.toString()],
+            ["stroke-width", "4"],
+            ["stroke-dasharray", "none"],
+        );
+        text.textContent = `${this.killerSum}`;
+        edgeGroup.appendChild(text);
 
         graphic.set(RenderLayer.Constraints, edgeGroup);
 
