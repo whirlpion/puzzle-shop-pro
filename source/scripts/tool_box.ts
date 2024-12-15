@@ -178,20 +178,17 @@ class ToolBox {
         throwIfNull(svg);
         svg.addEventListener("click", (event: Event) => {
             if (this.sceneManager.handleMouseClick(<MouseEvent>event)) {
-                event.preventDefault();
                 event.stopPropagation();
                 return;
             }
 
             if (this.currentTool.handleMouseClick(<MouseEvent>event)) {
-                event.preventDefault();
                 event.stopPropagation();
                 return;
             }
         });
         svg.addEventListener("dblclick", (event: Event) => {
             if (this.currentTool.handleMouseDoubleClick(<MouseEvent>event)) {
-                event.preventDefault();
                 event.stopPropagation();
             }
         });
@@ -205,7 +202,6 @@ class ToolBox {
             }
 
             if (this.currentTool.handleMouseDown(mouseEvent)) {
-                event.preventDefault();
                 event.stopPropagation();
                 return;
             }
@@ -214,7 +210,6 @@ class ToolBox {
             const mouseEvent = <MouseEvent>event;
 
             if (this.currentTool.handleMouseUp(mouseEvent)) {
-                event.preventDefault();
                 event.stopPropagation();
                 return;
             }
