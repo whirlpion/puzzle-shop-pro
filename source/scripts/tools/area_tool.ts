@@ -4,6 +4,10 @@ const AREA_KILLER: AreaType = "killer";
 class AreaTool extends ITool {
     areaType: AreaType  = AREA_KILLER;
 
+    // per-type values
+    killerSum: number = 1;
+
+    // tool data
     drawingArea: boolean = false;
     previousCell: Cell | null = null;
     cellsInArea: BSTSet<Cell> = new BSTSet();
@@ -13,21 +17,28 @@ class AreaTool extends ITool {
         super(toolBox, puzzleGrid, actionStack, sceneManager)
     }
 
-
-
     get mode(): ToolMode {
         return ToolMode.ConstraintInsert;
     }
 
     override get toolSettings(): Map<string, Setting> {
-        const retval: Map<string, Setting> = new Map();
-        retval.set("Type", new SettingOption([
-                    [AREA_KILLER, "Killer"],
-                ], this.areaType, (value: string): void => {
+        const settings: Map<string, Setting> = new Map();
+        settings.set("Type",
+            new SettingOption([
+                [AREA_KILLER, "Killer"],
+                ],
+                this.areaType,
+                (value: string): void => {
                     this.areaType = <AreaType>value;
                     console.log(`area type: ${this.areaType}`);
                 }));
-        return retval;
+        settings.set("Sum",
+            new SettingDataInteger(this.killerSum, 1, 45,
+                (value: number): void => {
+                    console.log(`new killer sum: ${value}`);
+                    this.killerSum = value;
+                }));
+        return settings;
     }
 
     override handleMouseDown(event: MouseEvent): boolean {
@@ -54,7 +65,7 @@ class AreaTool extends ITool {
 
             this.sceneManager.removeGraphic(this.graphic);
 
-            let areaConstraint = new KillerCageConstraint(new Array(...this.cellsInArea), this.graphic);
+            let areaConstraint = new KillerCageConstraint(new Array(...this.cellsInArea), this.killerSum, this.graphic);
             let action = new InsertConstraintAction(this.puzzleGrid, this.sceneManager, areaConstraint);
             this.actionStack.doAction(action);
 
