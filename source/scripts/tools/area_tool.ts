@@ -102,12 +102,12 @@ class AreaTool extends ITool {
         const edgeGroup = this.sceneManager.createElement("g", SVGGElement);
         edgeGroup.setAttribute("transform", `translate(${origin.left},${origin.top})`);
 
+        const DASH_SIZE = CELL_SIZE / 8;
         switch (this.areaType) {
         case AREA_KILLER:
-            const DASH_SIZE = CELL_SIZE * 15/16*  1/5;
             edgeGroup.setAttributes(
                 ["stroke", "black"],
-                ["stroke-dasharray", `${DASH_SIZE} ${DASH_SIZE}`],
+                ["stroke-dasharray", `0 ${DASH_SIZE/2} ${DASH_SIZE} ${DASH_SIZE/2}`],
                 ["stroke-width", "1"]
             );
             break;
@@ -116,7 +116,7 @@ class AreaTool extends ITool {
         for (let cell of cells) {
             const normCell = new Cell(cell.i - origin.i, cell.j - origin.j);
             let neighbors = DirectionFlag.neighborDirections(cell, cells);
-            let edge = SVGTileSet.getEdge(normCell, neighbors, 4, this.sceneManager);
+            let edge = SVGTileSet.getEdge(normCell, neighbors, DASH_SIZE, this.sceneManager);
             edgeGroup.appendChild(edge);
         }
 
