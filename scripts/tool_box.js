@@ -20,15 +20,16 @@ var ToolID;
     // constraint tools
     ToolID[ToolID["Grid"] = 3] = "Grid";
     ToolID[ToolID["Line"] = 4] = "Line";
+    ToolID[ToolID["Area"] = 5] = "Area";
     // digit tools
-    ToolID[ToolID["Digit"] = 5] = "Digit";
-    ToolID[ToolID["Center"] = 6] = "Center";
-    ToolID[ToolID["Corner"] = 7] = "Corner";
+    ToolID[ToolID["Digit"] = 6] = "Digit";
+    ToolID[ToolID["Center"] = 7] = "Center";
+    ToolID[ToolID["Corner"] = 8] = "Corner";
     // navigation
-    ToolID[ToolID["Zoom"] = 8] = "Zoom";
-    ToolID[ToolID["Pan"] = 9] = "Pan";
+    ToolID[ToolID["Zoom"] = 9] = "Zoom";
+    ToolID[ToolID["Pan"] = 10] = "Pan";
     // the number of tools
-    ToolID[ToolID["Count"] = 10] = "Count";
+    ToolID[ToolID["Count"] = 11] = "Count";
 })(ToolID || (ToolID = {}));
 class ITool {
     constructor(toolBox, puzzleGrid, actionStack, sceneManager) {
@@ -112,6 +113,7 @@ class ToolBox {
             { id: "move_tool", toolConstructor: MoveTool, shortcut: "KeyM" },
             { id: "grid_tool", toolConstructor: GridTool, shortcut: "KeyG" },
             { id: "line_tool", toolConstructor: LineTool, shortcut: "KeyL" },
+            { id: "area_tool", toolConstructor: AreaTool, shortcut: "KeyA" },
             { id: "digit_tool", toolConstructor: DigitTool, shortcut: "KeyZ" },
             { id: "corner_tool", toolConstructor: CornerTool, shortcut: "KeyX" },
             { id: "center_tool", toolConstructor: CenterTool, shortcut: "KeyC" },
@@ -146,19 +148,16 @@ class ToolBox {
         throwIfNull(svg);
         svg.addEventListener("click", (event) => {
             if (this.sceneManager.handleMouseClick(event)) {
-                event.preventDefault();
                 event.stopPropagation();
                 return;
             }
             if (this.currentTool.handleMouseClick(event)) {
-                event.preventDefault();
                 event.stopPropagation();
                 return;
             }
         });
         svg.addEventListener("dblclick", (event) => {
             if (this.currentTool.handleMouseDoubleClick(event)) {
-                event.preventDefault();
                 event.stopPropagation();
             }
         });
@@ -170,7 +169,6 @@ class ToolBox {
                 return;
             }
             if (this.currentTool.handleMouseDown(mouseEvent)) {
-                event.preventDefault();
                 event.stopPropagation();
                 return;
             }
@@ -178,7 +176,6 @@ class ToolBox {
         svg.addEventListener("mouseup", (event) => {
             const mouseEvent = event;
             if (this.currentTool.handleMouseUp(mouseEvent)) {
-                event.preventDefault();
                 event.stopPropagation();
                 return;
             }

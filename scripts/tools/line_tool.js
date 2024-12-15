@@ -8,6 +8,9 @@ class LineTool extends ITool {
         this.cellsInLine = new Array();
         this.graphic = new Graphic();
     }
+    //
+    // ITool interface
+    //
     get mode() {
         return ToolMode.ConstraintInsert;
     }

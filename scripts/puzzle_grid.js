@@ -133,9 +133,8 @@ class PuzzleGrid {
         this.sceneManager = sceneManager;
         this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.CellHighlight);
         this.errorHighlight.setAttributes(["fill", Colour.LightRed.adjustAlpha(0.5).toString()]);
-        this.highlightTileset = new SVGTileSet(this.sceneManager, 6);
         this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.CellHighlight);
-        this.highlightSvg.setAttributes(["fill", "none"], ["stroke", Colour.LightBlue.toString()], ["stroke-width", "12px"], ["stroke-linejoin", "round"]);
+        this.highlightSvg.setAttributes(["stroke", Colour.LightBlue.toString()], ["stroke-width", "12px"], ["stroke-linejoin", "round"]);
         this.selectionBox = sceneManager.createElement("rect", SVGRectElement, RenderLayer.Foreground);
         // number of dashes pe rcell
         const DASHES_PER_CELL = 4;
@@ -228,26 +227,10 @@ class PuzzleGrid {
             if (oldPath) {
                 this.highlightSvg.removeChild(oldPath);
             }
-            let neighbors = DirectionFlag.None;
-            if (this.highlightedCells.has(cell.northNeighbor))
-                neighbors |= DirectionFlag.North;
-            if (this.highlightedCells.has(cell.northEastNeighbor))
-                neighbors |= DirectionFlag.NorthEast;
-            if (this.highlightedCells.has(cell.eastNeighbor))
-                neighbors |= DirectionFlag.East;
-            if (this.highlightedCells.has(cell.southEastNeighbor))
-                neighbors |= DirectionFlag.SouthEast;
-            if (this.highlightedCells.has(cell.southNeighbor))
-                neighbors |= DirectionFlag.South;
-            if (this.highlightedCells.has(cell.southWestNeighbor))
-                neighbors |= DirectionFlag.SouthWest;
-            if (this.highlightedCells.has(cell.westNeighbor))
-                neighbors |= DirectionFlag.West;
-            if (this.highlightedCells.has(cell.northWestNeighbor))
-                neighbors |= DirectionFlag.NorthWest;
-            const path = this.highlightTileset.getTile(cell, neighbors);
-            this.highlightedCells.set(cell, path);
-            this.highlightSvg.appendChild(path);
+            const neighbors = DirectionFlag.neighborDirections(cell, this.highlightedCells);
+            const edge = SVGTileSet.getEdge(cell, neighbors, 6, this.sceneManager);
+            this.highlightedCells.set(cell, edge);
+            this.highlightSvg.appendChild(edge);
         }
         if (flags & HighlightCellsFlags.Focus) {
             this._focusedCell = cells.last();
@@ -266,30 +249,14 @@ class PuzzleGrid {
             // update the paths of neighbors
             for (let dirtyCell of cell.neighbors) {
                 if (this.highlightedCells.has(dirtyCell)) {
-                    let neighbors = DirectionFlag.None;
-                    if (this.highlightedCells.has(dirtyCell.northNeighbor))
-                        neighbors |= DirectionFlag.North;
-                    if (this.highlightedCells.has(dirtyCell.northEastNeighbor))
-                        neighbors |= DirectionFlag.NorthEast;
-                    if (this.highlightedCells.has(dirtyCell.eastNeighbor))
-                        neighbors |= DirectionFlag.East;
-                    if (this.highlightedCells.has(dirtyCell.southEastNeighbor))
-                        neighbors |= DirectionFlag.SouthEast;
-                    if (this.highlightedCells.has(dirtyCell.southNeighbor))
-                        neighbors |= DirectionFlag.South;
-                    if (this.highlightedCells.has(dirtyCell.southWestNeighbor))
-                        neighbors |= DirectionFlag.SouthWest;
-                    if (this.highlightedCells.has(dirtyCell.westNeighbor))
-                        neighbors |= DirectionFlag.West;
-                    if (this.highlightedCells.has(dirtyCell.northWestNeighbor))
-                        neighbors |= DirectionFlag.NorthWest;
+                    const neighbors = DirectionFlag.neighborDirections(dirtyCell, this.highlightedCells);
                     // get the old path svg nd remove
                     path = this.highlightedCells.get(dirtyCell);
                     if (path) {
                         this.highlightSvg.removeChild(path);
                     }
                     // create new and upate
-                    path = this.highlightTileset.getTile(dirtyCell, neighbors);
+                    path = SVGTileSet.getEdge(dirtyCell, neighbors, 6, this.sceneManager);
                     this.highlightedCells.set(dirtyCell, path);
                     this.highlightSvg.appendChild(path);
                 }
@@ -555,67 +522,67 @@ class PuzzleGrid {
                 const fontSize = baseFontSize / 4;
                 switch (count) {
                     case 1:
-                        coords.push([0.15, 0.2]);
+                        coords.push([0.15, 0.3]);
                         break;
                     case 2:
-                        coords.push([0.15, 0.2]);
-                        coords.push([0.85, 0.2]);
+                        coords.push([0.15, 0.3]);
+                        coords.push([0.85, 0.3]);
                         break;
                     case 3:
-                        coords.push([0.15, 0.2]);
-                        coords.push([0.85, 0.2]);
-                        coords.push([0.15, 0.8]);
+                        coords.push([0.15, 0.3]);
+                        coords.push([0.85, 0.3]);
+                        coords.push([0.15, 0.7]);
                         break;
                     case 4:
-                        coords.push([0.15, 0.2]);
-                        coords.push([0.85, 0.2]);
-                        coords.push([0.15, 0.8]);
-                        coords.push([0.85, 0.8]);
+                        coords.push([0.15, 0.3]);
+                        coords.push([0.85, 0.3]);
+                        coords.push([0.15, 0.7]);
+                        coords.push([0.85, 0.7]);
                         break;
                     case 5:
-                        coords.push([0.15, 0.2]);
-                        coords.push([0.5, 0.2]);
-                        coords.push([0.85, 0.2]);
-                        coords.push([0.15, 0.8]);
-                        coords.push([0.85, 0.8]);
+                        coords.push([0.15, 0.3]);
+                        coords.push([0.5, 0.3]);
+                        coords.push([0.85, 0.3]);
+                        coords.push([0.15, 0.7]);
+                        coords.push([0.85, 0.7]);
                         break;
                     case 6:
-                        coords.push([0.15, 0.2]);
-                        coords.push([0.5, 0.2]);
-                        coords.push([0.85, 0.2]);
-                        coords.push([0.15, 0.8]);
-                        coords.push([0.5, 0.8]);
-                        coords.push([0.85, 0.8]);
+                        coords.push([0.15, 0.3]);
+                        coords.push([0.5, 0.3]);
+                        coords.push([0.85, 0.3]);
+                        coords.push([0.15, 0.7]);
+                        coords.push([0.5, 0.7]);
+                        coords.push([0.85, 0.7]);
                         break;
                     case 7:
-                        coords.push([0.15, 0.2]);
-                        coords.push([0.3833, 0.2]);
-                        coords.push([0.6167, 0.2]);
-                        coords.push([0.85, 0.2]);
-                        coords.push([0.15, 0.8]);
-                        coords.push([0.5, 0.8]);
-                        coords.push([0.85, 0.8]);
+                        coords.push([0.15, 0.3]);
+                        coords.push([0.3833, 0.3]);
+                        coords.push([0.6167, 0.3]);
+                        coords.push([0.85, 0.3]);
+                        coords.push([0.15, 0.7]);
+                        coords.push([0.5, 0.7]);
+                        coords.push([0.85, 0.7]);
                         break;
                     case 8:
-                        coords.push([0.15, 0.2]);
-                        coords.push([0.3833, 0.2]);
-                        coords.push([0.6167, 0.2]);
-                        coords.push([0.85, 0.2]);
-                        coords.push([0.15, 0.8]);
-                        coords.push([0.3833, 0.8]);
-                        coords.push([0.6167, 0.8]);
-                        coords.push([0.85, 0.8]);
+                        coords.push([0.15, 0.3]);
+                        coords.push([0.3833, 0.3]);
+                        coords.push([0.6167, 0.3]);
+                        coords.push([0.85, 0.3]);
+                        coords.push([0.15, 0.7]);
+                        coords.push([0.3833, 0.7]);
+                        coords.push([0.6167, 0.7]);
+                        coords.push([0.85, 0.7]);
                         break;
                     case 9:
-                        coords.push([0.15, 0.2]);
-                        coords.push([0.325, 0.2]);
-                        coords.push([0.5, 0.2]);
-                        coords.push([0.675, 0.2]);
-                        coords.push([0.85, 0.2]);
-                        coords.push([0.15, 0.8]);
-                        coords.push([0.3833, 0.8]);
-                        coords.push([0.6167, 0.8]);
-                        coords.push([0.85, 0.8]);
+                        coords.push([0.15, 0.3]);
+                        coords.push([0.325, 0.3]);
+                        coords.push([0.5, 0.3]);
+                        coords.push([0.675, 0.3]);
+                        coords.push([0.85, 0.3]);
+                        coords.push([0.15, 0.7]);
+                        coords.push([0.3833, 0.7]);
+                        coords.push([0.6167, 0.7]);
+                        coords.push([0.85, 0.7]);
                         break;
                 }
                 for (let k = 0; k < count; k++) {
@@ -631,7 +598,7 @@ class PuzzleGrid {
         }
         if (value.colourMark) {
             const colourTable = [
-                Colour.Invisible,
+                Colour.Invisible, // dummy colour to make table 1-indexed
                 Colour.HotPink,
                 Colour.Red,
                 Colour.Orange,

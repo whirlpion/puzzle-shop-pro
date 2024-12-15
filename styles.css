@@ -102,6 +102,10 @@ div#center_tool {
     background-image: url("icons/123.svg")
 }
 
+div#colour_tool {
+    background-image: url("icons/123.svg")
+}
+
 div#zoom_tool {
     background-image: url("icons/zoom.svg")
 }

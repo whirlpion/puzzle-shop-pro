@@ -12,130 +12,209 @@ var DirectionFlag;
     DirectionFlag[DirectionFlag["NorthWest"] = 128] = "NorthWest";
     DirectionFlag[DirectionFlag["All"] = 255] = "All";
 })(DirectionFlag || (DirectionFlag = {}));
-class SVGTileSet {
-    // inset: pixels in orthogonally from the cell border to draw lines
-    constructor(sceneManager, inset) {
-        this.pathPrototypes = new Array();
-        this.sceneManager = sceneManager;
-        const SIZE = CELL_SIZE;
-        const INSET = inset;
-        for (let neighbors = 0; neighbors < 256; neighbors++) {
-            // assumes we start from top left of a cell
-            let d = "";
-            // North-West Corner
-            switch (neighbors & (DirectionFlag.West | DirectionFlag.NorthWest | DirectionFlag.North)) {
-                case DirectionFlag.None:
-                    d += `m ${INSET} ${SIZE / 2} v ${-(SIZE / 2 - INSET)} h ${SIZE / 2 - INSET} m ${-SIZE / 2} ${-INSET} `;
-                    break;
-                case DirectionFlag.West:
-                    d += `m 0 ${INSET} h ${SIZE / 2} m ${-SIZE / 2} ${-INSET} `;
-                    break;
-                case DirectionFlag.NorthWest:
-                    d += `m ${INSET} ${SIZE / 2} v ${-(SIZE / 2 - INSET)} h ${SIZE / 2 - INSET} m ${-SIZE / 2} ${-INSET} `;
-                    break;
-                case DirectionFlag.West | DirectionFlag.NorthWest:
-                    d += `m 0 ${INSET} h ${SIZE / 2} m ${-SIZE / 2} ${-INSET} `;
-                    break;
-                case DirectionFlag.North:
-                    d += `m ${INSET} ${SIZE / 2} v ${-SIZE / 2} m ${-INSET} 0 `;
-                    break;
-                case DirectionFlag.West | DirectionFlag.North:
-                    d += `m ${INSET} 0 v 0 ${INSET} h ${-INSET} 0 m 0 ${-INSET}`;
-                    break;
-                case DirectionFlag.NorthWest | DirectionFlag.North:
-                    d += `m ${INSET} ${SIZE / 2} v ${-SIZE / 2} m ${-INSET} 0 `;
-                    break;
-                case DirectionFlag.West | DirectionFlag.NorthWest | DirectionFlag.North: break;
-            }
-            // North-East Corner
-            switch (neighbors & (DirectionFlag.North | DirectionFlag.NorthEast | DirectionFlag.East)) {
-                case DirectionFlag.None:
-                    d += `m ${SIZE / 2} ${INSET} h ${SIZE / 2 - INSET} v ${SIZE / 2 - INSET} m ${-(SIZE - INSET)} ${-SIZE / 2} `;
-                    break;
-                case DirectionFlag.North:
-                    d += `m ${SIZE - INSET} 0 v ${SIZE / 2} m ${-(SIZE - INSET)} ${-SIZE / 2} `;
-                    break;
-                case DirectionFlag.NorthEast:
-                    d += `m ${SIZE / 2} ${INSET} h ${SIZE / 2 - INSET} v ${SIZE / 2 - INSET} m ${-(SIZE - INSET)} ${-SIZE / 2} `;
-                    break;
-                case DirectionFlag.North | DirectionFlag.NorthEast:
-                    d += `m ${SIZE - INSET} 0 v ${SIZE / 2} m ${-(SIZE - INSET)} ${-SIZE / 2} `;
-                    break;
-                case DirectionFlag.East:
-                    d += `m ${SIZE / 2} ${INSET} h ${SIZE / 2} m ${-SIZE} ${-INSET} `;
-                    break;
-                case DirectionFlag.North | DirectionFlag.East:
-                    d += `m ${SIZE - INSET} 0 v ${INSET} h ${INSET} m ${-SIZE} ${-INSET} `;
-                    break;
-                case DirectionFlag.NorthEast | DirectionFlag.East:
-                    d += `m ${SIZE / 2} ${INSET} h ${SIZE / 2} m ${-SIZE} ${-INSET} `;
-                    break;
-                case DirectionFlag.North | DirectionFlag.NorthEast | DirectionFlag.East: break;
-            }
-            // South-East Corner
-            switch (neighbors & (DirectionFlag.East | DirectionFlag.SouthEast | DirectionFlag.South)) {
-                case DirectionFlag.None:
-                    d += `m ${SIZE - INSET} ${SIZE / 2} v ${SIZE / 2 - INSET} h ${-(SIZE / 2 - INSET)} m ${-SIZE / 2} ${-(SIZE - INSET)} `;
-                    break;
-                case DirectionFlag.East:
-                    d += `m ${SIZE / 2} ${SIZE - INSET} h ${SIZE / 2} m ${-SIZE} ${-(SIZE - INSET)} `;
-                    break;
-                case DirectionFlag.SouthEast:
-                    d += `m ${SIZE - INSET} ${SIZE / 2} v ${SIZE / 2 - INSET} h ${-(SIZE / 2 - INSET)} m ${-SIZE / 2} ${-(SIZE - INSET)} `;
-                    break;
-                case DirectionFlag.East | DirectionFlag.SouthEast:
-                    d += `m ${SIZE / 2} ${SIZE - INSET} h ${SIZE / 2} m ${-SIZE} ${-(SIZE - INSET)} `;
-                    break;
-                case DirectionFlag.South:
-                    d += `m ${SIZE - INSET} ${SIZE / 2} v ${SIZE / 2} m ${-(SIZE - INSET)} ${-SIZE} `;
-                    break;
-                case DirectionFlag.East | DirectionFlag.South:
-                    d += `m ${SIZE} ${SIZE - INSET} h ${-INSET} v ${INSET} m ${-(SIZE - INSET)} ${-SIZE}`;
-                    break;
-                case DirectionFlag.SouthEast | DirectionFlag.South:
-                    d += `m ${SIZE - INSET} ${SIZE / 2} v ${SIZE / 2} m ${-(SIZE - INSET)} ${-SIZE} `;
-                    break;
-                case DirectionFlag.East | DirectionFlag.SouthEast | DirectionFlag.South: break;
-            }
-            // South-West Corner
-            switch (neighbors & (DirectionFlag.South | DirectionFlag.SouthWest | DirectionFlag.West)) {
-                case DirectionFlag.None:
-                    d += `m ${INSET} ${SIZE / 2} v ${SIZE / 2 - INSET} h ${SIZE / 2 - INSET} m ${SIZE / 2} ${-(SIZE - INSET)} `;
-                    break;
-                case DirectionFlag.South:
-                    d += `m ${INSET} ${SIZE / 2} v ${SIZE / 2} m ${-INSET} ${-SIZE} `;
-                    break;
-                case DirectionFlag.SouthWest:
-                    d += `m ${INSET} ${SIZE / 2} v ${SIZE / 2 - INSET} h ${SIZE / 2 - INSET} m ${-SIZE / 2} ${-(SIZE - INSET)} `;
-                    break;
-                case DirectionFlag.South | DirectionFlag.SouthWest:
-                    d += `m ${INSET} ${SIZE / 2} v ${SIZE / 2} m ${-INSET} ${-SIZE} `;
-                    break;
-                case DirectionFlag.West:
-                    d += `m ${SIZE / 2} ${SIZE - INSET} h ${-(SIZE / 2)} m 0 ${-(SIZE - INSET)} `;
-                    break;
-                case DirectionFlag.South | DirectionFlag.West:
-                    d += `m ${INSET} ${SIZE} v ${-INSET} h ${-INSET} m 0 ${-(SIZE - INSET)} `;
-                    break;
-                    ;
-                case DirectionFlag.SouthWest | DirectionFlag.West:
-                    d += `m ${SIZE / 2} ${SIZE - INSET} h ${-SIZE / 2} m 0 ${-(SIZE - INSET)} `;
-                    break;
-                case DirectionFlag.South | DirectionFlag.SouthWest | DirectionFlag.West: break;
-            }
-            this.pathPrototypes.push(d.trim());
-        }
+(function (DirectionFlag) {
+    function neighborDirections(cell, cellSet) {
+        let neighbors = DirectionFlag.None;
+        if (cellSet.has(cell.northNeighbor))
+            neighbors |= DirectionFlag.North;
+        if (cellSet.has(cell.northEastNeighbor))
+            neighbors |= DirectionFlag.NorthEast;
+        if (cellSet.has(cell.eastNeighbor))
+            neighbors |= DirectionFlag.East;
+        if (cellSet.has(cell.southEastNeighbor))
+            neighbors |= DirectionFlag.SouthEast;
+        if (cellSet.has(cell.southNeighbor))
+            neighbors |= DirectionFlag.South;
+        if (cellSet.has(cell.southWestNeighbor))
+            neighbors |= DirectionFlag.SouthWest;
+        if (cellSet.has(cell.westNeighbor))
+            neighbors |= DirectionFlag.West;
+        if (cellSet.has(cell.northWestNeighbor))
+            neighbors |= DirectionFlag.NorthWest;
+        return neighbors;
     }
-    getTile(cell, neighbors) {
-        let d = this.pathPrototypes[neighbors];
-        let path = this.sceneManager.createElement("path", SVGPathElement);
-        path.setAttribute("d", `M ${cell.left} ${cell.top} ${d}`);
-        // path.setAttributes(
-        //     // prepend with absolute position of top left of cell
-        //     ["d", `M ${cell.left} ${cell.top} ${d}`],
-        //     ["fill", "none"],
-        //     ["stroke", "skyblue"],
-        //     ["stroke-width", "24px"]);
+    DirectionFlag.neighborDirections = neighborDirections;
+})(DirectionFlag || (DirectionFlag = {}));
+class SVGTileSet {
+    static getEdge(cell, neighbors, inset, sceneManager) {
+        let d_stroke = new Array();
+        const INSET = inset;
+        // North-West Corner
+        switch (neighbors & (DirectionFlag.West | DirectionFlag.NorthWest | DirectionFlag.North)) {
+            case DirectionFlag.None:
+            case DirectionFlag.NorthWest:
+                d_stroke.push(`m ${INSET} ${HALF_CELL_SIZE} v -${HALF_CELL_SIZE - INSET} h ${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.West:
+            case DirectionFlag.West | DirectionFlag.NorthWest:
+                d_stroke.push(`m 0 ${INSET} h ${HALF_CELL_SIZE}`);
+                break;
+            case DirectionFlag.North:
+            case DirectionFlag.NorthWest | DirectionFlag.North:
+                d_stroke.push(`m ${INSET} ${HALF_CELL_SIZE} v -${HALF_CELL_SIZE} m ${HALF_CELL_SIZE - INSET} 0`);
+                break;
+            case DirectionFlag.West | DirectionFlag.North:
+                d_stroke.push(`m 0 ${INSET} h ${INSET} v ${-INSET} m ${HALF_CELL_SIZE - INSET} 0`);
+                break;
+            case DirectionFlag.West | DirectionFlag.NorthWest | DirectionFlag.North:
+                d_stroke.push(`m ${HALF_CELL_SIZE} 0`);
+                break;
+        }
+        // North-East Corner
+        switch (neighbors & (DirectionFlag.North | DirectionFlag.NorthEast | DirectionFlag.East)) {
+            case DirectionFlag.None:
+            case DirectionFlag.NorthEast:
+                d_stroke.push(`h ${HALF_CELL_SIZE - INSET} v ${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.North:
+            case DirectionFlag.North | DirectionFlag.NorthEast:
+                d_stroke.push(`m ${HALF_CELL_SIZE - INSET} 0 v ${HALF_CELL_SIZE}`);
+                break;
+            case DirectionFlag.East:
+            case DirectionFlag.NorthEast | DirectionFlag.East:
+                d_stroke.push(`h ${HALF_CELL_SIZE} m 0 ${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.North | DirectionFlag.East:
+                d_stroke.push(`m ${HALF_CELL_SIZE - INSET} 0 v ${INSET} h ${INSET} m 0 ${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.North | DirectionFlag.NorthEast | DirectionFlag.East:
+                d_stroke.push(`m ${HALF_CELL_SIZE} ${HALF_CELL_SIZE}`);
+                break;
+        }
+        // South-East Corner
+        switch (neighbors & (DirectionFlag.East | DirectionFlag.SouthEast | DirectionFlag.South)) {
+            case DirectionFlag.None:
+            case DirectionFlag.SouthEast:
+                d_stroke.push(`v ${HALF_CELL_SIZE - INSET} h -${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.East:
+            case DirectionFlag.East | DirectionFlag.SouthEast:
+                d_stroke.push(`m 0 ${HALF_CELL_SIZE - INSET} h ${-HALF_CELL_SIZE}`);
+                break;
+            case DirectionFlag.South:
+            case DirectionFlag.SouthEast | DirectionFlag.South:
+                d_stroke.push(`v ${HALF_CELL_SIZE} m -${HALF_CELL_SIZE - INSET} 0`);
+                break;
+            case DirectionFlag.East | DirectionFlag.South:
+                d_stroke.push(`m 0 ${HALF_CELL_SIZE - INSET} h -${INSET} v ${INSET} m -${HALF_CELL_SIZE - INSET} 0`);
+                break;
+            case DirectionFlag.East | DirectionFlag.SouthEast | DirectionFlag.South:
+                d_stroke.push(`m -${HALF_CELL_SIZE} ${HALF_CELL_SIZE}`);
+                break;
+        }
+        // South-West Corner
+        switch (neighbors & (DirectionFlag.South | DirectionFlag.SouthWest | DirectionFlag.West)) {
+            case DirectionFlag.None:
+            case DirectionFlag.SouthWest:
+                d_stroke.push(`h -${HALF_CELL_SIZE - INSET} v -${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.South:
+            case DirectionFlag.South | DirectionFlag.SouthWest:
+                d_stroke.push(`m -${HALF_CELL_SIZE - INSET} 0 v -${HALF_CELL_SIZE}`);
+                break;
+            case DirectionFlag.West:
+            case DirectionFlag.SouthWest | DirectionFlag.West:
+                d_stroke.push(`h -${HALF_CELL_SIZE}`);
+                break;
+            case DirectionFlag.South | DirectionFlag.West:
+                d_stroke.push(`m -${HALF_CELL_SIZE - INSET} 0 v -${INSET} h -${INSET}`);
+                break;
+            case DirectionFlag.South | DirectionFlag.SouthWest | DirectionFlag.West:
+                break;
+        }
+        let path = sceneManager.createElement("path", SVGPathElement);
+        path.setAttributes(["d", `M ${cell.left} ${cell.top} ${d_stroke.join(" ")}`], ["fill", "none"]);
+        return path;
+    }
+    static getFill(cell, neighbors, inset, sceneManager) {
+        let d_fill = new Array();
+        const INSET = inset;
+        // North-West Corner
+        switch (neighbors & (DirectionFlag.West | DirectionFlag.NorthWest | DirectionFlag.North)) {
+            case DirectionFlag.None:
+            case DirectionFlag.NorthWest:
+                d_fill.push(`m ${INSET} ${HALF_CELL_SIZE} v -${HALF_CELL_SIZE - INSET} h ${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.West:
+            case DirectionFlag.West | DirectionFlag.NorthWest:
+                d_fill.push(`m 0 ${HALF_CELL_SIZE} v -${HALF_CELL_SIZE - INSET} h ${HALF_CELL_SIZE}`);
+                break;
+            case DirectionFlag.North:
+            case DirectionFlag.NorthWest | DirectionFlag.North:
+                d_fill.push(`m ${INSET} ${HALF_CELL_SIZE} v -${HALF_CELL_SIZE} h ${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.West | DirectionFlag.North:
+                d_fill.push(`m 0 ${HALF_CELL_SIZE} v -${HALF_CELL_SIZE - INSET} h ${INSET} v -${INSET} h ${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.West | DirectionFlag.NorthWest | DirectionFlag.North:
+                d_fill.push(`m 0 ${HALF_CELL_SIZE} v -${HALF_CELL_SIZE} h ${HALF_CELL_SIZE}`);
+                break;
+        }
+        // North-East Corner
+        switch (neighbors & (DirectionFlag.North | DirectionFlag.NorthEast | DirectionFlag.East)) {
+            case DirectionFlag.None:
+            case DirectionFlag.NorthEast:
+                d_fill.push(`h ${HALF_CELL_SIZE - INSET} v ${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.North:
+            case DirectionFlag.North | DirectionFlag.NorthEast:
+                d_fill.push(`h ${HALF_CELL_SIZE - INSET} v ${HALF_CELL_SIZE}`);
+                break;
+            case DirectionFlag.East:
+            case DirectionFlag.NorthEast | DirectionFlag.East:
+                d_fill.push(`h ${HALF_CELL_SIZE} v ${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.North | DirectionFlag.East:
+                d_fill.push(`h ${HALF_CELL_SIZE - INSET} v ${INSET} h ${INSET} v ${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.North | DirectionFlag.NorthEast | DirectionFlag.East:
+                d_fill.push(`h ${HALF_CELL_SIZE} v ${HALF_CELL_SIZE}`);
+                break;
+        }
+        // South-East Corner
+        switch (neighbors & (DirectionFlag.East | DirectionFlag.SouthEast | DirectionFlag.South)) {
+            case DirectionFlag.None:
+            case DirectionFlag.SouthEast:
+                d_fill.push(`v ${HALF_CELL_SIZE - INSET} h -${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.East:
+            case DirectionFlag.East | DirectionFlag.SouthEast:
+                d_fill.push(`v ${HALF_CELL_SIZE - INSET} h -${HALF_CELL_SIZE}`);
+                break;
+            case DirectionFlag.South:
+            case DirectionFlag.SouthEast | DirectionFlag.South:
+                d_fill.push(`v ${HALF_CELL_SIZE} h -${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.East | DirectionFlag.South:
+                d_fill.push(`v ${HALF_CELL_SIZE - INSET} h -${INSET} v ${INSET} h -${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.East | DirectionFlag.SouthEast | DirectionFlag.South:
+                d_fill.push(`v ${HALF_CELL_SIZE} h -${HALF_CELL_SIZE}`);
+                break;
+        }
+        // South-West Corner
+        switch (neighbors & (DirectionFlag.South | DirectionFlag.SouthWest | DirectionFlag.West)) {
+            case DirectionFlag.None:
+            case DirectionFlag.SouthWest:
+                d_fill.push(`h -${HALF_CELL_SIZE - INSET} `);
+                break;
+            case DirectionFlag.South:
+            case DirectionFlag.South | DirectionFlag.SouthWest:
+                d_fill.push(`h -${HALF_CELL_SIZE - INSET}`);
+                break;
+            case DirectionFlag.West:
+            case DirectionFlag.SouthWest | DirectionFlag.West:
+                d_fill.push(`h -${HALF_CELL_SIZE}`);
+                break;
+            case DirectionFlag.South | DirectionFlag.West:
+                d_fill.push(`h -${HALF_CELL_SIZE - INSET} v -${INSET} h -${INSET}`);
+                break;
+            case DirectionFlag.South | DirectionFlag.SouthWest | DirectionFlag.West:
+                d_fill.push(`h -${HALF_CELL_SIZE}`);
+                break;
+        }
+        let path = sceneManager.createElement("path", SVGPathElement);
+        path.setAttributes(["d", `M ${cell.left} ${cell.top} ${d_fill.join(" ")}`], ["stroke", "none"]);
         return path;
     }
 }

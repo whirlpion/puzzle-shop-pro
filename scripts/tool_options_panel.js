@@ -32,8 +32,26 @@ class SettingOption extends Setting {
 }
 // class SettingBooleanData extends Setting {
 // }
-// class SettingDataInteger extends Setting {
-// }
+class SettingDataInteger extends Setting {
+    constructor(value, minValue, maxValue, changeCallback) {
+        super();
+        let inputElement = document.createElement("input");
+        inputElement.addEventListener("keydown", (event) => {
+            event.stopPropagation();
+        });
+        inputElement.addEventListener("input", (_event) => {
+            let value = parseInt(inputElement.value);
+            value = Math.clamp(minValue, value, maxValue);
+            inputElement.value = `${value}`;
+            changeCallback(value);
+        });
+        inputElement.setAttributes(["type", "number"], ["value", `${value}`]);
+        this.element = inputElement;
+    }
+    getHTMLElement() {
+        return this.element;
+    }
+}
 class SettingElement extends HTMLElement {
     setSetting(name, setting) {
         const nameElement = document.createElement("div");
