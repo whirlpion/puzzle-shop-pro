@@ -4,18 +4,13 @@ const AREA_KILLER: AreaType = "killer";
 class AreaTool extends ITool {
     areaType: AreaType  = AREA_KILLER;
 
-    killerTileset: SVGTileSet;
-
     drawingArea: boolean = false;
     previousCell: Cell | null = null;
     cellsInArea: BSTSet<Cell> = new BSTSet();
-    currentTileset: SVGTileSet | null = null;
     graphic: Graphic = new Graphic();
 
     constructor(toolBox: ToolBox, puzzleGrid: PuzzleGrid, actionStack: UndoRedoStack, sceneManager: SceneManager) {
         super(toolBox, puzzleGrid, actionStack, sceneManager)
-
-        this.killerTileset = new SVGTileSet(sceneManager, CELL_SIZE / 16);
     }
 
 
@@ -37,11 +32,6 @@ class AreaTool extends ITool {
 
     override handleMouseDown(event: MouseEvent): boolean {
         if (event.primaryButton) {
-            // set rendering tileset
-            switch (this.areaType) {
-            case AREA_KILLER:
-                this.currentTileset = this.killerTileset; break;
-            }
 
             this.cellsInArea = new BSTSet();
             const cell = this.sceneManager.cellAtMouseEvent(event);
@@ -104,8 +94,6 @@ class AreaTool extends ITool {
 
     private drawArea(cells: BSTSet<Cell>): Graphic {
 
-        throwIfNull(this.currentTileset);
-
         const boundingBox = BoundingBox.fromCells(...cells);
         const origin = new Cell(boundingBox.top, boundingBox.left);
 
@@ -128,7 +116,7 @@ class AreaTool extends ITool {
         for (let cell of cells) {
             const normCell = new Cell(cell.i - origin.i, cell.j - origin.j);
             let neighbors = DirectionFlag.neighborDirections(cell, cells);
-            let edge = this.currentTileset.getEdge(normCell, neighbors);
+            let edge = SVGTileSet.getEdge(normCell, neighbors, 4, this.sceneManager);
             edgeGroup.appendChild(edge);
         }
 

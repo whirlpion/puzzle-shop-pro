@@ -167,8 +167,6 @@ class PuzzleGrid {
     // root element for error highlights
     private errorHighlight: SVGGElement;
 
-    private highlightTileset: SVGTileSet;
-
     // root element for cell selection highlights
     private highlightSvg: SVGGElement;
     // the cells which are currently highlighted mapped to their associated SVG Path
@@ -189,7 +187,6 @@ class PuzzleGrid {
         this.errorHighlight = sceneManager.createElement("g", SVGGElement, RenderLayer.CellHighlight);
         this.errorHighlight.setAttributes(
             ["fill", Colour.LightRed.adjustAlpha(0.5).toString()]);
-        this.highlightTileset = new SVGTileSet(this.sceneManager, 6);
         this.highlightSvg = sceneManager.createElement("g", SVGGElement, RenderLayer.CellHighlight);
         this.highlightSvg.setAttributes(
             ["stroke", Colour.LightBlue.toString()],
@@ -304,7 +301,7 @@ class PuzzleGrid {
 
             const neighbors = DirectionFlag.neighborDirections(cell, this.highlightedCells);
 
-            const edge = this.highlightTileset.getEdge(cell, neighbors);
+            const edge = SVGTileSet.getEdge(cell, neighbors, 6, this.sceneManager);
             this.highlightedCells.set(cell, edge);
             this.highlightSvg.appendChild(edge);
         }
@@ -338,7 +335,7 @@ class PuzzleGrid {
                     }
 
                     // create new and upate
-                    path = this.highlightTileset.getEdge(dirtyCell, neighbors);
+                    path = SVGTileSet.getEdge(dirtyCell, neighbors, 6, this.sceneManager);
                     this.highlightedCells.set(dirtyCell, path);
                     this.highlightSvg.appendChild(path);
                 }
