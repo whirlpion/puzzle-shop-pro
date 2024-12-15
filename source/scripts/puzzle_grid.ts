@@ -302,15 +302,7 @@ class PuzzleGrid {
                 this.highlightSvg.removeChild(oldPath);
             }
 
-            let neighbors = DirectionFlag.None;
-            if (this.highlightedCells.has(cell.northNeighbor)) neighbors |= DirectionFlag.North;
-            if (this.highlightedCells.has(cell.northEastNeighbor)) neighbors |= DirectionFlag.NorthEast;
-            if (this.highlightedCells.has(cell.eastNeighbor)) neighbors |= DirectionFlag.East;
-            if (this.highlightedCells.has(cell.southEastNeighbor)) neighbors |= DirectionFlag.SouthEast;
-            if (this.highlightedCells.has(cell.southNeighbor)) neighbors |= DirectionFlag.South;
-            if (this.highlightedCells.has(cell.southWestNeighbor)) neighbors |= DirectionFlag.SouthWest;
-            if (this.highlightedCells.has(cell.westNeighbor)) neighbors |= DirectionFlag.West;
-            if (this.highlightedCells.has(cell.northWestNeighbor)) neighbors |= DirectionFlag.NorthWest;
+            const neighbors = DirectionFlag.neighborDirections(cell, this.highlightedCells);
 
             const edge = this.highlightTileset.getEdge(cell, neighbors);
             this.highlightedCells.set(cell, edge);
@@ -337,15 +329,7 @@ class PuzzleGrid {
             // update the paths of neighbors
             for (let dirtyCell of cell.neighbors) {
                 if (this.highlightedCells.has(dirtyCell)) {
-                    let neighbors = DirectionFlag.None;
-                    if (this.highlightedCells.has(dirtyCell.northNeighbor)) neighbors |= DirectionFlag.North;
-                    if (this.highlightedCells.has(dirtyCell.northEastNeighbor)) neighbors |= DirectionFlag.NorthEast;
-                    if (this.highlightedCells.has(dirtyCell.eastNeighbor)) neighbors |= DirectionFlag.East;
-                    if (this.highlightedCells.has(dirtyCell.southEastNeighbor)) neighbors |= DirectionFlag.SouthEast;
-                    if (this.highlightedCells.has(dirtyCell.southNeighbor)) neighbors |= DirectionFlag.South;
-                    if (this.highlightedCells.has(dirtyCell.southWestNeighbor)) neighbors |= DirectionFlag.SouthWest;
-                    if (this.highlightedCells.has(dirtyCell.westNeighbor)) neighbors |= DirectionFlag.West;
-                    if (this.highlightedCells.has(dirtyCell.northWestNeighbor)) neighbors |= DirectionFlag.NorthWest;
+                    const neighbors = DirectionFlag.neighborDirections(dirtyCell, this.highlightedCells);
 
                     // get the old path svg nd remove
                     path = this.highlightedCells.get(dirtyCell);

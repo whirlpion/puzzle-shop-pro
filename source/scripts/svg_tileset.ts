@@ -11,6 +11,23 @@ enum DirectionFlag {
     All = North | NorthEast | East | SouthEast | South | SouthWest | West | NorthWest,
 }
 
+namespace DirectionFlag {
+    export function neighborDirections<T>(cell: Cell, cellSet: BSTSet<Cell> | BSTMap<Cell, T>): DirectionFlag {
+
+        let neighbors = DirectionFlag.None;
+        if (cellSet.has(cell.northNeighbor)) neighbors |= DirectionFlag.North;
+        if (cellSet.has(cell.northEastNeighbor)) neighbors |= DirectionFlag.NorthEast;
+        if (cellSet.has(cell.eastNeighbor)) neighbors |= DirectionFlag.East;
+        if (cellSet.has(cell.southEastNeighbor)) neighbors |= DirectionFlag.SouthEast;
+        if (cellSet.has(cell.southNeighbor)) neighbors |= DirectionFlag.South;
+        if (cellSet.has(cell.southWestNeighbor)) neighbors |= DirectionFlag.SouthWest;
+        if (cellSet.has(cell.westNeighbor)) neighbors |= DirectionFlag.West;
+        if (cellSet.has(cell.northWestNeighbor)) neighbors |= DirectionFlag.NorthWest;
+
+        return neighbors;
+    }
+}
+
 class SVGTileSet {
     private pathPrototypes: Array<[String, String]> = new Array();
 
