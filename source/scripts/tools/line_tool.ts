@@ -14,6 +14,10 @@ class LineTool extends ITool {
         super(toolBox, puzzleGrid, actionStack, sceneManager)
     }
 
+    //
+    // ITool interface
+    //
+
     get mode(): ToolMode {
         return ToolMode.ConstraintInsert;
     }
